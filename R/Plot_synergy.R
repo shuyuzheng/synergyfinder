@@ -89,15 +89,7 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3, pair.inde
     # coordinates for the predicted values of the matrix
     
     # len: how many values need to be predicted between two concentrations
-    pred.corx <- seq(1, nr, length = (nr - 1)*(len + 2) - (nr - 2)) 
-    pred.cory <- seq(1, nc, length = (nc - 1)*(len + 2) - (nc - 2))
-    pred.cor <- cbind(pred.corx, pred.cory)
-    data.cor <- cbind(rep(1:nr, each = nc), rep(1:nc, nr))
-    krig <- kriging(c(t(scores.dose)), data.cor, pred.cor, cov.mod = "whitmat", grid = TRUE, sill = 1, range = 10, smooth = 0.8)
-    scores.extended <- krig$krig.est
-    
-    rownames(scores.extended) <- pred.corx
-    colnames(scores.extended) <- pred.cory
+    scores.extended <- .ExtendedScores(scores.dose, len)
     
     # get the subset of the extended matrix with predicted values
     mat.tmp <- scores.extended
@@ -326,3 +318,30 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3, pair.inde
 
 
 }
+
+.ExtendedScores <- function(scores.dose, len) {
+  # len: how many values need to be predicted between two adjacent elements
+  #      of scores.dose
+  nr <- nrow(scores.dose)
+  nc <- ncol(scores.dose)
+  extended.row.idx <- seq(1, nr, length = (nr - 1)*(len + 2) - (nr - 2))
+  extended.col.idx <- seq(1, nc, length = (nc - 1)*(len + 2) - (nc - 2))
+  krig.coord <- cbind(rep(extended.row.idx, each = length(extended.col.idx)), 
+                      rep(extended.col.idx, length(extended.row.idx)))
+  extended.scores <- SpatialExtremes::kriging(
+    data = c(scores.dose),
+    data.coord = cbind(rep(1:nr, nc), rep(1:nc, each = nr)),
+    krig.coord = krig.coord,
+    cov.mod = "whitmat",
+    grid = FALSE,
+    sill = 1,
+    range = 10,
+    smooth = 0.8
+  )$krig.est
+  extended.scores <- matrix(extended.scores, 
+                            nrow = length(extended.row.idx),
+                            ncol = length(extended.col.idx),
+                            byrow = TRUE)	
+  extended.scores
+}
+
