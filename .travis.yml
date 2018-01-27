@@ -1,8 +1,8 @@
 language: r
 cache: packages
 r:
-  -oldrel
-  -release
-  -devel
-  -bioc-devel
-  -bioc-release
+  - oldrel
+  - release
+  - devel
+  - bioc-devel
+  - bioc-release
