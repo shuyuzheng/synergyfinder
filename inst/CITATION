@@ -1,13 +1,12 @@
 citHeader("To cite synergyfinder in publications, please use:")
-citEntry(entry="article",
-         title = "Methods for High-Throughput Drug Combination Screening and Synergy Scoring
-",
+citEntry(entry="inbook",
+         title = "Methods for High-Throughput Drug Combination Screening and Synergy Scoring",
          author = "Liye He, Evgeny Kulesskiy, Jani Saarela, Laura Turunen, Krister Wennerberg, Tero Aittokallio and Jing Tang",
-         year = 2016,
-         journal = "Springer Protocol",
-         volume = "",
-         pages = "",
-         doi = "",
-         url = "",
-
-         textVersion = "He LY, Kulesskiy E, Saarela J et al (2016) Methods for High-Throughput Drug Combination Screening and Synergy Scoring. Springer Protocol (submitted)")
+         year = 2018,
+         booktitle = "Cancer Systems Biology: Methods and Protocols",
+         editor = "von Stechow, Louise",
+         pages = "351-398",
+         doi = "10.1007/978-1-4939-7493-1_17",
+         url = "https://link.springer.com/protocol/10.1007/978-1-4939-7493-1_17",
+         publisher = "Springer New York",
+         textVersion = "He L, Kulesskiy E, Saarela J, Turunen L, Wennerberg K, Aittokallio T, et al. Methods for High-throughput Drug Combination Screening and Synergy Scoring. In: von Stechow L, editor. Cancer Systems Biology: Methods and Protocols. New York, NY: Springer New York; 2018. p 351-98.")
