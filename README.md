@@ -1,5 +1,7 @@
 # SynergyFinder: Calculate and Visualize Synergy Scores for Drug Combinations
 
+[![Build Status](https://travis-ci.org/hly89/synergyfinder.svg?branch=master)](https://travis-ci.org/hly89/synergyfinder)
+
 ## Introduction
 Efficient implementations for all the popular synergy scoring models for drug combinations, including HSA, Loewe, Bliss and ZIP and visualization of the synergy scores as either a two-dimensional or a three-dimensional interaction surface over the dose matrix.
 
