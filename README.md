@@ -14,4 +14,4 @@ Code released under the Mozilla Public License 2.0.
 
 In case you use the package in your work, we do appreciate a cition to our publication:
 
-He L, Kulesskiy E, Saarela J, Turunen L, Wennerberg K, Aittokallio T, et al. (2018) Methods for High-throughput Drug Combination Screening and Synergy Scoring. In: von Stechow L, editor. Cancer Systems Biology: Methods and Protocols. New York, NY: Springer New York; 2018. p 351-98.
+He L, Kulesskiy E, Saarela J, Turunen L, Wennerberg K, Aittokallio T, et al. (2018) Methods for High-throughput Drug Combination Screening and Synergy Scoring. In: von Stechow L, editor. Cancer Systems Biology: Methods and Protocols. New York, NY: Springer New York. P351-98.
