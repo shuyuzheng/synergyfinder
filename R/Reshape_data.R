@@ -16,15 +16,16 @@
 ReshapeData <- function(data, data.type = "viability") {
   # check column names
   if (!all(c("BlockID", "DrugRow", "DrugCol", "Row", "Col", "Response", "ConcRow", "ConcCol",
-             "ConcUnit") %in% colnames(data)))
+             "ConcRowUnit", "ConcColUnit") %in% colnames(data)))
     stop("The input data must contain the following columns: BlockID, DrugRow, DrugCol, Row, Col, Response,
-         ConcRow, ConcCol, ConcUnit")
+         ConcRow, ConcCol, ConcRowUnit, ConcColUnit")
   # obtain BlockIDs
   id.drug.comb <- unique(data$BlockID)
   dose.response.mats <- list() ## store all the dose-response matrices
   drug.pairs <- data.frame(drug.row = character(length(id.drug.comb)),
                            drug.col = character(length(id.drug.comb)),
-                           concUnit = character(length(id.drug.comb)),
+                           concRUnit = character(length(id.drug.comb)),
+                           concCUnit = character(length(id.drug.comb)),
                            blockIDs = numeric(length(id.drug.comb)),
                            stringsAsFactors = FALSE)
   for (i in 1:length(id.drug.comb)) {
@@ -59,12 +60,14 @@ ReshapeData <- function(data, data.type = "viability") {
     } else if (which.max(conc.row) == 1 & which.max(conc.col) == length(conc.col)) {
       response.mat <- apply(response.mat, 2, rev)
     }
-    conc.unit <- unique(tmp.mat$ConcUnit) ## concentration unit
+    conc.runit <- unique(tmp.mat$ConcRowUnit) ## concentration unit row
+    conc.cunit <- unique(tmp.mat$ConcColUnit) ## concentration unit col
     drug.row <- unique(tmp.mat$DrugRow)
     drug.col <- unique(tmp.mat$DrugCol)
     drug.pairs$drug.row[i] <- drug.row
     drug.pairs$drug.col[i] <- drug.col
-    drug.pairs$concUnit[i] <- conc.unit
+    drug.pairs$concRUnit[i] <- conc.runit
+    drug.pairs$concCUnit[i] <- conc.cunit
     # save dose-response matrix
     dose.response.mats[[i]] <- response.mat
   }
