@@ -41,8 +41,10 @@ PlotDoseResponse <- function (data, save.file = FALSE, pair.index = NULL, Emin =
     data.plot$x <- rep(1:nrow(response.mat), each = ncol(response.mat))
     data.plot$x <- as.factor(data.plot$x)
     data.plot$y <- as.factor(data.plot$y)
-    conc.unit <- drug.pairs$concUnit[i] ## concentration unit
-    unit.text <- paste("(", conc.unit, ")", sep = "")
+    conc.runit <- drug.pairs$concRUnit[i] ## concentration row unit
+    conc.cunit <- drug.pairs$concCUnit[i] ## concentration col unit
+    runit.text <- paste("(", conc.runit, ")", sep = "")
+    cunit.text <- paste("(", conc.cunit, ")", sep = "")
     drug.row <- drug.pairs$drug.row[i]
     drug.col <- drug.pairs$drug.col[i]
     plot.title <- paste("Dose-response matrix (inhibition)", "\n BlockID:",
@@ -54,14 +56,14 @@ PlotDoseResponse <- function (data, save.file = FALSE, pair.index = NULL, Emin =
     axis.y.text <- round(as.numeric(rownames(response.mat)), 1)
     dose.response.p <- ggplot(data.plot, aes_string(x = "x", y = "y")) + geom_tile(aes_string(fill = 'Inhibition')) +
       geom_text(aes_string(fill = 'Inhibition', label = 'Inhibition')) +
-      scale_fill_gradient2(low = "green", high = "red", midpoint = 0, name = "Inhibiton (%)") +
+      scale_fill_gradient2(low = "green", high = "red", midpoint = 0, name = "Inhibition (%)") +
       scale_x_discrete(labels = axis.x.text) + scale_y_discrete(labels = axis.y.text) +
-      xlab(paste(drug.col, unit.text, sep = " ")) + ylab(paste(drug.row, unit.text, sep = " "))
+      xlab(paste(drug.col, runit.text, sep = " ")) + ylab(paste(drug.row, cunit.text, sep = " "))
     dose.response.p <- dose.response.p + theme(axis.text.x = element_text(color = "red", face = "bold", size = 15))
     dose.response.p <- dose.response.p + theme(axis.text.y = element_text(color = "red", face = "bold", size = 15))
     dose.response.p <- dose.response.p + theme(axis.title = element_text(size = 15))
     dose.response.p <- dose.response.p + ggtitle(plot.title) + theme(plot.title = 
-                                                                    element_text(size = 25))
+                                                                    element_text(size = 20))
     
 
     single.fitted <- FittingSingleDrug(response.mat, fixed = c(NA, Emin, Emax, NA))
@@ -70,7 +72,7 @@ PlotDoseResponse <- function (data, save.file = FALSE, pair.index = NULL, Emin =
     layout(matrix(c(1, 3, 2, 3), 2, 2, byrow = TRUE))
     # plot the curve for the row drug
     suppressWarnings(par(mgp=c(3, .5, 0)))
-    x.lab <- paste("Concentration", unit.text, sep = " ")
+    x.lab <- paste("Concentration", runit.text, sep = " ")
     plot(single.fitted$drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", type = "obs", col = "red", 
          cex = 1.5, pch = 16, ...)
     plot(single.fitted$drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", type = "none",
@@ -81,7 +83,7 @@ PlotDoseResponse <- function (data, save.file = FALSE, pair.index = NULL, Emin =
 
 
     # plot the curve for the col drug
-
+    x.lab <- paste("Concentration", cunit.text, sep = " ")
     plot(single.fitted$drug.col.model, xlab = x.lab, ylab = "Inhibition (%)", type = "obs", col = "red", 
          cex = 1.5, pch = 16, ...)
     plot(single.fitted$drug.col.model, xlab = x.lab, ylab = "Inhibition (%)", type = "none", cex = 1.5, add = TRUE, lwd = 3)
@@ -109,3 +111,4 @@ PlotDoseResponse <- function (data, save.file = FALSE, pair.index = NULL, Emin =
     }
   }
 }
+

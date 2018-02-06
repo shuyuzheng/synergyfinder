@@ -112,11 +112,13 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3, pair.inde
     
     plot.title <- paste("Average synergy: ", summary.score, " (",data$method,")", sep = "")
 
-    conc.unit <- drug.pairs$concUnit[i] ## concentration unit
-    unit.text <- paste("(", conc.unit, ")", sep = "")
+    conc.runit <- drug.pairs$concRUnit[i] ## concentration unit row
+    conc.cunit <- drug.pairs$concCUnit[i] ## concentration unit col
+    unit.rtext <- paste("(", conc.runit, ")", sep = "")
+    unit.ctext <- paste("(", conc.cunit, ")", sep = "")
     file.name <- paste(drug.row, drug.col, "synergy", drug.pairs$blockIDs[i], data$method, "pdf", sep = ".")
-    drug.row <- paste(drug.row, unit.text, sep = " ")
-    drug.col <- paste(drug.col, unit.text, sep = " ")
+    drug.row <- paste(drug.row, unit.rtext, sep = " ")
+    drug.col <- paste(drug.col, unit.ctext, sep = " ")
     max.dose <- max(abs(max(scores.dose)), abs(min(scores.dose)))
     color.range <- round(max.dose + 5, -1)
     if(is.null(legend.start)){
