@@ -6,7 +6,7 @@
 Efficient implementations for all the popular synergy scoring models for drug combinations, including HSA, Loewe, Bliss and ZIP and visualization of the synergy scores as either a two-dimensional or a three-dimensional interaction surface over the dose matrix.
 
 ## Support
-If you have any problems in using SynergyFinder, please contace **Liye He** (liye.he@helsinki.fi)
+If you have any problems in using SynergyFinder, please contact **Shuyu Zheng** (shuyu.zheng@helsinki.fi)
 
 ## Copyright & License
 
