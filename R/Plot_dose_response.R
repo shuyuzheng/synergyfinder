@@ -41,53 +41,63 @@ PlotDoseResponse <- function (data, save.file = FALSE, pair.index = NULL, Emin =
     data.plot$x <- rep(1:nrow(response.mat), each = ncol(response.mat))
     data.plot$x <- as.factor(data.plot$x)
     data.plot$y <- as.factor(data.plot$y)
-    conc.runit <- drug.pairs$concRUnit[i] ## concentration row unit
-    conc.cunit <- drug.pairs$concCUnit[i] ## concentration col unit
+    conc.runit <- drug.pairs$conc_r_unit[i] ## concentration row unit
+    conc.cunit <- drug.pairs$conc_c_unit[i] ## concentration col unit
     runit.text <- paste("(", conc.runit, ")", sep = "")
     cunit.text <- paste("(", conc.cunit, ")", sep = "")
-    drug.row <- drug.pairs$drug.row[i]
-    drug.col <- drug.pairs$drug.col[i]
+    drug.row <- drug.pairs$drug_row[i]
+    drug.col <- drug.pairs$drug_col[i]
     plot.title <- paste("Dose-response matrix (inhibition)", "\n BlockID:",
-                        drug.pairs$blockIDs[i], sep = " ")
+                        drug.pairs$block_id[i], sep = " ")
 
 
     # plot dose-response matrix
     axis.x.text <- round(as.numeric(colnames(response.mat)), 1)
     axis.y.text <- round(as.numeric(rownames(response.mat)), 1)
-    dose.response.p <- ggplot(data.plot, aes_string(x = "x", y = "y")) + geom_tile(aes_string(fill = 'Inhibition')) +
+    dose.response.p <- ggplot(data.plot, aes_string(x = "x", y = "y")) + 
+      geom_tile(aes_string(fill = 'Inhibition')) +
       geom_text(aes_string(fill = 'Inhibition', label = 'Inhibition')) +
-      scale_fill_gradient2(low = "green", high = "red", midpoint = 0, name = "Inhibition (%)") +
-      scale_x_discrete(labels = axis.x.text) + scale_y_discrete(labels = axis.y.text) +
-      xlab(paste(drug.col, runit.text, sep = " ")) + ylab(paste(drug.row, cunit.text, sep = " "))
-    dose.response.p <- dose.response.p + theme(axis.text.x = element_text(color = "red", face = "bold", size = 15))
-    dose.response.p <- dose.response.p + theme(axis.text.y = element_text(color = "red", face = "bold", size = 15))
-    dose.response.p <- dose.response.p + theme(axis.title = element_text(size = 15))
-    dose.response.p <- dose.response.p + ggtitle(plot.title) + theme(plot.title = 
-                                                                    element_text(size = 20))
-    
-
-    single.fitted <- FittingSingleDrug(response.mat, fixed = c(NA, Emin, Emax, NA))
-
+      scale_fill_gradient2(low = "green", high = "red", 
+                           midpoint = 0, name = "Inhibition (%)") +
+      scale_x_discrete(labels = axis.x.text) + 
+      scale_y_discrete(labels = axis.y.text) +
+      xlab(paste(drug.col, runit.text, sep = " ")) + 
+      ylab(paste(drug.row, cunit.text, sep = " "))
+    dose.response.p <- dose.response.p + 
+      theme(axis.text.x = element_text(color = "red", face = "bold", size = 15))
+    dose.response.p <- dose.response.p + 
+      theme(axis.text.y = element_text(color = "red", face = "bold", size = 15))
+    dose.response.p <- dose.response.p + 
+      theme(axis.title = element_text(size = 15))
+    dose.response.p <- dose.response.p + 
+      ggtitle(plot.title) + 
+      theme(plot.title = element_text(size = 20))
+     
+    # Fit model for the col drug
+    drug.row.response <- ExtractSingleDrug(response.mat, dim = "row")
+    drug.row.model <- FitDoseResponse(drug.row.response, ...)
 
     layout(matrix(c(1, 3, 2, 3), 2, 2, byrow = TRUE))
     # plot the curve for the row drug
     suppressWarnings(par(mgp=c(3, .5, 0)))
     x.lab <- paste("Concentration", runit.text, sep = " ")
-    plot(single.fitted$drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", type = "obs", col = "red", 
+    plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", type = "obs", col = "red", 
          cex = 1.5, pch = 16, ...)
-    plot(single.fitted$drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", type = "none",
+    plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", type = "none",
          cex = 1.5, add = TRUE, lwd = 3)
-    title(paste("Dose-response curve for drug:", drug.row, "in Block", drug.pairs$blockIDs[i]), cex.main = 1)
+    title(paste("Dose-response curve for drug:", drug.row, "in Block", drug.pairs$block_id[i]), cex.main = 1)
 
 
-
+    # Fit model for the col drug
+    drug.col.response <- ExtractSingleDrug(response.mat, dim = "col")
+    drug.col.model <- FitDoseResponse(drug.col.response, ...)
 
     # plot the curve for the col drug
     x.lab <- paste("Concentration", cunit.text, sep = " ")
     plot(single.fitted$drug.col.model, xlab = x.lab, ylab = "Inhibition (%)", type = "obs", col = "red", 
          cex = 1.5, pch = 16, ...)
     plot(single.fitted$drug.col.model, xlab = x.lab, ylab = "Inhibition (%)", type = "none", cex = 1.5, add = TRUE, lwd = 3)
-    title(paste("Dose-response curve for drug:", drug.col, "in Block", drug.pairs$blockIDs[i]), cex.main = 1)
+    title(paste("Dose-response curve for drug:", drug.col, "in Block", drug.pairs$block_id[i]), cex.main = 1)
 
     plot.new()
     #vps <- baseViewports()
@@ -98,7 +108,7 @@ PlotDoseResponse <- function (data, save.file = FALSE, pair.index = NULL, Emin =
     merge.plot <- recordPlot()
     plots[[i]] <- merge.plot
     if(save.file) {
-      file.name <- paste(drug.row, drug.col, "dose.response", drug.pairs$blockIDs[i], "pdf", sep = ".")
+      file.name <- paste(drug.row, drug.col, "dose.response", drug.pairs$block_id[i], "pdf", sep = ".")
       pdf(file.name, width = 12, height = 6)
       replayPlot(merge.plot)
       dev.off()
