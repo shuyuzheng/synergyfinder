@@ -42,6 +42,11 @@ Model choice:
 First use "L.4" model to fit the raw data. If error or waring occurs, use
 "LL.4" model to fit \code{log(raw data)}.
 }
+\examples{
+df <- data.frame(response = c(0, 29, 59, 60, 75, 90),
+                 dose = c(0.00, 9.7656, 39.0626, 156.25, 625, 2500))
+model <- FitDoseResponse(df)
+}
 \references{
 Seber, G. A. F. and Wild, C. J (1989)
 href{https://onlinelibrary.wiley.com/doi/book/10.1002/0471725315}{Nonlinear

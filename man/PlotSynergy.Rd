@@ -58,7 +58,11 @@ data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
 scores <- CalculateSynergy(data)
 PlotSynergy(scores, "2D")
+PlotSynergy(scores, "3D")
 }
 \author{
-Liye He \email{liye.he@helsinki.fi}
+\itemize{
+   \item{Liye He \email{liye.he@helsinki.fi}}
+   \item{Shuyu Zheng \email{shuyu.zheng@helsinki.fi}}
+}
 }

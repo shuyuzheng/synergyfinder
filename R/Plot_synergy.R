@@ -1,3 +1,12 @@
+# SynergyFinder
+# Functions for plot synergy scores
+#
+# Functions in this page:
+#
+# PlotSynergy: Plot drug interaction landscape
+# .ExtendedScores: Internal function facilating drug interaction landscape 
+#                  ploting 
+
 #' Drug interaction landscape
 #'
 #' A function to visualize the synergy scores for drug combinations as 2D or 3D
@@ -32,30 +41,49 @@
 #'    so all the concentrations are used.
 #' @return a pdf file or the interaction landscapes which are only displayed 
 #'    It depends on the \code{save.file} parameter.
-#' @author Liye He \email{liye.he@helsinki.fi}
+#'    
+#' @author \itemize{
+#'    \item{Liye He \email{liye.he@helsinki.fi}}
+#'    \item{Shuyu Zheng \email{shuyu.zheng@helsinki.fi}}
+#' }
+#' 
+#' @import ggplot2 gridBase grid lattice gplots nleqslv graphics grDevices
+#'   
+#' @export
+#' 
 #' @examples
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
 #' scores <- CalculateSynergy(data)
 #' PlotSynergy(scores, "2D")
-
+#' PlotSynergy(scores, "3D")
 PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3, 
                         pair.index = NULL, legend.start = NULL, 
                         legend.end = NULL, row.range = NULL, col.range = NULL){
-  if(!is.list(data)) {
+  # 1. Check input data
+  if (!is.list(data)) {
       stop("Input data is not a list format!")
   }
-  scores <- data$scores
-  drug.pairs <- data$drug.pairs
-  num.pairs <- 1:length(scores)
-  plots <- list()
-  if(!is.null(pair.index)) {
-      num.pairs <- pair.index
+  if (!("scores" %in% names(data))) {
+    stop("There should be a list named 'scores'.")
   }
-  for (i in num.pairs) {
-    scores.dose <- scores[[i]]
-    drug.col <- drug.pairs$drug_col[i]
-    drug.row <- drug.pairs$drug_row[i]
+  
+  # 2. Extract scores matrices
+  scores <- data$scores
+  drug.pairs <- data$drug.pairs  
+  
+  if(!is.null(pair.index)) {
+    blocks <- pair.index
+  } else {
+    blocks <- names(scores)
+  }
+  
+  plots <- vector(mode="list", length=length(blocks))
+  names(plots) <- blocks
+  for (block in blocks) {
+    scores.dose <- scores[[block]]
+    drug.col <- drug.pairs$drug_col[drug.pairs$block_id == block]
+    drug.row <- drug.pairs$drug_row[drug.pairs$block_id == block]
     
     scores.tmp <- scores.dose
     if(!is.null(col.range)) {
@@ -77,22 +105,19 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
         } else {
             scores.tmp <- scores.tmp[row.range[1]:row.range[2], ]
         }
-        
     } else {
       # delete the first row
       scores.tmp <- scores.tmp[-1, ]
     }
 
-    
-    
     summary.score <- round(mean(scores.tmp, na.rm = TRUE), 3)
     # drug.col: the col-wise drug
     # drug.row: the row-wise drug
     
     # kriging with kriging from SpatialExtremes package!
     
-    row.conc <- as.numeric(rownames(scores.dose))  ## concentrations on the row
-    col.conc <- as.numeric(colnames(scores.dose))  ## concentrations on the column
+    row.conc <- as.numeric(rownames(scores.dose)) # concentrations on the row
+    col.conc <- as.numeric(colnames(scores.dose)) # concentrations on the column
     
     nr <- nrow(scores.dose)
     nc <- ncol(scores.dose)
@@ -124,11 +149,11 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
     plot.title <- paste("Average synergy: ", summary.score, 
                         " (",data$method,")", sep = "")
 
-    conc.runit <- drug.pairs$concRUnit[i] ## concentration unit row
-    conc.cunit <- drug.pairs$concCUnit[i] ## concentration unit col
+    conc.runit <- drug.pairs$conc_r_unit[drug.pairs$block_id == block]
+    conc.cunit <- drug.pairs$conc_c_unit[drug.pairs$block_id == block]
     unit.rtext <- paste("(", conc.runit, ")", sep = "")
     unit.ctext <- paste("(", conc.cunit, ")", sep = "")
-    file.name <- paste(drug.row, drug.col, "synergy", drug.pairs$blockIDs[i], 
+    file.name <- paste(drug.row, drug.col, "synergy", block, 
                        data$method, "pdf", sep = ".")
     drug.row <- paste(drug.row, unit.rtext, sep = " ")
     drug.col <- paste(drug.col, unit.ctext, sep = " ")
@@ -316,7 +341,7 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
       print(syn.3d.plot, position = c(0.5,0, 1, 1), newpage = FALSE)
       fig <- recordPlot()
     }
-    plots[[i]] <- fig
+    plots[[block]] <- fig
     if(save.file) {
       if (type %in% c("2D", "3D")) {
         pdf(file.name, width = 10, height = 10)
@@ -330,13 +355,11 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
   }
 
   if(!save.file) {
-    for(i in num.pairs) {
+    for(block in blocks) {
       dev.new(noRStudioGD = TRUE)
-      replayPlot(plots[[i]])
+      replayPlot(plots[[block]])
     }
   }
-
-
 }
 
 .ExtendedScores <- function(scores.dose, len) {

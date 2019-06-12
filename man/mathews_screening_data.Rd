@@ -3,8 +3,8 @@
 \name{mathews_screening_data}
 \alias{mathews_screening_data}
 \title{A high-throughput drug combination screening data}
-\format{A data frame with the following columns: BlockID, DrugRow, DrugCol, Row, Col, Response, Replicate,
-ConcRow, ConcCol, ConcUnit}
+\format{A data frame with the following columns: block_id, drug_row, 
+  drug_col, conc_r, conc_c, response, conc_r_unit, conc_c_unit.}
 \description{
 A recent drug combination screening for the treatment of diffuse large B-cell
 lymphoma (DLBCL).
