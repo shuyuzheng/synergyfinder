@@ -8,10 +8,6 @@ ImputeNA(response.mat)
 }
 \arguments{
 \item{response.mat}{A matrix which has missing value.}
-
-\item{times}{a integer which refers to the time of runing imputation. The
-default value is \code{1}, but sometimes you might want to run imputation
-more than once.}
 }
 \value{
 A matrix which is same as input matrix except the NA cells are filled
@@ -28,7 +24,7 @@ data <- ReshapeData(mathews_screening_data)
 response.mat <- data$dose.response.mats[[1]]
 # introduce some NA values into matrix
 response.mat[3:4, 3:5] <- NA
-adjusted.mat <- ImputeNa(response.mat)
+adjusted.mat <- ImputeNA(response.mat)
 }
 \author{
 Shuyu Zheng{shuyu.zheng@helsinki.fi}

@@ -32,7 +32,6 @@
 #'     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 #'   }
 #'
-#' @import ggplot2 gridBase grid lattice gplots nleqslv graphics grDevices
 #' @export
 #' 
 #' @examples
@@ -98,24 +97,30 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
     # plot dose-response matrix
     axis.x.text <- round(as.numeric(colnames(response.mat)), 1)
     axis.y.text <- round(as.numeric(rownames(response.mat)), 1)
-    dose.response.p <- ggplot(data.plot, aes_string(x = "x", y = "y")) + 
-      geom_tile(aes_string(fill = 'Inhibition')) +
-      geom_text(aes_string(fill = 'Inhibition', label = 'Inhibition')) +
-      scale_fill_gradient2(low = "green", high = "red", 
-                           midpoint = 0, name = "Inhibition (%)") +
-      scale_x_discrete(labels = axis.x.text) + 
-      scale_y_discrete(labels = axis.y.text) +
-      xlab(paste(drug.col, runit.text, sep = " ")) + 
-      ylab(paste(drug.row, cunit.text, sep = " "))
+    dose.response.p <- ggplot2::ggplot(data.plot, 
+                                       ggplot2::aes_string(x = "x", y = "y")) + 
+      ggplot2::geom_tile(ggplot2::aes_string(fill = 'Inhibition')) +
+      ggplot2::geom_text(ggplot2::aes_string(fill = 'Inhibition', 
+                                             label = 'Inhibition')) +
+      ggplot2::scale_fill_gradient2(low = "green", high = "red",
+                                    midpoint = 0, name = "Inhibition (%)") +
+      ggplot2::scale_x_discrete(labels = axis.x.text) + 
+      ggplot2::scale_y_discrete(labels = axis.y.text) +
+      ggplot2::xlab(paste(drug.col, runit.text, sep = " ")) + 
+      ggplot2::ylab(paste(drug.row, cunit.text, sep = " "))
     dose.response.p <- dose.response.p + 
-      theme(axis.text.x = element_text(color = "red", face = "bold", size = 15))
+      ggplot2::theme(axis.text.x = ggplot2::element_text(color = "red", 
+                                                         face = "bold", 
+                                                         size = 15))
     dose.response.p <- dose.response.p + 
-      theme(axis.text.y = element_text(color = "red", face = "bold", size = 15))
+      ggplot2::theme(axis.text.y = ggplot2::element_text(color = "red",
+                                                         face = "bold",
+                                                         size = 15))
     dose.response.p <- dose.response.p + 
-      theme(axis.title = element_text(size = 15))
+      ggplot2::theme(axis.title = ggplot2::element_text(size = 15))
     dose.response.p <- dose.response.p + 
-      ggtitle(plot.title) + 
-      theme(plot.title = element_text(size = 20))
+      ggplot2::ggtitle(plot.title) + 
+      ggplot2::theme(plot.title = ggplot2::element_text(size = 20))
      
     # Fit model for the col drug
     drug.row.response <- ExtractSingleDrug(response.mat, dim = "row")
@@ -125,12 +130,12 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
     # plot the curve for the row drug
     suppressWarnings(par(mgp=c(3, .5, 0)))
     x.lab <- paste("Concentration", runit.text, sep = " ")
-    plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", 
-         type = "obs", col = "red", cex = 1.5, pch = 16, ...)
-    plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", type = "none",
-         cex = 1.5, add = TRUE, lwd = 3)
-    title(paste("Dose-response curve for drug:", drug.row, "in Block", 
-                block), cex.main = 1)
+    graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)",
+                   type = "obs", col = "red", cex = 1.5, pch = 16, ...)
+    graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", 
+                   type = "none", cex = 1.5, add = TRUE, lwd = 3)
+    graphics::title(paste("Dose-response curve for drug:", drug.row, "in Block", 
+                         block), cex.main = 1)
 
 
     # Fit model for the col drug
@@ -139,22 +144,22 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
 
     # plot the curve for the col drug
     x.lab <- paste("Concentration", cunit.text, sep = " ")
-    plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)", type = "obs", 
-         col = "red", cex = 1.5, pch = 16, ...)
-    plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)", type = "none", 
-         cex = 1.5, add = TRUE, lwd = 3)
-    title(paste("Dose-response curve for drug:", drug.col, "in Block", 
-                block), cex.main = 1)
+    graphics::plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)",
+                   type = "obs", col = "red", cex = 1.5, pch = 16, ...)
+    graphics::plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)",
+                   type = "none", cex = 1.5, add = TRUE, lwd = 3)
+    graphics::title(paste("Dose-response curve for drug:", drug.col, "in Block",
+                          block), cex.main = 1)
 
     plot.new()
     #vps <- baseViewports()
     #pushViewport()
-    print(dose.response.p, vp = grid::viewport(height = unit(1, "npc"), 
-                                               width = unit(0.5, "npc"), 
+    print(dose.response.p, vp = grid::viewport(height = grid::unit(1, "npc"), 
+                                               width = grid::unit(0.5, "npc"), 
                                                just = c("left","top"),
                                                y = 1, x = 0.5))
     #popViewport()
-    merge.plot <- recordPlot()
+    merge.plot <- grDevices::recordPlot()
     plots[[block]] <- merge.plot
     if(save.file) {
       if (adjusted) {
@@ -164,9 +169,9 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
       file.name <- paste(drug.row, drug.col, "original.dose.response", 
                          block, "pdf", sep = ".")
       }
-      pdf(file.name, width = 12, height = 6)
-      replayPlot(merge.plot)
-      dev.off()
+      grDevices::pdf(file.name, width = 12, height = 6)
+      grDevices::replayPlot(merge.plot)
+      grDevices::dev.off()
     }
   }
   if(!save.file) {
@@ -174,8 +179,8 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
       if (is.null(plots[[block]])) {
         next
       }
-      dev.new(noRStudioGD = TRUE)
-      replayPlot(plots[[block]])
+      grDevices::dev.new(noRStudioGD = TRUE)
+      grDevices::replayPlot(plots[[block]])
     }
   }
 }

@@ -46,9 +46,7 @@
 #'    \item{Liye He \email{liye.he@helsinki.fi}}
 #'    \item{Shuyu Zheng \email{shuyu.zheng@helsinki.fi}}
 #' }
-#' 
-#' @import ggplot2 gridBase grid lattice gplots nleqslv graphics grDevices
-#'   
+#'
 #' @export
 #' 
 #' @examples
@@ -86,65 +84,52 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
     drug.row <- drug.pairs$drug_row[drug.pairs$block_id == block]
     
     scores.tmp <- scores.dose
-    if(!is.null(col.range)) {
-        if(col.range[1] == 1) {
-            # the first column is not included while calculating the average score
-            scores.tmp <- scores.tmp[, (col.range[1] + 1):col.range[2]]
-        } else {
-            scores.tmp <- scores.tmp[,col.range[1]:col.range[2]]
-        }
-        
-    } else {
-      # delete the first column
-      scores.tmp <- scores.tmp[, -1]
-    }
-    if(!is.null(row.range)) {
-        if(row.range[1] == 1) {
-            # the first row is not included while calculating the average score
-            scores.tmp <- scores.tmp[(row.range[1] + 1):row.range[2],]
-        } else {
-            scores.tmp <- scores.tmp[row.range[1]:row.range[2], ]
-        }
-    } else {
-      # delete the first row
-      scores.tmp <- scores.tmp[-1, ]
+
+    if (!is.null(col.range)) {
+      scores.tmp <- scores.tmp[,col.range[1]:col.range[2]]
     }
 
-    summary.score <- round(mean(scores.tmp, na.rm = TRUE), 3)
+    if (!is.null(row.range)) {
+        scores.tmp <- scores.tmp[row.range[1]:row.range[2], ]
+    }
+    row.conc <- as.numeric(rownames(scores.tmp)) # concentrations on the row
+    col.conc <- as.numeric(colnames(scores.tmp)) # concentrations on the column
+    summary.score <- round(mean(scores.tmp[row.conc != 0, col.conc != 0],
+                                na.rm = TRUE), 3)
     # drug.col: the col-wise drug
     # drug.row: the row-wise drug
     
     # kriging with kriging from SpatialExtremes package!
     
-    row.conc <- as.numeric(rownames(scores.dose)) # concentrations on the row
-    col.conc <- as.numeric(colnames(scores.dose)) # concentrations on the column
+
     
-    nr <- nrow(scores.dose)
-    nc <- ncol(scores.dose)
+    nr <- nrow(scores.tmp)
+    nc <- ncol(scores.tmp)
     
     # coordinates for the predicted values of the matrix
     
     # len: how many values need to be predicted between two concentrations
-    scores.extended <- .ExtendedScores(scores.dose, len)
+    scores.extended <- .ExtendedScores(scores.tmp, len)
     
     # get the subset of the extended matrix with predicted values
     mat.tmp <- scores.extended
-    if(!is.null(col.range)){
-      # selecting cols
-      mat.tmp[, which(pred.cory >= col.range[1] & pred.cory <= col.range[2])]
-    }
-    if(!is.null(row.range)){
-      # selecting rows
-      mat.tmp[which(pred.corx >= row.range[1] & pred.corx <= row.range[2]), ]
-    }
+    # pred.cory <- as.numeric(colnames(mat.tmp))
+    # pred.corx <- as.numeric(rownames(mat.tmp))
+    # if(!is.null(col.range)){
+    #   # selecting cols
+    #   mat.tmp <- mat.tmp[, which(pred.cory >= col.conc[col.range[1]] & 
+    #                                pred.cory <= col.conc[col.range[2]])]
+    # }
+    # if(!is.null(row.range)){
+    #   # selecting rows
+    #   mat.tmp <- mat.tmp[which(pred.corx >= row.conc[row.range[1]] & 
+    #                              pred.corx <= row.conc[row.range[2]]), ]
+    # }
     
     # the matrix for plotting
-    pp <- matrix(NA, nrow(mat.tmp)*ncol(mat.tmp), 3)
-    pp <- data.frame(pp)
-    colnames(pp) <- c("x", "y", "z")
-    pp$x <- rep(colnames(mat.tmp), each = nrow(mat.tmp))
-    pp$y <- rep(rownames(mat.tmp), ncol(mat.tmp))
-    pp$z <- c(mat.tmp)
+    pp <- data.frame(x = rep(colnames(mat.tmp), each = nrow(mat.tmp)),
+                     y = rep(rownames(mat.tmp), ncol(mat.tmp)),
+                     z = c(mat.tmp))
     
     plot.title <- paste("Average synergy: ", summary.score, 
                         " (",data$method,")", sep = "")
@@ -157,7 +142,7 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
                        data$method, "pdf", sep = ".")
     drug.row <- paste(drug.row, unit.rtext, sep = " ")
     drug.col <- paste(drug.col, unit.ctext, sep = " ")
-    max.dose <- max(abs(max(scores.dose)), abs(min(scores.dose)))
+    max.dose <- max(abs(scores.dose))
     color.range <- round(max.dose + 5, -1)
     if(is.null(legend.start)){
         start.point <- -color.range
@@ -173,11 +158,11 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
     
     # colors
     levels <- seq(start.point, end.point, by = 2)
-    col1 <- colorRampPalette(c('green', "#FFFFFF"))(length(which(levels<=0)))
-    col2 <- colorRampPalette(c("#FFFFFF", 'red'))(length(which(levels>=0)))
+    col1 <- grDevices::colorRampPalette(c('green', 
+                                          "#FFFFFF"))(length(which(levels <= 0)))
+    col2 <- grDevices::colorRampPalette(c("#FFFFFF", 
+                                          'red'))(length(which(levels >= 0)))
     col <- c(col1, col2[-1])
-    
-    
     
 
     if (type == "3D") {
@@ -200,7 +185,7 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
       }
       
       
-      par1 <- list(arrows=FALSE, distance=c(0.8,0.8,0.8), col = 1,
+      par1 <- list(arrows = FALSE, distance = c(0.8,0.8,0.8), col = 1,
                    cex = 0.8, z = list(tick.number = 6),
                    x=xaxis, y = yaxis)
       zlabs <- list(expression("Synergy score"), rot = 90, 
@@ -208,45 +193,50 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
       xpar <- list(as.character(drug.col), cex = 1, rot = 20)
       ypar <- list(as.character(drug.row), cex = 1, rot = -50)
       
-      fig <- wireframe(t(mat.tmp),scales = par1,
-                       drape = TRUE, colorkey = list(space = "top",width = 0.5),
-                       screen = list(z = 30, x = -55),
-                       zlab = zlabs, xlab = xpar, ylab = ypar,
-                       zlim = c(start.point, end.point),
-                       col.regions = col,
-                       main = plot.title,
-                       at = do.breaks(c(start.point, end.point), length(col)),
-                       par.settings = list(axis.line=list(col="transparent")),
-                       zoom = 1, aspect = 1)
+      fig <- lattice::wireframe(t(mat.tmp),scales = par1, drape = TRUE,
+                          colorkey = list(space = "top",width = 0.5),
+                          screen = list(z = 30, x = -55),
+                          zlab = zlabs, xlab = xpar, ylab = ypar,
+                          zlim = c(start.point, end.point),
+                          col.regions = col,
+                          main = plot.title,
+                          at = lattice::do.breaks(c(start.point, end.point), 
+                                         length(col)),
+                          par.settings=list(axis.line=list(col="transparent")),
+                          zoom = 1, aspect = 1)
       print(fig)
-      fig <- recordPlot()
+      fig <- grDevices::recordPlot()
     } else if (type == "2D") {
-      dev.new(noRStudioGD = TRUE)
-      layout(matrix(c(1, 2), nrow = 2L, ncol = 1L), heights = c(0.1, 1))
-      par(mar = c(0, 6.1, 2.1, 4.1))
-      suppressWarnings(par(mgp = c(3, -1.5, 0)))
+      grDevices::dev.new(noRStudioGD = TRUE)
+      graphics::layout(matrix(c(1, 2), nrow = 2L, ncol = 1L), 
+                       heights = c(0.1, 1))
+      graphics::par(mar = c(0, 6.1, 2.1, 4.1))
+      suppressWarnings(graphics::par(mgp = c(3, -1.5, 0)))
       #levels <- seq(start.point, end.point, by = 2)
       #col <- colorpanel(end.point, low = "green", mid = "white", high = "red")
-      plot.new()
-      plot.window(ylim = c(0, 1), xlim = range(levels), xaxs = "i", yaxs = "i")
-      rect(levels[-length(levels)],0, levels[-1L],0.3, col = col, border = NA)
-      axis(3,tick = FALSE, at = do.breaks(c(start.point, end.point), 
-                                          end.point/10))
-      title(plot.title)
-      par(mar = c(5.1,4.1,1.1,2.1))
-      suppressWarnings(par(mgp = c(2,1,0)))
-      plot.new()
+      graphics::plot.new()
+      graphics::plot.window(ylim = c(0, 1), xlim = range(levels), 
+                            xaxs = "i", yaxs = "i")
+      graphics::rect(levels[-length(levels)], 0, levels[-1L], 0.3, 
+                     col = col, border = NA)
+      graphics::axis(3,tick = FALSE, at = lattice::do.breaks(c(start.point, 
+                                                               end.point), 
+                                      round((end.point - start.point)/10, 2)))
+      graphics::title(plot.title)
+      graphics::par(mar = c(5.1,4.1,1.1,2.1))
+      suppressWarnings(graphics::par(mgp = c(2,1,0)))
+      graphics::plot.new()
       mat.tmp <- t(mat.tmp)
       x.2D <- (1:dim(mat.tmp)[1] - 1) / (dim(mat.tmp)[1] - 1)
       y.2D <- (1:dim(mat.tmp)[2] - 1) / (dim(mat.tmp)[2] - 1)
-      plot.window(asp = NA, xlim = range(x.2D), ylim = range(y.2D), "", 
-                  xaxs = "i", yaxs = "i")
-      .filled.contour(x.2D, y.2D, z = mat.tmp, levels, col = col)
+      graphics::plot.window(asp = NA, xlim = range(x.2D), ylim = range(y.2D), 
+                            "", xaxs = "i", yaxs = "i")
+      graphics::.filled.contour(x.2D, y.2D, z = mat.tmp, levels, col = col)
       ## grid(dim(c)[1] - 1, dim(c)[2] - 1, col = "gray", lty = "solid", 
       ## lwd = 0.3)
-      box()
-      mtext(drug.col, 1, cex = 1, padj = 3)
-      mtext(drug.row, 2, cex = 1, las = 3, padj = -3)
+      graphics::box()
+      graphics::mtext(drug.col, 1, cex = 1, padj = 3)
+      graphics::mtext(drug.row, 2, cex = 1, las = 3, padj = -3)
       if(!is.null(row.range)) {
         yconc <- round(row.conc[row.range[1]:row.range[2]], 3)
       } else {
@@ -259,10 +249,12 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
         xconc <- round(col.conc, 3)
       }
 
-      axis(side = 1, at = seq(0, 1, by = 1/(length(xconc) - 1)), labels = xconc)
-      axis(side = 2, at = seq(0, 1, by = 1/(length(yconc) - 1)), labels = yconc)
-      fig <- recordPlot()
-      dev.off()
+      graphics::axis(side = 1, at = seq(0, 1, by = 1/(length(xconc) - 1)), 
+                     labels = xconc)
+      graphics::axis(side = 2, at = seq(0, 1, by = 1/(length(yconc) - 1)), 
+                     labels = yconc)
+      fig <- grDevices::recordPlot()
+      grDevices::dev.off()
     } else {
       # 3d plot
       # x-axis ticks settings
@@ -292,38 +284,43 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
       xpar <- list(as.character(drug.col), cex = 1, rot = 20)
       ypar <- list(as.character(drug.row), cex = 1, rot = -50)
       
-      syn.3d.plot <- wireframe(t(mat.tmp),scales = par1,
+      syn.3d.plot <- lattice::wireframe(t(mat.tmp),scales = par1,
                        drape = TRUE, colorkey = list(space = "top",width = 0.5),
                        screen = list(z = 30, x = -55),
                        zlab = zlabs, xlab = xpar, ylab = ypar,
                        zlim = c(start.point, end.point),
                        col.regions = col,
                        main = plot.title,
-                       at = do.breaks(c(start.point, end.point), length(col)),
+                       at = lattice::do.breaks(c(start.point, end.point), 
+                                               length(col)),
                        par.settings = list(axis.line=list(col="transparent")),
                        zoom = 1, aspect = 1)
       # 2d plot
-      layout(matrix(c(1, 2, 3, 3), nrow = 2L, ncol = 2L), heights = c(0.1, 1))
-      par(mar = c(0, 6.1, 2.1, 4.1))
-      suppressWarnings(par(mgp = c(3, -0.8, 0)))
-      plot.new()
-      plot.window(ylim = c(0, 1), xlim = range(levels), xaxs = "i", yaxs = "i")
-      rect(levels[-length(levels)],0, levels[-1L],0.3, col = col, border = NA)
-      axis(3, tick = FALSE, 
-           at = do.breaks(c(start.point, end.point), end.point/10))
-      title(plot.title)
-      par(mar = c(5.1,4.1,1.1,2.1))
-      suppressWarnings(par(mgp = c(2,1,0)))
-      plot.new()
+      graphics::layout(matrix(c(1, 2, 3, 3), nrow = 2L, ncol = 2L),
+                       heights = c(0.1, 1))
+      graphics::par(mar = c(0, 6.1, 2.1, 4.1))
+      suppressWarnings(graphics::par(mgp = c(3, -0.8, 0)))
+      graphics::plot.new()
+      graphics::plot.window(ylim = c(0, 1), xlim = range(levels),
+                            xaxs = "i", yaxs = "i")
+      graphics::rect(levels[-length(levels)],0, levels[-1L],0.3,
+                     col = col, border = NA)
+      graphics::axis(3, tick = FALSE,
+                     at = lattice::do.breaks(c(start.point, end.point),
+                                             end.point/10))
+      graphics::title(plot.title)
+      graphics::par(mar = c(5.1,4.1,1.1,2.1))
+      suppressWarnings(graphics::par(mgp = c(2,1,0)))
+      graphics::plot.new()
       mat.tmp <- t(mat.tmp)
       x.2D <- (1:dim(mat.tmp)[1] - 1) / (dim(mat.tmp)[1] - 1)
       y.2D <- (1:dim(mat.tmp)[2] - 1) / (dim(mat.tmp)[2] - 1)
-      plot.window(asp = NA, xlim = range(x.2D), ylim = range(y.2D), "", 
-                  xaxs = "i", yaxs = "i")
-      .filled.contour(x.2D, y.2D, z = mat.tmp, levels, col = col)
-      box()
-      mtext(drug.col, 1, cex = 1, padj = 3)
-      mtext(drug.row, 2, cex = 1, las = 3, padj = -3)
+      graphics::plot.window(asp = NA, xlim = range(x.2D), ylim = range(y.2D),
+                            "", xaxs = "i", yaxs = "i")
+      graphics::.filled.contour(x.2D, y.2D, z = mat.tmp, levels, col = col)
+      graphics::box()
+      graphics::mtext(drug.col, 1, cex = 1, padj = 3)
+      graphics::mtext(drug.row, 2, cex = 1, las = 3, padj = -3)
       if(!is.null(row.range)) {
         yconc <- round(row.conc[row.range[1]:row.range[2]], 3)
       } else {
@@ -336,55 +333,82 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
         xconc <- round(col.conc, 3)
       }
       
-      axis(side = 1, at = seq(0, 1, by = 1/(length(xconc) - 1)), labels = xconc)
-      axis(side = 2, at = seq(0, 1, by = 1/(length(yconc) - 1)), labels = yconc)
+      graphics::axis(side = 1, at = seq(0, 1, by = 1/(length(xconc) - 1)),
+                     labels = xconc)
+      graphics::axis(side = 2, at = seq(0, 1, by = 1/(length(yconc) - 1)),
+                     labels = yconc)
       print(syn.3d.plot, position = c(0.5,0, 1, 1), newpage = FALSE)
-      fig <- recordPlot()
+      fig <- grDevices::recordPlot()
     }
     plots[[block]] <- fig
     if(save.file) {
       if (type %in% c("2D", "3D")) {
-        pdf(file.name, width = 10, height = 10)
+        grDevices::pdf(file.name, width = 10, height = 10)
       } else {
-        pdf(file.name, width = 12, height = 6)
+        grDevices::pdf(file.name, width = 12, height = 6)
       }
       print(fig)
-      dev.off()
+      grDevices::dev.off()
     }
 
   }
 
   if(!save.file) {
     for(block in blocks) {
-      dev.new(noRStudioGD = TRUE)
-      replayPlot(plots[[block]])
+      grDevices::dev.new(noRStudioGD = TRUE)
+      grDevices::replayPlot(plots[[block]])
     }
   }
 }
 
-.ExtendedScores <- function(scores.dose, len) {
+.ExtendedScores <-  function (scores.mat, len) {
   # len: how many values need to be predicted between two adjacent elements
   #      of scores.dose
-  nr <- nrow(scores.dose)
-  nc <- ncol(scores.dose)
-  extended.row.idx <- seq(1, nr, length = (nr - 1)*(len + 2) - (nr - 2))
-  extended.col.idx <- seq(1, nc, length = (nc - 1)*(len + 2) - (nc - 2))
-  krig.coord <- cbind(rep(extended.row.idx, each = length(extended.col.idx)), 
-                      rep(extended.col.idx, length(extended.row.idx)))
-  extended.scores <- SpatialExtremes::kriging(
-    data = c(scores.dose),
-    data.coord = cbind(rep(1:nr, nc), rep(1:nc, each = nr)),
-    krig.coord = krig.coord,
-    cov.mod = "whitmat",
-    grid = FALSE,
-    sill = 1,
-    range = 10,
-    smooth = 0.8
-  )$krig.est
-  extended.scores <- matrix(extended.scores, 
-                            nrow = length(extended.row.idx),
-                            ncol = length(extended.col.idx),
-                            byrow = TRUE)	
-  extended.scores
+  options(scipen = 999)
+  nr <- nrow(scores.mat)
+  nc <- ncol(scores.mat)
+  
+  # missing value imputation
+  while (sum(is.na(scores.mat))) {
+    scores.mat <- ImputeNear(scores.mat)
+  }
+  ext.row.len <- (nr - 1) * (len + 2) - (nr - 2)
+  ext.col.len <- (nc - 1) * (len + 2) - (nc - 2)
+  
+  extended.row.idx <- seq(1, nr, length = ext.row.len)
+  extended.col.idx <- seq(1, nc, length = ext.col.len)
+  
+  krig.coord <- cbind(rep(extended.row.idx, each = ext.col.len),
+                      rep(extended.col.idx, times = ext.row.len))
+  extended.scores <- SpatialExtremes::kriging(data = c(scores.mat),
+                                              data.coord = cbind(rep(1:nr, nc),
+                                                                 rep(1:nc, 
+                                                                     each=nr)),
+                                              krig.coord = krig.coord,
+                                              cov.mod = "whitmat", grid = FALSE,
+                                              sill = 1, range = 10,
+                                              smooth = 0.8)$krig.est
+  extended.scores <- matrix(extended.scores, nrow = ext.row.len,
+                            ncol = ext.col.len, byrow = TRUE)
+  
+  # extended.scores = data.frame(extended.scores)
+  extended.scores <- round(extended.scores, 3)
+  
+  row.dose <- as.numeric(rownames(scores.mat))
+  col.dose <- as.numeric(colnames(scores.mat))
+  
+  extend.row.dose <- mapply(function(x, y){seq(from = x, to = y,
+                                               length.out = len + 2)},
+                            row.dose[-nr], row.dose[-1])
+  extend.row.dose <- unique(round(c(extend.row.dose), 8))
+  
+  extend.col.dose <- mapply(function(x, y){seq(from = x, to = y,
+                                               length.out = len + 2)},
+                            col.dose[-nc], col.dose[-1])
+  extend.col.dose <- unique(round(c(extend.col.dose), 8))
+  
+  rownames(extended.scores) <- extend.row.dose
+  colnames(extended.scores) <- extend.col.dose
+  
+  return(extended.scores)
 }
-

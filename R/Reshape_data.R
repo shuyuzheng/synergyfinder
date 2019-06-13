@@ -49,8 +49,6 @@
 #'     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 #'  }
 #'  
-#' @import reshape2 stats
-#'   
 #' @export
 #' 
 #' @examples
@@ -121,7 +119,7 @@ ReshapeData <- function(data, impute=TRUE, noise=TRUE, correction = "non",
     # process data according to setting of arguments
     if (impute | noise | correction != "non") {
       if (impute) {
-        response.mat <- ImputeNear(response.mat)
+        response.mat <- ImputeNA(response.mat)
       }
       if (noise){
         response.mat <- AddNoise(response.mat)
@@ -148,9 +146,6 @@ ReshapeData <- function(data, impute=TRUE, noise=TRUE, correction = "non",
 #' cell.
 #'
 #' @param response.mat A matrix which has missing value.
-#' @param times a integer which refers to the time of runing imputation. The
-#'   default value is \code{1}, but sometimes you might want to run imputation
-#'   more than once.
 #'
 #' @return A matrix which is same as input matrix except the NA cells are filled
 #' with numbers.
@@ -165,7 +160,7 @@ ReshapeData <- function(data, impute=TRUE, noise=TRUE, correction = "non",
 #' response.mat <- data$dose.response.mats[[1]]
 #' # introduce some NA values into matrix
 #' response.mat[3:4, 3:5] <- NA
-#' adjusted.mat <- ImputeNa(response.mat)
+#' adjusted.mat <- ImputeNA(response.mat)
 ImputeNA <- function(response.mat) {
   while (sum(is.na(response.mat))) {
   x <- array(c(rbind(response.mat[-1,], NA),
@@ -196,8 +191,6 @@ ImputeNA <- function(response.mat) {
 #'
 #' @author Shuyu Zheng{shuyu.zheng@helsinki.fi}
 #'
-#' @import stats
-#' 
 #' @export
 #' 
 #' @examples 
@@ -281,7 +274,6 @@ ExtractSingleDrug <- function(response.mat, dim = "row") {
 #'    \item{Shuyu Zheng \email{shuyu.zheng@helsinki.fi}}
 #' }
 #'
-#' @import drc SpatialExtremes stats
 #' @export
 #' 
 #' @examples 
@@ -301,12 +293,10 @@ CorrectBaseLine <- function(response.mat, method = c("non", "part", "all")){
       return(response.mat)
     }
     drug.row <- ExtractSingleDrug(response.mat, dim = "row")
-    drug.row.fit <- suppressWarnings(stats::fitted(FitDoseResponse(drug.row,
-                                                                   ...)))
+    drug.row.fit <- suppressWarnings(stats::fitted(FitDoseResponse(drug.row)))
 
     drug.col <- ExtractSingleDrug(response.mat, dim = "col")
-    drug.col.fit <- suppressWarnings(stats::fitted(FitDoseResponse(drug.col,
-                                                                   ...)))
+    drug.col.fit <- suppressWarnings(stats::fitted(FitDoseResponse(drug.col)))
 
     baseline <- mean(c(min(as.numeric(drug.row.fit)),
                        min(as.numeric(drug.col.fit))))
@@ -317,12 +307,10 @@ CorrectBaseLine <- function(response.mat, method = c("non", "part", "all")){
     return(response.mat)
   } else if (method == "all"){
     drug.row <- ExtractSingleDrug(response.mat, dim = "row")
-    drug.row.fit <- suppressWarnings(stats::fitted(FitDoseResponse(drug.row,
-                                                                   ...)))
+    drug.row.fit <- suppressWarnings(stats::fitted(FitDoseResponse(drug.row)))
 
     drug.col <- ExtractSingleDrug(response.mat, dim = "col")
-    drug.col.fit <- suppressWarnings(stats::fitted(FitDoseResponse(drug.col,
-                                                                   ...)))
+    drug.col.fit <- suppressWarnings(stats::fitted(FitDoseResponse(drug.col)))
 
     baseline <- mean(c(min(as.numeric(drug.row.fit)),
                        min(as.numeric(drug.col.fit))))

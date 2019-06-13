@@ -20,7 +20,7 @@
 #'     \enumerate{
 #'       \item Impute for missing values (with the average of values from the 
 #'           nearest four cells) in original matrix by using function 
-#'           \code{\link{ImputeNear}}.
+#'           \code{\link{ImputeNA}}.
 #'       \item Add noise(A small random number ranging from 0 to 0.001) to 
 #'           original matrix by using function \code{line{AddNoise}}.
 #'       )
@@ -52,7 +52,7 @@
 #'   \itemize{
 #'     \item \strong{dose.response.mats} The original input dose-response matrix.
 #'     \item \strong{adjusted.response.mats} The dose response matrix adjusted by
-#'       functions: \code{\link{AddNoise}}, \code{\link{ImputeNear}}, and 
+#'       functions: \code{\link{AddNoise}}, \code{\link{ImputeNA}}, and 
 #'       \code{\link{CorrectBaseLine}}.
 #'     \item \strong{drug.pairs} a data frame contains the name of the row drug,
 #'     the name of the column drug, concentration unit and block IDs.
@@ -67,8 +67,6 @@
 #'     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 #'  }
 #'
-#' @import drc SpatialExtremes nleqslv stats
-#' 
 #' @export
 #' 
 #' @examples 
@@ -163,8 +161,6 @@ CalculateSynergy <- function(data, method="ZIP", adjusted = TRUE,
 #' @return A matrix of \eqn{\Delta} score calculated via Zero Interaction
 #' Potency (ZIP) method.
 #'
-#' @import drc SpatialExtremes stats
-#' 
 #' @export
 #' 
 #' @examples
@@ -491,8 +487,6 @@ fun <- function(col_conc, row_conc, drug.par, model) {
 #'    }
 #' }
 #'
-#' @import drc SpatialExtremes nleqslv stats
-#' 
 #' @export
 #' 
 #' @examples
