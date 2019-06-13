@@ -300,10 +300,10 @@ CorrectBaseLine <- function(response.mat, method = c("non", "part", "all")){
 
     baseline <- mean(c(min(as.numeric(drug.row.fit)),
                        min(as.numeric(drug.col.fit))))
-    response.mat[negative.ind] <- sapply(response.mat[negative.ind],
+    response.mat[negative.ind] <- vapply(response.mat[negative.ind],
                                          function(x) {
                                            x - ((100 - x) / 100 * baseline)
-                                         })
+                                         }, numeric(1))
     return(response.mat)
   } else if (method == "all"){
     drug.row <- ExtractSingleDrug(response.mat, dim = "row")

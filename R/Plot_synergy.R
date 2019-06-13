@@ -159,7 +159,7 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
     # colors
     levels <- seq(start.point, end.point, by = 2)
     col1 <- grDevices::colorRampPalette(c('green', 
-                                          "#FFFFFF"))(length(which(levels <= 0)))
+                                        "#FFFFFF"))(length(which(levels <= 0)))
     col2 <- grDevices::colorRampPalette(c("#FFFFFF", 
                                           'red'))(length(which(levels >= 0)))
     col <- c(col1, col2[-1])
@@ -227,8 +227,8 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
       suppressWarnings(graphics::par(mgp = c(2,1,0)))
       graphics::plot.new()
       mat.tmp <- t(mat.tmp)
-      x.2D <- (1:dim(mat.tmp)[1] - 1) / (dim(mat.tmp)[1] - 1)
-      y.2D <- (1:dim(mat.tmp)[2] - 1) / (dim(mat.tmp)[2] - 1)
+      x.2D <- (seq_len(dim(mat.tmp)[1]) - 1) / (dim(mat.tmp)[1] - 1)
+      y.2D <- (seq_len(dim(mat.tmp)[2]) - 1) / (dim(mat.tmp)[2] - 1)
       graphics::plot.window(asp = NA, xlim = range(x.2D), ylim = range(y.2D), 
                             "", xaxs = "i", yaxs = "i")
       graphics::.filled.contour(x.2D, y.2D, z = mat.tmp, levels, col = col)
@@ -313,8 +313,8 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
       suppressWarnings(graphics::par(mgp = c(2,1,0)))
       graphics::plot.new()
       mat.tmp <- t(mat.tmp)
-      x.2D <- (1:dim(mat.tmp)[1] - 1) / (dim(mat.tmp)[1] - 1)
-      y.2D <- (1:dim(mat.tmp)[2] - 1) / (dim(mat.tmp)[2] - 1)
+      x.2D <- (seq_len(dim(mat.tmp)[1]) - 1) / (dim(mat.tmp)[1] - 1)
+      y.2D <- (seq_len(dim(mat.tmp)[2]) - 1) / (dim(mat.tmp)[2] - 1)
       graphics::plot.window(asp = NA, xlim = range(x.2D), ylim = range(y.2D),
                             "", xaxs = "i", yaxs = "i")
       graphics::.filled.contour(x.2D, y.2D, z = mat.tmp, levels, col = col)
@@ -370,7 +370,7 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
   
   # missing value imputation
   while (sum(is.na(scores.mat))) {
-    scores.mat <- ImputeNear(scores.mat)
+    scores.mat <- ImputeNA(scores.mat)
   }
   ext.row.len <- (nr - 1) * (len + 2) - (nr - 2)
   ext.col.len <- (nc - 1) * (len + 2) - (nc - 2)
@@ -381,13 +381,12 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
   krig.coord <- cbind(rep(extended.row.idx, each = ext.col.len),
                       rep(extended.col.idx, times = ext.row.len))
   extended.scores <- SpatialExtremes::kriging(data = c(scores.mat),
-                                              data.coord = cbind(rep(1:nr, nc),
-                                                                 rep(1:nc, 
-                                                                     each=nr)),
-                                              krig.coord = krig.coord,
-                                              cov.mod = "whitmat", grid = FALSE,
-                                              sill = 1, range = 10,
-                                              smooth = 0.8)$krig.est
+                                  data.coord = cbind(rep(seq_len(nr), nc),
+                                                    rep(seq_len(nc), each=nr)),
+                                  krig.coord = krig.coord,
+                                  cov.mod = "whitmat", grid = FALSE,
+                                  sill = 1, range = 10,
+                                  smooth = 0.8)$krig.est
   extended.scores <- matrix(extended.scores, nrow = ext.row.len,
                             ncol = ext.col.len, byrow = TRUE)
   

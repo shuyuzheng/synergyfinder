@@ -80,8 +80,8 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
     data.plot <- data.frame(x = numeric(num.row), y = numeric(num.row),
                             Inhibition = numeric(num.row))
     data.plot$Inhibition <- round(c(response.mat), 2)
-    data.plot$y <- rep(c(1:ncol(response.mat)), nrow(response.mat))
-    data.plot$x <- rep(1:nrow(response.mat), each = ncol(response.mat))
+    data.plot$y <- rep(c(seq_len(ncol(response.mat))), nrow(response.mat))
+    data.plot$x <- rep(seq_len(nrow(response.mat)), each = ncol(response.mat))
     data.plot$x <- as.factor(data.plot$x)
     data.plot$y <- as.factor(data.plot$y)
     conc.runit <- drug.pairs$conc_r_unit[drug.pairs$block_id == block]
@@ -126,9 +126,9 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
     drug.row.response <- ExtractSingleDrug(response.mat, dim = "row")
     drug.row.model <- FitDoseResponse(drug.row.response, ...)
 
-    layout(matrix(c(1, 3, 2, 3), 2, 2, byrow = TRUE))
+    graphics::layout(matrix(c(1, 3, 2, 3), 2, 2, byrow = TRUE))
     # plot the curve for the row drug
-    suppressWarnings(par(mgp=c(3, .5, 0)))
+    suppressWarnings(graphics::par(mgp=c(3, .5, 0)))
     x.lab <- paste("Concentration", runit.text, sep = " ")
     graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)",
                    type = "obs", col = "red", cex = 1.5, pch = 16, ...)
@@ -151,7 +151,7 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
     graphics::title(paste("Dose-response curve for drug:", drug.col, "in Block",
                           block), cex.main = 1)
 
-    plot.new()
+    graphics::plot.new()
     #vps <- baseViewports()
     #pushViewport()
     print(dose.response.p, vp = grid::viewport(height = grid::unit(1, "npc"), 

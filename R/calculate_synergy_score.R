@@ -248,8 +248,8 @@ ZIP <- function(response.mat, quiet = TRUE, drug.row.model = NULL,
   fitted.mat <- (updated.col.mat + updated.row.mat) / 2
 
   zip.mat <- matrix(nrow = n.row -1, ncol = n.col - 1)
-  for (i in 1:(n.row - 1)) {
-    for (j in 1:(n.col - 1)) {
+  for (i in seq_len((n.row - 1))) {
+    for (j in seq_len((n.col - 1))) {
       zip.mat[i, j] <- drug.row.fit[i + 1] + drug.col.fit[j + 1] -
         drug.row.fit[i + 1] * drug.col.fit[j + 1] / 100
     }
@@ -442,8 +442,8 @@ fun <- function(col_conc, row_conc, drug.par, model) {
 
 #' Calculate Loewe synergy score
 #'
-#' \code{Loewe} calculates the synergy score matrix from a dose-response
-#' matrix by using a druginteraction reference model introduced by Loewe in 1953.
+#' \code{Loewe} calculates the synergy score matrix from a dose-response matrix
+#' by using a druginteraction reference model introduced by Loewe in 1953.
 #' 
 #' @details Loewe model is a reference model for evaluating the combination 
 #' effect of two drugs. The basic assumption of this model is "The referece 
@@ -510,7 +510,7 @@ Loewe <- function (response.mat, quiet = TRUE, drug.col.model = NULL,
   drug.row <- ExtractSingleDrug(response.mat, dim = "row")
   drug.col <- ExtractSingleDrug(response.mat, dim = "col")
 
-  con <- sapply(list(drug.col.model, drug.row.model), is.null)
+  con <- vapply(list(drug.col.model, drug.row.model), is.null, logical(1))
 
   if (!all(!con)) {
     drug.row.model <- FitDoseResponse(drug.row)
@@ -533,8 +533,8 @@ Loewe <- function (response.mat, quiet = TRUE, drug.col.model = NULL,
 
   x <- max(drug.col.par[2], drug.row.par[2]) + 1
 
-  for (i in 1:(nrow(drug.col) - 1)) {
-    for (j in 1:(nrow(drug.row) - 1)) {
+  for (i in seq_len((nrow(drug.col)) - 1)) {
+    for (j in seq_len((nrow(drug.row)) - 1)) {
       x1 <- drug.col$dose[i + 1]
       x2 <- drug.row$dose[j + 1]
 
