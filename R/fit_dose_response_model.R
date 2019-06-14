@@ -1,6 +1,5 @@
 # SynergyFinder
 # Functions for fitting single drug dose-response curve
-# Copyright Shuyu Zheng
 #
 # Functions on this page:
 # FitDoseResponse: Fitting single drug dose-response model

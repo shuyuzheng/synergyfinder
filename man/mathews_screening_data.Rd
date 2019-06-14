@@ -10,7 +10,8 @@ A recent drug combination screening for the treatment of diffuse large B-cell
 lymphoma (DLBCL).
 }
 \references{
-Mathews Griner LA, Guha R, Shinn P, Young RM, Keller JM, et al. High-throughput combinatorial
-screening identifies drugs that cooperate with ibrutinib to kill activated B-cell-like diffuse large B-cell
+Mathews Griner LA, Guha R, Shinn P, Young RM, Keller JM, et al. 
+High-throughput combinatorial screening identifies drugs that cooperate with
+ibrutinib to kill activated B-cell-like diffuse large B-cell
 lymphoma cells. Proc Natl Acad Sci USA 2014; 111:2349-54.
 }

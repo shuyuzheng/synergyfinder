@@ -27,8 +27,8 @@ A matrix for Synergy score calculated via reference model introduced
   by Loewe, S.
 }
 \description{
-\code{Loewe} calculates the synergy score matrix from a dose-response
-matrix by using a druginteraction reference model introduced by Loewe in 1953.
+\code{Loewe} calculates the synergy score matrix from a dose-response matrix
+by using a druginteraction reference model introduced by Loewe in 1953.
 }
 \details{
 Loewe model is a reference model for evaluating the combination 

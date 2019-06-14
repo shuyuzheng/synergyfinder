@@ -10,8 +10,9 @@
 
 #' Calculate the synergy scores for drug combinations
 #'
-#' \code{CalculateSynergy} is the main function for calculating synergy scores based
-#' on model(ZIP, Bliss, Loewe, and HSA) fron one dose-response \strong{matrix}.
+#' \code{CalculateSynergy} is the main function for calculating synergy scores
+#' based on model(ZIP, Bliss, Loewe, and HSA) fron one dose-response 
+#' \strong{matrix}.
 #'
 #' @details
 #' The steps for calculation:
@@ -50,9 +51,9 @@
 #'
 #' @return a list. It contains 4 elements:
 #'   \itemize{
-#'     \item \strong{dose.response.mats} The original input dose-response matrix.
-#'     \item \strong{adjusted.response.mats} The dose response matrix adjusted by
-#'       functions: \code{\link{AddNoise}}, \code{\link{ImputeNA}}, and 
+#'     \item \strong{dose.response.mats} The original input dose-response matrix
+#'     \item \strong{adjusted.response.mats} The dose response matrix adjusted
+#'       by functions: \code{\link{AddNoise}}, \code{\link{ImputeNA}}, and 
 #'       \code{\link{CorrectBaseLine}}.
 #'     \item \strong{drug.pairs} a data frame contains the name of the row drug,
 #'     the name of the column drug, concentration unit and block IDs.
