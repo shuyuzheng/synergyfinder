@@ -141,16 +141,17 @@ ReshapeData <- function(data, impute=TRUE, noise=TRUE, correction = "non",
 
 #' Impute missing value with nearest values
 #'
-#' Function \code{ImputeNA} do missing value imputation by assigning the
+#' Function \code{ImputeNA} does missing value imputation by assigning the
 #' average of values in nearest 4 cells (top, bottom, left, right) to the NA
-#' cell.
+#' cell. This pocess will be done repeadly until there is no missing values in
+#' the matrix.
 #'
 #' @param response.mat A matrix which has missing value.
 #'
-#' @return A matrix which is same as input matrix except the NA cells are filled
-#' with numbers.
+#' @return A matrix which is same as input matrix except the missing values are
+#' imputed.
 #'
-#' @author Shuyu Zheng{shuyu.zheng@helsinki.fi}
+#' @author Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 #' 
 #' @export
 #' 
@@ -184,12 +185,12 @@ ImputeNA <- function(response.mat) {
 #' \strong{Note}: If the analysis requires for reproductiblity, plesase set the 
 #' random seed before calling this function.
 #'
-#' @param response.mat A matrix. It contains the response data for one block
-#' of drug combination screen.
+#' @param response.mat A matrix. It contains the response data for one drug 
+#' combination.
 #'
 #' @return A matrix. It contains the response value added with noises.
 #'
-#' @author Shuyu Zheng{shuyu.zheng@helsinki.fi}
+#' @author Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 #'
 #' @export
 #' 
@@ -227,7 +228,7 @@ AddNoise <- function(response.mat) {
 #'       corresponding drug concertration.
 #' }
 #'
-#' @author Shuyu Zheng{shuyu.zheng@helsinki.fi}
+#' @author Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 #'
 #' @export
 #' 

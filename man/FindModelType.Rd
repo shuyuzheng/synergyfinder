@@ -24,3 +24,6 @@ df <- data.frame(response = c(0, 29, 59, 60, 75, 90),
 model <- FitDoseResponse(df)
 model.type <- FindModelType(model)
 }
+\author{
+Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+}

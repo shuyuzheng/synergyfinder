@@ -10,13 +10,14 @@ ImputeNA(response.mat)
 \item{response.mat}{A matrix which has missing value.}
 }
 \value{
-A matrix which is same as input matrix except the NA cells are filled
-with numbers.
+A matrix which is same as input matrix except the missing values are
+imputed.
 }
 \description{
-Function \code{ImputeNA} do missing value imputation by assigning the
+Function \code{ImputeNA} does missing value imputation by assigning the
 average of values in nearest 4 cells (top, bottom, left, right) to the NA
-cell.
+cell. This pocess will be done repeadly until there is no missing values in
+the matrix.
 }
 \examples{
 data("mathews_screening_data")
@@ -27,5 +28,5 @@ response.mat[3:4, 3:5] <- NA
 adjusted.mat <- ImputeNA(response.mat)
 }
 \author{
-Shuyu Zheng{shuyu.zheng@helsinki.fi}
+Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 }
