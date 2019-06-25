@@ -99,6 +99,7 @@ FitDoseResponse <- function (data, Emin = NA, Emax = NA) {
 #' @return A character either "LL.4" or "L.4". It indicates the type of 
 #' model used for fitting dose response data.
 #' 
+#' @author Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 #' @export
 #'
 #' @examples

@@ -34,5 +34,5 @@ response.mat <- data$dose.response.mats[[1]]
 drug.row <- ExtractSingleDrug(response.mat, dim = "row")
 }
 \author{
-Shuyu Zheng{shuyu.zheng@helsinki.fi}
+Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 }

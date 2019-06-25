@@ -7,8 +7,8 @@
 AddNoise(response.mat)
 }
 \arguments{
-\item{response.mat}{A matrix. It contains the response data for one block
-of drug combination screen.}
+\item{response.mat}{A matrix. It contains the response data for one drug 
+combination.}
 }
 \value{
 A matrix. It contains the response value added with noises.
@@ -30,5 +30,5 @@ set.seed(1)
 adjusted.mat <- AddNoise(response.mat)
 }
 \author{
-Shuyu Zheng{shuyu.zheng@helsinki.fi}
+Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 }
