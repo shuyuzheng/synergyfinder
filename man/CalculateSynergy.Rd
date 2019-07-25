@@ -41,28 +41,6 @@ a list. It contains 4 elements:
 based on model(ZIP, Bliss, Loewe, and HSA) fron one dose-response 
 \strong{matrix}.
 }
-\details{
-The steps for calculation:
-\enumerate{
-  \item Pre-process Matrix
-    \enumerate{
-      \item Impute for missing values (with the average of values from the 
-          nearest four cells) in original matrix by using function 
-          \code{\link{ImputeNA}}.
-      \item Add noise(A small random number ranging from 0 to 0.001) to 
-          original matrix by using function \code{line{AddNoise}}.
-      )
-      \item Correct baseline to 0, if \code{correction} is \code{TRUE}.
-    }
-  \item Calculate synergy scores using the functions:
-    \itemize{
-      \item \code{\link{ZIP}}
-      \item \code{\link{Bliss}}
-      \item \code{\link{HSA}}
-      \item \code{\link{Loewe}}
-    }
-}
-}
 \examples{
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
