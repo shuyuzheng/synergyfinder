@@ -110,6 +110,7 @@ ReshapeData <- function(data, impute=TRUE, noise=TRUE, correction = "non",
   # 3. Reshape the data
   for (block in blocks) {
     tmp.mat <- data[data$block_id == block, ]
+    block <- as.character(block)
 
     # response matrix for one drug combination
     response.mat <- reshape2::acast(conc_r ~ conc_c, data = tmp.mat, 
@@ -238,12 +239,14 @@ AddNoise <- function(response.mat) {
 #' response.mat <- data$dose.response.mats[[1]]
 #' drug.row <- ExtractSingleDrug(response.mat, dim = "row")
 ExtractSingleDrug <- function(response.mat, dim = "row") {
+  dose_col <- as.numeric(colnames(response.mat))
+  dose_row <- as.numeric(rownames(response.mat))
   if (dim == "row") {
-    single.drug <- data.frame(response = response.mat[, "0"],
-                              dose = as.numeric(rownames(response.mat)))
+    single.drug <- data.frame(response = response.mat[, dose_col == 0],
+                              dose = dose_row)
   } else if (dim == "col") {
-    single.drug <- data.frame(response = response.mat["0", ],
-                              dose = as.numeric(colnames(response.mat)))
+    single.drug <- data.frame(response = response.mat[dose_row == 0, ],
+                              dose = dose_col)
   } else {
     stop("Values for 'dim' should be eighther 'row' or 'col'!")
   }

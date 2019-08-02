@@ -83,6 +83,7 @@ CalculateSynergy <- function(data, method="ZIP", adjusted = TRUE,
        and Loewe.")
   }
   for (block in blocks) {
+    block <- as.character(block)
     response.mat <- dose.response.mats[[block]]
     scores[[block]] <- switch(method,
                               ZIP = ZIP(response.mat),
