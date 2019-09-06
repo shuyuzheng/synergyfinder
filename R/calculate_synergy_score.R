@@ -24,8 +24,6 @@
 #' @param method a parameter to specify which models to use to calculate the 
 #'   synergy scores. Choices are "ZIP", "Bliss", "HSA" and "Loewe". Defaults to
 #'   "ZIP".
-#' @param data.type a parameter to specify the response data type which can be 
-#'   either "viability" or "inhibition".
 #'
 #' @return a list. It contains 4 elements:
 #'   \itemize{
@@ -52,8 +50,7 @@
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
 #' scores <- CalculateSynergy(data)
-CalculateSynergy <- function(data, method="ZIP", adjusted = TRUE, 
-                             data.type="viability") {
+CalculateSynergy <- function(data, method="ZIP", adjusted = TRUE) {
   options(scipen = 999)
   # 1. Check input data
   if (!is.list(data)) {
