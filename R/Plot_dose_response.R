@@ -31,7 +31,7 @@
 #'     \item Liye He \email{liye.he@helsinki.fi},
 #'     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 #'   }
-#'
+#' @import ggplot2
 #' @export
 #' 
 #' @examples
@@ -76,14 +76,19 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
     response.mat <- response.mats[[block]]
     
     # Check NA values
-    num.row <- length(response.mat)
-    data.plot <- data.frame(x = numeric(num.row), y = numeric(num.row),
-                            Inhibition = numeric(num.row))
+    data.plot <- reshape2::melt(response.mat)
+    colnames(data.plot) <- c("conc_r", "conc_c", "Inhibition")
+    data.plot$conc_r <- as.factor(data.plot$conc_r)
+    data.plot$conc_c <- as.factor(data.plot$conc_c)
     data.plot$Inhibition <- round(c(response.mat), 2)
-    data.plot$y <- rep(c(seq_len(ncol(response.mat))), nrow(response.mat))
-    data.plot$x <- rep(seq_len(nrow(response.mat)), each = ncol(response.mat))
-    data.plot$x <- as.factor(data.plot$x)
-    data.plot$y <- as.factor(data.plot$y)
+    # num.row <- length(response.mat)
+    # data.plot <- data.frame(x = numeric(num.row), y = numeric(num.row),
+    #                         Inhibition = numeric(num.row))
+    # data.plot$Inhibition <- round(c(response.mat), 2)
+    # data.plot$y <- rep(c(seq_len(ncol(response.mat))), nrow(response.mat))
+    # data.plot$x <- rep(seq_len(nrow(response.mat)), each = ncol(response.mat))
+    # data.plot$x <- as.factor(data.plot$x)
+    # data.plot$y <- as.factor(data.plot$y)
     conc.runit <- drug.pairs$conc_r_unit[drug.pairs$block_id == block]
     conc.cunit <- drug.pairs$conc_c_unit[drug.pairs$block_id == block]
     runit.text <- paste("(", conc.runit, ")", sep = "")
@@ -94,58 +99,59 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
                         block, sep = " ")
 
 
-    # plot dose-response matrix
-    axis.x.text <- round(as.numeric(colnames(response.mat)), 1)
-    axis.y.text <- round(as.numeric(rownames(response.mat)), 1)
-    dose.response.p <- ggplot2::ggplot(data.plot, 
-                                       ggplot2::aes_string(x = "x", y = "y")) + 
-      ggplot2::geom_tile(ggplot2::aes_string(fill = 'Inhibition')) +
-      ggplot2::geom_text(ggplot2::aes_string(fill = 'Inhibition', 
-                                             label = 'Inhibition')) +
+    # plot heatmap for dose-response matrix
+    axis.x.text <- round(as.numeric(levels(data.plot$conc_c)), 1)
+    axis.y.text <- round(as.numeric(levels(data.plot$conc_r)), 1)
+    dose.response.p <- ggplot2::ggplot(data = data.plot, 
+                                    aes(x=conc_c, y=conc_r, fill=Inhibition)) +
+      ggplot2::geom_tile() +
+      ggplot2::geom_text(ggplot2::aes(label = Inhibition)) +
       ggplot2::scale_fill_gradient2(low = "green", high = "red",
                                     midpoint = 0, name = "Inhibition (%)") +
-      ggplot2::scale_x_discrete(labels = axis.x.text) + 
+      ggplot2::scale_x_discrete(labels = axis.x.text) +
       ggplot2::scale_y_discrete(labels = axis.y.text) +
-      ggplot2::xlab(paste(drug.col, runit.text, sep = " ")) + 
-      ggplot2::ylab(paste(drug.row, cunit.text, sep = " "))
-    dose.response.p <- dose.response.p + 
-      ggplot2::theme(axis.text.x = ggplot2::element_text(color = "red", 
-                                                         face = "bold", 
-                                                         size = 15))
-    dose.response.p <- dose.response.p + 
-      ggplot2::theme(axis.text.y = ggplot2::element_text(color = "red",
-                                                         face = "bold",
-                                                         size = 15))
-    dose.response.p <- dose.response.p + 
-      ggplot2::theme(axis.title = ggplot2::element_text(size = 15))
+      ggplot2::xlab(paste(drug.col, cunit.text, sep = " ")) +
+      ggplot2::ylab(paste(drug.row, runit.text, sep = " "))
+    
+    # Add the title for heatmap
     dose.response.p <- dose.response.p + 
       ggplot2::ggtitle(plot.title) + 
       ggplot2::theme(plot.title = ggplot2::element_text(size = 20))
+    
+    # Set label's style of heatmap
+    dose.response.p <- dose.response.p + 
+      ggplot2::theme(axis.text.x = ggplot2::element_text(color = "red", 
+                                                         face = "bold", 
+                                                         size = 15),
+                     axis.text.y = ggplot2::element_text(color = "red",
+                                                         face = "bold",
+                                                         size = 15),
+                     axis.title = ggplot2::element_text(size = 15))
+    
      
-    # Fit model for the col drug
+    # Fit model for the row drug
     drug.row.response <- ExtractSingleDrug(response.mat, dim = "row")
-    drug.row.model <- FitDoseResponse(drug.row.response, ...)
+    drug.row.model <- FitDoseResponse(drug.row.response)#, ...)
 
     graphics::layout(matrix(c(1, 3, 2, 3), 2, 2, byrow = TRUE))
     # plot the curve for the row drug
     suppressWarnings(graphics::par(mgp=c(3, .5, 0)))
     x.lab <- paste("Concentration", runit.text, sep = " ")
     graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)",
-                   type = "obs", col = "red", cex = 1.5, pch = 16, ...)
+                   type = "obs", col = "red", cex = 1.5, pch = 16)#, ...)
     graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", 
                    type = "none", cex = 1.5, add = TRUE, lwd = 3)
     graphics::title(paste("Dose-response curve for drug:", drug.row, "in Block", 
                          block), cex.main = 1)
 
-
     # Fit model for the col drug
     drug.col.response <- ExtractSingleDrug(response.mat, dim = "col")
-    drug.col.model <- FitDoseResponse(drug.col.response, ...)
+    drug.col.model <- FitDoseResponse(drug.col.response)#, ...)
 
     # plot the curve for the col drug
     x.lab <- paste("Concentration", cunit.text, sep = " ")
     graphics::plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)",
-                   type = "obs", col = "red", cex = 1.5, pch = 16, ...)
+                   type = "obs", col = "red", cex = 1.5, pch = 16)#, ...)
     graphics::plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)",
                    type = "none", cex = 1.5, add = TRUE, lwd = 3)
     graphics::title(paste("Dose-response curve for drug:", drug.col, "in Block",
