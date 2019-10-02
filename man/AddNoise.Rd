@@ -16,7 +16,7 @@ A matrix. It contains the response value added with noises.
 \description{
 Function \code{AddNoise} calculates and add a noise to values in response
 matrix. The noises obey normal distribution ~N(0, 0.001) wich are generated 
-by fucntion \code{\link[stats]{rnorm}}.
+by fucntion \code{rnorm}.
 }
 \details{
 \strong{Note}: If the analysis requires for reproductiblity, plesase set the 
