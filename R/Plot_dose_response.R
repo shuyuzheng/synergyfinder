@@ -39,7 +39,7 @@
 #' data <- ReshapeData(mathews_screening_data)
 #' PlotDoseResponse(data)
 PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE, 
-                                 pair.index = NULL, ...) {
+                                 file.name = NULL, title.block = NULL, pair.index = NULL, ...) {
   # 1. Check the input data
   if (!is.list(data)) {
     stop("Input data is not a list format!")
@@ -95,8 +95,12 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
     cunit.text <- paste("(", conc.cunit, ")", sep = "")
     drug.row <- drug.pairs$drug_row[drug.pairs$block_id == block]
     drug.col <- drug.pairs$drug_col[drug.pairs$block_id == block]
+
+    if(is.null(title.block)){
+      title.block <- block
+    }
     plot.title <- paste("Dose-response matrix (inhibition)", "\n BlockID:",
-                        block, sep = " ")
+                        title.block, sep = " ")
 
 
     # plot heatmap for dose-response matrix
@@ -142,7 +146,7 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
     graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", 
                    type = "none", cex = 1.5, add = TRUE, lwd = 3)
     graphics::title(paste("Dose-response curve for drug:", drug.row, "in Block", 
-                         block), cex.main = 1)
+                         title.block), cex.main = 1)
 
     # Fit model for the col drug
     drug.col.response <- ExtractSingleDrug(response.mat, dim = "col")
@@ -155,7 +159,7 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
     graphics::plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)",
                    type = "none", cex = 1.5, add = TRUE, lwd = 3)
     graphics::title(paste("Dose-response curve for drug:", drug.col, "in Block",
-                          block), cex.main = 1)
+                          title.block), cex.main = 1)
 
     graphics::plot.new()
     #vps <- baseViewports()
@@ -168,14 +172,18 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
     merge.plot <- grDevices::recordPlot()
     plots[[block]] <- merge.plot
     if(save.file) {
-      if (adjusted) {
-      file.name <- paste(drug.row, drug.col, "adjusted.dose.response", 
-                         block, "pdf", sep = ".")
-      } else {
-      file.name <- paste(drug.row, drug.col, "original.dose.response", 
-                         block, "pdf", sep = ".")
+      if(is.null(file.name)){
+        if (adjusted) {
+        file.name <- paste(drug.row, drug.col, "adjusted.dose.response",
+                          block, "pdf", sep = ".")
+        } else {
+        file.name <- paste(drug.row, drug.col, "original.dose.response",
+                          block, "pdf", sep = ".")
+        }
       }
-      grDevices::pdf(file.name, width = 12, height = 6)
+
+      # grDevices::pdf(file.name, width = 12, height = 6)
+      grDevices::jpeg(file.name, width = 800, height = 600)
       grDevices::replayPlot(merge.plot)
       grDevices::dev.off()
     }

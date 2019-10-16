@@ -55,8 +55,8 @@
 #' scores <- CalculateSynergy(data)
 #' PlotSynergy(scores, "2D")
 #' PlotSynergy(scores, "3D")
-PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3, 
-                        pair.index = NULL, legend.start = NULL, 
+PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL, len = 3, 
+                        pair.index = NULL, legend.start = NULL, file.outputDir = NULL,
                         legend.end = NULL, row.range = NULL, col.range = NULL){
   # 1. Check input data
   if (!is.list(data)) {
@@ -75,6 +75,8 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
   } else {
     blocks <- names(scores)
   }
+
+  summary_score <- 0
   
   plots <- vector(mode="list", length=length(blocks))
   names(plots) <- blocks
@@ -96,6 +98,7 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
     col.conc <- as.numeric(colnames(scores.tmp)) # concentrations on the column
     summary.score <- round(mean(scores.tmp[row.conc != 0, col.conc != 0],
                                 na.rm = TRUE), 3)
+    summary_score <- summary.score
     # drug.col: the col-wise drug
     # drug.row: the row-wise drug
     
@@ -138,8 +141,11 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
     conc.cunit <- drug.pairs$conc_c_unit[drug.pairs$block_id == block]
     unit.rtext <- paste("(", conc.runit, ")", sep = "")
     unit.ctext <- paste("(", conc.cunit, ")", sep = "")
-    file.name <- paste(drug.row, drug.col, "synergy", block, 
-                       data$method, "pdf", sep = ".")
+
+    if(is.null(file.name)){
+      file.name <- paste(drug.row, drug.col, "synergy", block,
+                         data$method, "pdf", sep = ".")
+    }
     drug.row <- paste(drug.row, unit.rtext, sep = " ")
     drug.col <- paste(drug.col, unit.ctext, sep = " ")
     max.dose <- max(abs(scores.dose))
@@ -343,9 +349,9 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
     plots[[block]] <- fig
     if(save.file) {
       if (type %in% c("2D", "3D")) {
-        grDevices::pdf(file.name, width = 10, height = 10)
+        grDevices::jpeg(file.name, width = 800, height = 600)
       } else {
-        grDevices::pdf(file.name, width = 12, height = 6)
+        grDevices::jpeg(file.name, width = 800, height = 600)
       }
       print(fig)
       grDevices::dev.off()
@@ -359,6 +365,8 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, len = 3,
       grDevices::replayPlot(plots[[block]])
     }
   }
+
+  return(summary_score)
 }
 
 .ExtendedScores <-  function (scores.mat, len) {
