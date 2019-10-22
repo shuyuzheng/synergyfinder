@@ -19,6 +19,9 @@
 #' @param save.file a logical parameter to specify if the interaction landscape
 #'     is saved as a pdf file in the current working directory or returned as an
 #'     R object. By default, it is FALSE.
+#' @param file.name a character vector. It indicates the file names, if 
+#'   user chose to save the plot to local directory.If it is not defined by
+#'   user, a default name will be assigned.
 #' @param len a parameter to specify how many values need to be predicted 
 #'    between two concentrations
 #' @param pair.index a parameter to specify which drug combination if there are 
@@ -54,9 +57,9 @@
 #' data <- ReshapeData(mathews_screening_data)
 #' scores <- CalculateSynergy(data)
 #' PlotSynergy(scores, "2D")
-#' PlotSynergy(scores, "3D")
-PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL, len = 3, 
-                        pair.index = NULL, legend.start = NULL, file.outputDir = NULL,
+#' PlotSynergy(scores, "3D", save.file = TRUE, file.name = c("plot1.jpg", "plot2.jpg"))
+PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL, 
+                        len = 3, pair.index = NULL, legend.start = NULL,
                         legend.end = NULL, row.range = NULL, col.range = NULL){
   # 1. Check input data
   if (!is.list(data)) {
@@ -144,7 +147,7 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL, 
 
     if(is.null(file.name)){
       file.name <- paste(drug.row, drug.col, "synergy", block,
-                         data$method, "pdf", sep = ".")
+                         data$method, "jpg", sep = ".")
     }
     drug.row <- paste(drug.row, unit.rtext, sep = " ")
     drug.col <- paste(drug.col, unit.ctext, sep = " ")

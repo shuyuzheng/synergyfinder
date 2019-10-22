@@ -14,8 +14,14 @@
 #'   matrix will be plotted. If it is \code{TRUE}, adjusted response matrix will
 #'   be plotted.
 #' @param save.file a parameter to specify if the visualization results are 
-#'   saved as pdf files in current working directory or not. If it is FALSE, the 
-#'   results are returned as a list of the plots. It is FALSE by default.
+#'   saved as pdf files in current working directory or not. If it is FALSE, 
+#'   the results are returned as a list of the plots. It is FALSE by default.
+#' @param file.name a character vector. It indicates the file names, if 
+#'   user chose to save the plot to local directory.If it is not defined by
+#'   user, a default name will be assigned.
+#' @param title.block a character vector. It indicates the title of each blocks
+#'   shown on the plot. If it is not defined by user, a default title with
+#'   block IDs will be assigned.
 #' @param pair.index a parameter to specify which drug combination if there are
 #'   many drug combinations in the data. By default, it is NULL so that the
 #'   visualization of all the drug combinations in the data is returned.
@@ -175,10 +181,10 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
       if(is.null(file.name)){
         if (adjusted) {
         file.name <- paste(drug.row, drug.col, "adjusted.dose.response",
-                          block, "pdf", sep = ".")
+                          block, "jpg", sep = ".")
         } else {
         file.name <- paste(drug.row, drug.col, "original.dose.response",
-                          block, "pdf", sep = ".")
+                          block, "jpg", sep = ".")
         }
       }
 

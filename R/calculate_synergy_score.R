@@ -278,9 +278,8 @@ ZIP <- function(response.mat, quiet = TRUE, drug.row.model = NULL,
 #'    Synergy in Complex Dose-Response Landscape Using an Interaction Potency
 #'    Model.} Comput Struct Biotechnol J, 13:504– 513.}
 #'    \item{Bliss, C. I. (1939).
-#'    \href{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1744-7348.1939.tb06990.x}{The
-#'    toxicity of poisons applied jointly.} Annals of Applied Biology,
-#'    26(3):585–615.}
+#'    \href{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1744-7348.1939.tb06990.x}{The toxicity of poisons applied jointly.}
+#'    Annals of Applied Biology, 26(3):585–615.}
 #' }
 #'
 #' @export
