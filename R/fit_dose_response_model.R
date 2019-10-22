@@ -53,40 +53,39 @@
 #' df <- data.frame(response = c(0, 29, 59, 60, 75, 90),
 #'                  dose = c(0.00, 9.7656, 39.0626, 156.25, 625, 2500))
 #' model <- FitDoseResponse(df)
-FitDoseResponse <- function (data, Emin = NA, Emax = NA) {
-
+FitDoseResponse <- function(data, Emin = NA, Emax = NA) {
   if (!all(c("dose", "response") %in% colnames(data))) {
-    stop('The input must contain columns: "dose", "respone".')
+    stop("The input must contain columns: \"dose\", \"respone\".")
   }
-
-  # nonzero concentrations to take the log
-  data$dose[which(data$dose == 0)] <- 10^-10
-
+  
   if (nrow(data) != 1 & stats::var(data$response) == 0) {
-    data$response[nrow(data)] <- data$response[nrow(data)] + 10 ^ -10
+    data$response[nrow(data)] <- data$response[nrow(data)] + 
+      10^-10
   }
-
+  
   drug.model <- tryCatch({
-    drc::drm(response ~ dose, data = data,
-             fct = drc::LL.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)),
-             na.action = stats::na.omit,
-             control = drc::drmc(errorm = FALSE, noMessage = TRUE,
+    drc::drm(response ~ dose, data = data, fct = drc::LL.4(fixed = c(NA, 
+             Emin = Emin, Emax = Emax, NA)), na.action = stats::na.omit, 
+             control = drc::drmc(errorm = FALSE, noMessage = TRUE, 
                                  otrace = TRUE))
-  }, warning = function(w) {
-    drc::drm(response ~ log(dose), data = data,
-             fct = drc::L.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)),
-             na.action = stats::na.omit,
-             control = drc::drmc(errorm = FALSE, noMessage = TRUE,
-                                 otrace = FALSE))
+    # }, warning = function(w) {
+    #   print(w)
+    #   data$dose[which(data$dose == 0)] <- 10^-10
+    #   drc::drm(response ~ log(dose), data = data, fct = drc::L.4(fixed = c(NA,
+    #            Emin = Emin, Emax = Emax, NA)), na.action = stats::na.omit,
+    #            control = drc::drmc(errorm = FALSE, noMessage = TRUE,
+    #                                otrace = FALSE))
   }, error = function(e) {
-    drc::drm(response ~ log(dose), data = data,
-             fct = drc::L.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)),
-             na.action = stats::na.omit,
-             control = drc::drmc(errorm = FALSE, noMessage = TRUE,
+    print(e)
+    data$dose[which(data$dose == 0)] <- 10^-10
+    drc::drm(response ~ log(dose), data = data, fct = drc::L.4(fixed = c(NA, 
+             Emin = Emin, Emax = Emax, NA)), na.action = stats::na.omit, 
+             control = drc::drmc(errorm = FALSE, noMessage = TRUE, 
                                  otrace = FALSE))
   })
   return(drug.model)
 }
+
 
 #' Find the type of model used for fitting dose response data
 #'
