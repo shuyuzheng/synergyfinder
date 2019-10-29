@@ -19,7 +19,7 @@
 #' @param file.name a character vector. It indicates the file names, if 
 #'   user chose to save the plot to local directory.If it is not defined by
 #'   user, a default name will be assigned.
-#' @param title.block a character vector. It indicates the title of each blocks
+#' @param title a character vector. It indicates the title of each blocks
 #'   shown on the plot. If it is not defined by user, a default title with
 #'   block IDs will be assigned.
 #' @param pair.index a parameter to specify which drug combination if there are
@@ -28,9 +28,10 @@
 #' @param ... further graphical parameters from \code{\link{plot}} for plotting 
 #'   the single drug dose-response curve. Use e.g., cex.lab to change the axis 
 #'   label size and cex.axis to change the tick size of axises. 
-#'   
-#' @return if save.file parameter is TRUE, pdf files are returned. Otherwise, 
-#'   the plots are only displayed.
+#' @param file.type a character. It indicates the format of files you want to 
+#'   save as. Default is "pdf". Available values are "jpeg", "bmp", "png", 
+#'   "tiff", "pdf".
+#' @return NULL
 #'   
 #' @author 
 #'   \itemize{
@@ -44,8 +45,9 @@
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
 #' PlotDoseResponse(data)
-PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE, 
-                                 file.name = NULL, title.block = NULL, pair.index = NULL, ...) {
+PlotDoseResponse <- function (data, adjusted=TRUE, title=NULL, pair.index=NULL,
+                              save.file=FALSE, file.type="pdf",
+                              file.name=NULL,  ...) {
   # 1. Check the input data
   if (!is.list(data)) {
     stop("Input data is not a list format!")
@@ -77,24 +79,16 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
   plots <- vector(mode="list", length=length(blocks))
   names(plots) <- blocks
   
+  i <- 1
   for (block in blocks) {
-    #dev.new()
     response.mat <- response.mats[[block]]
     
-    # Check NA values
+    # reshape data
     data.plot <- reshape2::melt(response.mat)
     colnames(data.plot) <- c("conc_r", "conc_c", "Inhibition")
     data.plot$conc_r <- as.factor(data.plot$conc_r)
     data.plot$conc_c <- as.factor(data.plot$conc_c)
-    data.plot$Inhibition <- round(c(response.mat), 2)
-    # num.row <- length(response.mat)
-    # data.plot <- data.frame(x = numeric(num.row), y = numeric(num.row),
-    #                         Inhibition = numeric(num.row))
-    # data.plot$Inhibition <- round(c(response.mat), 2)
-    # data.plot$y <- rep(c(seq_len(ncol(response.mat))), nrow(response.mat))
-    # data.plot$x <- rep(seq_len(nrow(response.mat)), each = ncol(response.mat))
-    # data.plot$x <- as.factor(data.plot$x)
-    # data.plot$y <- as.factor(data.plot$y)
+    data.plot$Inhibition <- signif(c(response.mat), 3)
     conc.runit <- drug.pairs$conc_r_unit[drug.pairs$block_id == block]
     conc.cunit <- drug.pairs$conc_c_unit[drug.pairs$block_id == block]
     runit.text <- paste("(", conc.runit, ")", sep = "")
@@ -102,16 +96,12 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
     drug.row <- drug.pairs$drug_row[drug.pairs$block_id == block]
     drug.col <- drug.pairs$drug_col[drug.pairs$block_id == block]
 
-    if(is.null(title.block)){
-      title.block <- block
-    }
-    plot.title <- paste("Dose-response matrix (inhibition)", "\n BlockID:",
-                        title.block, sep = " ")
-
+    plot.title <- paste("Dose-response matrix (inhibition)", "\nBlockID:",
+                          block, sep = " ")
 
     # plot heatmap for dose-response matrix
-    axis.x.text <- round(as.numeric(levels(data.plot$conc_c)), 1)
-    axis.y.text <- round(as.numeric(levels(data.plot$conc_r)), 1)
+    axis.x.text <- signif(as.numeric(levels(data.plot$conc_c)), 4)
+    axis.y.text <- signif(as.numeric(levels(data.plot$conc_r)), 4)
     dose.response.p <- ggplot2::ggplot(data = data.plot, 
                                     aes(x=conc_c, y=conc_r, fill=Inhibition)) +
       ggplot2::geom_tile() +
@@ -152,7 +142,7 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
     graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", 
                    type = "none", cex = 1.5, add = TRUE, lwd = 3)
     graphics::title(paste("Dose-response curve for drug:", drug.row, "in Block", 
-                         title.block), cex.main = 1)
+                         block), cex.main = 1)
 
     # Fit model for the col drug
     drug.col.response <- ExtractSingleDrug(response.mat, dim = "col")
@@ -165,7 +155,7 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
     graphics::plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)",
                    type = "none", cex = 1.5, add = TRUE, lwd = 3)
     graphics::title(paste("Dose-response curve for drug:", drug.col, "in Block",
-                          title.block), cex.main = 1)
+                          block), cex.main = 1)
 
     graphics::plot.new()
     #vps <- baseViewports()
@@ -180,27 +170,36 @@ PlotDoseResponse <- function (data, adjusted = TRUE, save.file = FALSE,
     if(save.file) {
       if(is.null(file.name)){
         if (adjusted) {
-        file.name <- paste(drug.row, drug.col, "adjusted.dose.response",
-                          block, "jpg", sep = ".")
+          file <- paste(drug.row, drug.col, "adjusted_dose_response_block",
+                            block, sep = "_")
         } else {
-        file.name <- paste(drug.row, drug.col, "original.dose.response",
-                          block, "jpg", sep = ".")
+          file <- paste(drug.row, drug.col, "original_dose_response_block",
+                            block, sep = "_")
         }
+      } else {
+        file <- file.name[i]
+        i <- i + 1
       }
-
-      # grDevices::pdf(file.name, width = 12, height = 6)
-      grDevices::jpeg(file.name, width = 800, height = 600)
+      
+      if (!file.type %in% c("jpeg", "bmp", "png", "tiff", "pdf")){
+        warning("Can not save plot in ", file.type, " format. Avaliable formats
+                are 'jpeg', 'bmp', 'png', 'tiff',and 'pdf'.")
+      } else if (file.type  == "pdf") {
+        grDevices::pdf(paste(file, file.type, sep="."), width=12, height=6)
+      } else {
+        do.call(file.type, args=list(filename=paste(file, file.type, sep="."),
+                                     width = 12, height = 6, units = "in",
+                                     res = 600))
+      }
+      #
+      #grDevices::jpeg(file.name, width = 800, height = 600)
       grDevices::replayPlot(merge.plot)
+      grDevices::dev.off()
+    } else {
+      grDevices::dev.new(noRStudioGD = TRUE)
+      grDevices::replayPlot(plots[[block]])
       grDevices::dev.off()
     }
   }
-  if(!save.file) {
-    for(block in blocks) {
-      if (is.null(plots[[block]])) {
-        next
-      }
-      grDevices::dev.new(noRStudioGD = TRUE)
-      grDevices::replayPlot(plots[[block]])
-    }
-  }
+ return(NULL)
 }

@@ -102,8 +102,8 @@ The pdf files will be saved under the current work directory with the filename: 
   
 \begin{figure}[h!]
   \label{dose}
-  \includegraphics[width=1\textwidth]{"ispinesib.ibrutinib.adjusted.dose.response.1"}
-  \includegraphics[width=1\textwidth]{"canertinib.ibrutinib.adjusted.dose.response.2"}
+  \includegraphics[width=1\textwidth]{ispinesib_ibrutinib_adjusted_dose_response_block_1.pdf}
+  \includegraphics[width=1\textwidth]{canertinib_ibrutinib_adjusted_dose_response_block_2.pdf}
   \caption{\textbf{Plots for single drug dose-response curves and drug combination dose-response matrices.} (A) The ibrutinib and ispinesib combination. (B) The ibrutinib and canertinib combination. Left panel: single drug dose-response curves fitted with the commonly-used 4-parameter log-logistic (4PL) function. Right panel: Heatmap of the dose-response matrix. }
 \end{figure}  
 
@@ -148,8 +148,8 @@ The synergy scores are calculated across all the tested concentration combinatio
 The \textit{type} parameter specifies the visualization type of the interaction surface as 2D, 3D or both.
 \begin{figure}[h!]
   \label{synergyplot}
-  \includegraphics[width=1\textwidth]{"ispinesib.ibrutinib.synergy.1.ZIP"}
-  \includegraphics[width=1\textwidth]{"canertinib.ibrutinib.synergy.2.ZIP"}
+  \includegraphics[width=1\textwidth]{ispinesib_ibrutinib_synergy_1_ZIP.pdf}
+  \includegraphics[width=1\textwidth]{canertinib_ibrutinib_synergy_2_ZIP.pdf}
   \caption{\textbf{The drug interaction landscapes based on the ZIP model.} (A) The ibrutinib and ispinesib combination. (B) The ibrutinib and canertinib combination.}
 \end{figure}
 

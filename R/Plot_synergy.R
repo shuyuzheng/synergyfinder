@@ -19,15 +19,13 @@
 #' @param save.file a logical parameter to specify if the interaction landscape
 #'     is saved as a pdf file in the current working directory or returned as an
 #'     R object. By default, it is FALSE.
-#' @param file.name a character vector. It indicates the file names, if 
-#'   user chose to save the plot to local directory.If it is not defined by
-#'   user, a default name will be assigned.
-#' @param len a parameter to specify how many values need to be predicted 
-#'    between two concentrations
 #' @param pair.index a parameter to specify which drug combination if there are 
 #'    many drug combinations in the data. By default, it is NULL so that the 
 #'    synergy score visualization of all the drug combinations in the data is 
 #'    returned.
+#' @param len a parameter to specify how many values need to be predicted 
+#'    between two concentrations. It is used to control the smoothness of the
+#'    synergy surface in the plot.
 #' @param legend.start a parameter to specify the starting point of the legend. 
 #'    By defualt, it is NULL so the legend starting point is fixed by the data 
 #'    automatically.
@@ -42,8 +40,13 @@
 #'    of the drug on y-axis. Use e.g., c(1, 3) to specify that only from 1st to 
 #'    3rd concentrations of the drug on y-axis are used. By default, it is NULl 
 #'    so all the concentrations are used.
-#' @return a pdf file or the interaction landscapes which are only displayed 
-#'    It depends on the \code{save.file} parameter.
+#' @param file.name a character vector. It indicates the file names, if 
+#'   user chose to save the plot to local directory.If it is not defined by
+#'   user, a default name will be assigned.
+#' @param file.type a character. It indicates the format of files you want to 
+#'   save as. Default is "pdf". Available values are "jpeg", "bmp", "png", 
+#'   "tiff", "pdf".
+#' @return a numeric value. It is the summarized synergy score.
 #'    
 #' @author \itemize{
 #'    \item{Liye He \email{liye.he@helsinki.fi}}
@@ -57,10 +60,11 @@
 #' data <- ReshapeData(mathews_screening_data)
 #' scores <- CalculateSynergy(data)
 #' PlotSynergy(scores, "2D")
-#' PlotSynergy(scores, "3D", save.file = TRUE, file.name = c("plot1.jpg", "plot2.jpg"))
-PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL, 
-                        len = 3, pair.index = NULL, legend.start = NULL,
-                        legend.end = NULL, row.range = NULL, col.range = NULL){
+#' PlotSynergy(scores, "3D", save.file = TRUE, file.name = c("plot1", "plot2"))
+PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL, 
+                        len = 3, legend.start = NULL, legend.end = NULL, 
+                        row.range = NULL, col.range = NULL,
+                        file.name = NULL, file.type = "pdf"){
   # 1. Check input data
   if (!is.list(data)) {
       stop("Input data is not a list format!")
@@ -83,6 +87,8 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL,
   
   plots <- vector(mode="list", length=length(blocks))
   names(plots) <- blocks
+  
+  i <- 1
   for (block in blocks) {
     scores.dose <- scores[[block]]
     drug.col <- drug.pairs$drug_col[drug.pairs$block_id == block]
@@ -107,8 +113,6 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL,
     
     # kriging with kriging from SpatialExtremes package!
     
-
-    
     nr <- nrow(scores.tmp)
     nc <- ncol(scores.tmp)
     
@@ -119,18 +123,6 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL,
     
     # get the subset of the extended matrix with predicted values
     mat.tmp <- scores.extended
-    # pred.cory <- as.numeric(colnames(mat.tmp))
-    # pred.corx <- as.numeric(rownames(mat.tmp))
-    # if(!is.null(col.range)){
-    #   # selecting cols
-    #   mat.tmp <- mat.tmp[, which(pred.cory >= col.conc[col.range[1]] & 
-    #                                pred.cory <= col.conc[col.range[2]])]
-    # }
-    # if(!is.null(row.range)){
-    #   # selecting rows
-    #   mat.tmp <- mat.tmp[which(pred.corx >= row.conc[row.range[1]] & 
-    #                              pred.corx <= row.conc[row.range[2]]), ]
-    # }
     
     # the matrix for plotting
     pp <- data.frame(x = rep(colnames(mat.tmp), each = nrow(mat.tmp)),
@@ -145,12 +137,8 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL,
     unit.rtext <- paste("(", conc.runit, ")", sep = "")
     unit.ctext <- paste("(", conc.cunit, ")", sep = "")
 
-    if(is.null(file.name)){
-      file.name <- paste(drug.row, drug.col, "synergy", block,
-                         data$method, "jpg", sep = ".")
-    }
-    drug.row <- paste(drug.row, unit.rtext, sep = " ")
-    drug.col <- paste(drug.col, unit.ctext, sep = " ")
+    drug.row_unit <- paste(drug.row, unit.rtext, sep = " ")
+    drug.col_unit <- paste(drug.col, unit.ctext, sep = " ")
     max.dose <- max(abs(scores.dose))
     color.range <- round(max.dose + 5, -1)
     if(is.null(legend.start)){
@@ -199,8 +187,8 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL,
                    x=xaxis, y = yaxis)
       zlabs <- list(expression("Synergy score"), rot = 90, 
                     cex = 1, axis.key.padding = 0)
-      xpar <- list(as.character(drug.col), cex = 1, rot = 20)
-      ypar <- list(as.character(drug.row), cex = 1, rot = -50)
+      xpar <- list(as.character(drug.col_unit), cex = 1, rot = 20)
+      ypar <- list(as.character(drug.row_unit), cex = 1, rot = -50)
       
       fig <- lattice::wireframe(t(mat.tmp),scales = par1, drape = TRUE,
                           colorkey = list(space = "top",width = 0.5),
@@ -216,7 +204,7 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL,
       print(fig)
       fig <- grDevices::recordPlot()
     } else if (type == "2D") {
-      grDevices::dev.new(noRStudioGD = TRUE)
+      # grDevices::dev.new(noRStudioGD = TRUE)
       graphics::layout(matrix(c(1, 2), nrow = 2L, ncol = 1L), 
                        heights = c(0.1, 1))
       graphics::par(mar = c(0, 6.1, 2.1, 4.1))
@@ -244,8 +232,8 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL,
       ## grid(dim(c)[1] - 1, dim(c)[2] - 1, col = "gray", lty = "solid", 
       ## lwd = 0.3)
       graphics::box()
-      graphics::mtext(drug.col, 1, cex = 1, padj = 3)
-      graphics::mtext(drug.row, 2, cex = 1, las = 3, padj = -3)
+      graphics::mtext(drug.col_unit, 1, cex = 1, padj = 3)
+      graphics::mtext(drug.row_unit, 2, cex = 1, las = 3, padj = -3)
       if(!is.null(row.range)) {
         yconc <- round(row.conc[row.range[1]:row.range[2]], 3)
       } else {
@@ -262,8 +250,9 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL,
                      labels = xconc)
       graphics::axis(side = 2, at = seq(0, 1, by = 1/(length(yconc) - 1)), 
                      labels = yconc)
+      
       fig <- grDevices::recordPlot()
-      grDevices::dev.off()
+      # grDevices::dev.off()
     } else {
       # 3d plot
       # x-axis ticks settings
@@ -290,8 +279,8 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL,
                    x=xaxis, y = yaxis)
       zlabs <- list(expression("Synergy score"), rot = 90, 
                     cex = 1, axis.key.padding = 0)
-      xpar <- list(as.character(drug.col), cex = 1, rot = 20)
-      ypar <- list(as.character(drug.row), cex = 1, rot = -50)
+      xpar <- list(as.character(drug.col_unit), cex = 1, rot = 20)
+      ypar <- list(as.character(drug.row_unit), cex = 1, rot = -50)
       
       syn.3d.plot <- lattice::wireframe(t(mat.tmp),scales = par1,
                        drape = TRUE, colorkey = list(space = "top",width = 0.5),
@@ -328,8 +317,8 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL,
                             "", xaxs = "i", yaxs = "i")
       graphics::.filled.contour(x.2D, y.2D, z = mat.tmp, levels, col = col)
       graphics::box()
-      graphics::mtext(drug.col, 1, cex = 1, padj = 3)
-      graphics::mtext(drug.row, 2, cex = 1, las = 3, padj = -3)
+      graphics::mtext(drug.col_unit, 1, cex = 1, padj = 3)
+      graphics::mtext(drug.row_unit, 2, cex = 1, las = 3, padj = -3)
       if(!is.null(row.range)) {
         yconc <- round(row.conc[row.range[1]:row.range[2]], 3)
       } else {
@@ -351,24 +340,36 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, file.name = NULL,
     }
     plots[[block]] <- fig
     if(save.file) {
-      if (type %in% c("2D", "3D")) {
-        grDevices::jpeg(file.name, width = 800, height = 600)
+      if(is.null(file.name)){
+        file <- paste(drug.row, drug.col, "synergy", block,
+                             data$method, sep = "_")
       } else {
-        grDevices::jpeg(file.name, width = 800, height = 600)
+        file <- file.name[i]
+        i <- i + 1
       }
-      print(fig)
+      # Set width and height according to plot types
+      if (type == "all"){
+        width <- 12
+        height <- 6
+      } else {
+        width <- 10
+        height <- 10
+      }
+      if (!file.type %in% c("jpeg", "bmp", "png", "tiff", "pdf")){
+        warning("Can not save plot in ", file.type, " format. Avaliable formats
+                are 'jpeg', 'bmp', 'png', 'tiff',and 'pdf'.")
+      } else if (file.type  == "pdf") {
+        grDevices::pdf(paste(file, file.type, sep = "."), 
+                       width = width, height = height)
+      } else {
+        do.call(file.type, args=list(filename=paste(file, file.type, sep="."),
+                                     width = width, height = height, 
+                                     units = "in", res = 600))
+      }
+      grDevices::replayPlot(fig)
       grDevices::dev.off()
     }
-
   }
-
-  if(!save.file) {
-    for(block in blocks) {
-      grDevices::dev.new(noRStudioGD = TRUE)
-      grDevices::replayPlot(plots[[block]])
-    }
-  }
-
   return(summary_score)
 }
 
