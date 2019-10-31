@@ -19,18 +19,15 @@
 #' @param file.name a character vector. It indicates the file names, if 
 #'   user chose to save the plot to local directory.If it is not defined by
 #'   user, a default name will be assigned.
-#' @param title a character vector. It indicates the title of each blocks
-#'   shown on the plot. If it is not defined by user, a default title with
-#'   block IDs will be assigned.
 #' @param pair.index a parameter to specify which drug combination if there are
 #'   many drug combinations in the data. By default, it is NULL so that the
 #'   visualization of all the drug combinations in the data is returned.
-#' @param ... further graphical parameters from \code{\link{plot}} for plotting 
-#'   the single drug dose-response curve. Use e.g., cex.lab to change the axis 
-#'   label size and cex.axis to change the tick size of axises. 
 #' @param file.type a character. It indicates the format of files you want to 
 #'   save as. Default is "pdf". Available values are "jpeg", "bmp", "png", 
 #'   "tiff", "pdf".
+#' @param ... further graphical parameters from \code{\link{plot}} for plotting 
+#'   the single drug dose-response curve. Use e.g., cex.lab to change the axis 
+#'   label size and cex.axis to change the tick size of axises. 
 #' @return NULL
 #'   
 #' @author 
@@ -45,9 +42,8 @@
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
 #' PlotDoseResponse(data)
-PlotDoseResponse <- function (data, adjusted=TRUE, title=NULL, pair.index=NULL,
-                              save.file=FALSE, file.type="pdf",
-                              file.name=NULL,  ...) {
+PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
+                              save.file=FALSE, file.type="pdf", file.name=NULL,  ...) {
   # 1. Check the input data
   if (!is.list(data)) {
     stop("Input data is not a list format!")

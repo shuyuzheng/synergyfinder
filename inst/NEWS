@@ -1,3 +1,13 @@
+# synergyfinder 2.1.1 (2019-10-30)
+## New features
+
+* Add "file.type" option in the "PlotSynergy" and "PlotDoseResponse" functions to specify the format of files when saving plots.
+* Add "file.name" parameter to plot functions. User can specify the name of the saved files.
+
+## Changes
+
+* Delete the "warning" exceptions in "FitDoseResponse" function.
+
 # synergyfinder 1.99.1 (2019-06-14)
 
 ## New features
