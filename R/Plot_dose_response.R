@@ -13,22 +13,24 @@
 #' @param adjusted a logical value. If it is \code{FALSE}, original response 
 #'   matrix will be plotted. If it is \code{TRUE}, adjusted response matrix will
 #'   be plotted.
-#' @param save.file a parameter to specify if the visualization results are 
-#'   saved as pdf files in current working directory or not. If it is FALSE, 
-#'   the results are returned as a list of the plots. It is FALSE by default.
-#' @param file.name a character vector. It indicates the file names, if 
-#'   user chose to save the plot to local directory.If it is not defined by
-#'   user, a default name will be assigned.
 #' @param pair.index a parameter to specify which drug combination if there are
 #'   many drug combinations in the data. By default, it is NULL so that the
 #'   visualization of all the drug combinations in the data is returned.
+#' @param save.file a parameter to specify if the visualization results are 
+#'   saved as pdf files in current working directory or not. If it is FALSE, 
+#'   the results are returned as a list of the plots. It is FALSE by default.
 #' @param file.type a character. It indicates the format of files you want to 
 #'   save as. Default is "pdf". Available values are "jpeg", "bmp", "png", 
 #'   "tiff", "pdf".
-#' @param ... further graphical parameters from \code{\link{plot}} for plotting 
-#'   the single drug dose-response curve. Use e.g., cex.lab to change the axis 
-#'   label size and cex.axis to change the tick size of axises. 
-#' @return NULL
+#' @param file.name a character vector. It indicates the file names, if 
+#'   user chose to save the plot to local directory.If it is not defined by
+#'   user, a default name will be assigned.
+#' @param ... further graphical parameters from \code{\link[graphics]{plot}} for
+#'   plotting the single drug dose-response curve. Use e.g., cex.lab to change 
+#'   the axis label size and cex.axis to change the tick size of axises. 
+#' @return NULL. The plot will be saved into a local file if 
+#'   \code{save.file = TRUE}. If \code{save.file = FALSE}, the plot will be 
+#'   printed in default graphic device.
 #'   
 #' @author 
 #'   \itemize{
@@ -43,7 +45,8 @@
 #' data <- ReshapeData(mathews_screening_data)
 #' PlotDoseResponse(data)
 PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
-                              save.file=FALSE, file.type="pdf", file.name=NULL,  ...) {
+                              save.file=FALSE, file.type="pdf", file.name=NULL, 
+                              ...) {
   # 1. Check the input data
   if (!is.list(data)) {
     stop("Input data is not a list format!")
