@@ -30,9 +30,14 @@ save as. Default is "pdf". Available values are "jpeg", "bmp", "png",
 user chose to save the plot to local directory.If it is not defined by
 user, a default name will be assigned.}
 
-\item{...}{further graphical parameters from \code{\link{plot}} for plotting 
-the single drug dose-response curve. Use e.g., cex.lab to change the axis 
-label size and cex.axis to change the tick size of axises.}
+\item{...}{further graphical parameters from \code{\link[graphics]{plot}} for
+plotting the single drug dose-response curve. Use e.g., cex.lab to change 
+the axis label size and cex.axis to change the tick size of axises.}
+}
+\value{
+NULL. The plot will be saved into a local file if 
+  \code{save.file = TRUE}. If \code{save.file = FALSE}, the plot will be 
+  printed in default graphic device.
 }
 \description{
 A function to visualize the drug combination dose-response data

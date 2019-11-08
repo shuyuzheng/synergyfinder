@@ -62,28 +62,32 @@ FitDoseResponse <- function(data, Emin = NA, Emax = NA) {
     data$response[nrow(data)] <- data$response[nrow(data)] + 
       10^-10
   }
-  
-  drug.model <- tryCatch({
-    drc::drm(response ~ dose, data = data, fct = drc::LL.4(fixed = c(NA, 
-             Emin = Emin, Emax = Emax, NA)), na.action = stats::na.omit, 
-             control = drc::drmc(errorm = FALSE, noMessage = TRUE, 
-                                 otrace = TRUE))
-    # }, warning = function(w) {
-    #   print(w)
-    #   data$dose[which(data$dose == 0)] <- 10^-10
-    #   drc::drm(response ~ log(dose), data = data, fct = drc::L.4(fixed = c(NA,
-    #            Emin = Emin, Emax = Emax, NA)), na.action = stats::na.omit,
-    #            control = drc::drmc(errorm = FALSE, noMessage = TRUE,
-    #                                otrace = FALSE))
+  drug.model <- NULL
+drug.model <- tryCatch({
+  drc::drm(response ~ dose, data = data, 
+           fct = drc::LL.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)), 
+           na.action = stats::na.omit, 
+           control = drc::drmc(errorm = FALSE, noMessage = TRUE, 
+                               otrace = TRUE))
   }, error = function(e) {
-    print(e)
-    data$dose[which(data$dose == 0)] <- 10^-10
-    drc::drm(response ~ log(dose), data = data, fct = drc::L.4(fixed = c(NA, 
-             Emin = Emin, Emax = Emax, NA)), na.action = stats::na.omit, 
-             control = drc::drmc(errorm = FALSE, noMessage = TRUE, 
-                                 otrace = FALSE))
+      data$dose[which(data$dose == 0)] <- 10^-10 
+      drc::drm(response ~ log(dose), data = data, 
+               fct = drc::L.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)), 
+               na.action = stats::na.omit, 
+               control = drc::drmc(errorm = FALSE, noMessage = TRUE, 
+                                   otrace = TRUE))
   })
-  return(drug.model)
+
+if (!is(drug.model, "drc")){
+  data$dose[which(data$dose == 0)] <- 10^-10 
+  drug.model <- drc::drm(response ~ log(dose), data = data, 
+                         fct=drc::L.4(fixed=c(NA, Emin=Emin, Emax=Emax, NA)), 
+                         na.action = stats::na.omit, 
+                         control = drc::drmc(errorm = FALSE, noMessage = TRUE, 
+                                             otrace = TRUE))
+}
+
+return(drug.model)
 }
 
 
