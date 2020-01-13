@@ -151,7 +151,7 @@ CalculateSynergy <- function(data, method="ZIP", adjusted = TRUE) {
 #' drug.row.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="row"))
 #' drug.col.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="col"))
 #' 
-#' ZIP.score <- ZIP(response.mat, drug.col.model=drug.col.model,
+#' ZIP.score2 <- ZIP(response.mat[-1, -1], drug.col.model=drug.col.model,
 #'                  drug.row.model=drug.row.model)
 ZIP <- function(response.mat, quiet = TRUE, drug.row.model = NULL, 
                 drug.col.model = NULL) {
@@ -170,16 +170,20 @@ ZIP <- function(response.mat, quiet = TRUE, drug.row.model = NULL,
   }
   drug.col.fit <- suppressWarnings(stats::fitted(drug.col.model))
 
-  n.row <- nrow(response.mat)
-  n.col <- ncol(response.mat)
-
+  dose_row_mat <- as.numeric(rownames(response.mat))
+  dose_col_mat <- as.numeric(colnames(response.mat))
+  dose_col <- dose_col_mat[dose_col_mat > 0]
+  dose_row <- dose_row_mat[dose_row_mat > 0]
+  n.row <- length(dose_row)
+  n.col <- length(dose_col)
   # generate drug_row fitting matrix
-  tmp <- data.frame(dose = as.numeric(rownames(response.mat))[-1])
-  updated.col.mat <- matrix(nrow = n.row - 1, ncol = n.col - 1)
+  tmp <- data.frame(dose = dose_row)
+  updated.col.mat <- response.mat[rownames(response.mat) != "0",
+                                  colnames(response.mat) != "0"]
 
-  for (i in 2:n.col) {
+  for (i in 1:n.col) {
     # nonzero concentrations to take the log
-    tmp$response <- response.mat[-1, i]
+    tmp$response <- updated.col.mat[, i]
     if(nrow(tmp) == 1) {
       # # no fitting
       fitted.response <- tmp$response - 10 ^ -10
@@ -195,16 +199,17 @@ ZIP <- function(response.mat, quiet = TRUE, drug.row.model = NULL,
 
     # if (fitted.inhibition[length(fitted.inhibition)] < 0)
     #  fitted.inhibition[length(fitted.inhibition)] <- tmp.min
-    updated.col.mat[, i - 1] <- fitted.response
+    updated.col.mat[, i] <- fitted.response
   }
 
   # generate drug_col fitting matrix
-  tmp <- data.frame(dose = as.numeric(colnames(response.mat))[-1])
-  updated.row.mat <- matrix(nrow = n.row - 1, ncol = n.col - 1)
+  tmp <- data.frame(dose = dose_col)
+  updated.row.mat <- response.mat[rownames(response.mat) != "0",
+                                  colnames(response.mat) != "0"]
 
-  for (i in 2:n.row) {
+  for (i in 1:n.row) {
     # nonzero concentrations to take the log
-    tmp$response <- response.mat[i, -1]
+    tmp$response <- updated.row.mat[i, ]
     if(nrow(tmp) == 1) {
       # # no fitting
       fitted.response <- tmp$response - 10 ^ -10
@@ -219,28 +224,26 @@ ZIP <- function(response.mat, quiet = TRUE, drug.row.model = NULL,
     }
     # if (fitted.inhibition[length(fitted.inhibition)] < 0)
     #  fitted.inhibition[length(fitted.inhibition)] <- tmp.min
-    updated.row.mat[i - 1 , ] <- fitted.response
+    updated.row.mat[i, ] <- fitted.response
   }
 
   fitted.mat <- (updated.col.mat + updated.row.mat) / 2
 
-  zip.mat <- matrix(nrow = n.row -1, ncol = n.col - 1)
-  for (i in seq_len((n.row - 1))) {
-    for (j in seq_len((n.col - 1))) {
-      zip.mat[i, j] <- drug.row.fit[i + 1] + drug.col.fit[j + 1] -
-        drug.row.fit[i + 1] * drug.col.fit[j + 1] / 100
+  zip.mat <- matrix(nrow = n.row, ncol = n.col)
+  for (i in seq_len((n.row))) {
+    for (j in seq_len((n.col))) {
+      zip.mat[i, j] <- drug.row.fit[i] + drug.col.fit[j] -
+        drug.row.fit[i] * drug.col.fit[j] / 100
     }
   }
 
   delta.mat <- fitted.mat - zip.mat
 
-  # add 0 to first column and first row
-  delta.mat <- rbind(rep(0, times = n.row -1), delta.mat)
-  delta.mat <- cbind(rep(0, times = n.col), delta.mat)
-
-  # add colname and rowname for delta.mat
-  colnames(delta.mat) <- colnames(response.mat)
-  rownames(delta.mat) <- rownames(response.mat)
+  # add synergy scores of single drugs into delta.mat
+  delta.mat <- cbind(rep(0, nrow(delta.mat)), delta.mat)
+  colnames(delta.mat)[1] <- "0"
+  delta.mat <- rbind(rep(0, ncol(delta.mat)), delta.mat)
+  rownames(delta.mat)[1] <- "0"
 
   return(delta.mat)
   
@@ -475,7 +478,7 @@ fun <- function(col_conc, row_conc, drug.par, model) {
 #' # Single drug dose response models have been fitted before.
 #' drug.row.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="row"))
 #' drug.col.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="col"))
-#' Loewe.score <- Loewe(response.mat, drug.col.model=drug.col.model,
+#' Loewe.score2 <- Loewe(response.mat, drug.col.model=drug.col.model,
 #'                      drug.row.model=drug.row.model)
 Loewe <- function (response.mat, quiet = TRUE, drug.col.model = NULL,
                             drug.row.model = NULL) {
@@ -483,12 +486,11 @@ Loewe <- function (response.mat, quiet = TRUE, drug.col.model = NULL,
     options(warn = -1)
   }
 
-  drug.row <- ExtractSingleDrug(response.mat, dim = "row")
-  drug.col <- ExtractSingleDrug(response.mat, dim = "col")
-
   con <- vapply(list(drug.col.model, drug.row.model), is.null, logical(1))
 
   if (!all(!con)) {
+    drug.row <- ExtractSingleDrug(response.mat, dim = "row")
+    drug.col <- ExtractSingleDrug(response.mat, dim = "col")
     drug.row.model <- FitDoseResponse(drug.row)
     drug.col.model <- FitDoseResponse(drug.col)
   }
@@ -497,8 +499,8 @@ Loewe <- function (response.mat, quiet = TRUE, drug.col.model = NULL,
   drug.col.par <- stats::coef(drug.col.model)
   drug.col.type <- FindModelType(drug.col.model)
   
-  drug.row$dose[drug.row$dose == 0] = 10^-10 # avoid log(0)
-  drug.col$dose[drug.col$dose == 0] = 10^-10 # avoid log(0)
+  # drug.row$dose[drug.row$dose == 0] = 10^-10 # avoid log(0)
+  # drug.col$dose[drug.col$dose == 0] = 10^-10 # avoid log(0)
 
   loewe.mat <- response.mat
   eq <- switch (paste(drug.col.type, drug.row.type),
@@ -508,11 +510,16 @@ Loewe <- function (response.mat, quiet = TRUE, drug.col.model = NULL,
                 "L.4 LL.4"  = eq.L4.LL4)
 
   x <- max(drug.col.par[2], drug.row.par[2]) + 1
-
-  for (i in seq_len((nrow(drug.col)) - 1)) {
-    for (j in seq_len((nrow(drug.row)) - 1)) {
-      x1 <- drug.col$dose[i + 1]
-      x2 <- drug.row$dose[j + 1]
+  
+  dose_col_mat <- as.numeric(colnames(response.mat))
+  dose_row_mat <- as.numeric(rownames(response.mat))
+  dose_col <- dose_col_mat[dose_col_mat > 0]
+  dose_row <- dose_row_mat[dose_row_mat > 0]
+  
+  for (i in seq_len(length(dose_col))) {
+    for (j in seq_len(length(dose_row))) {
+      x1 <- dose_col[i]
+      x2 <- dose_row[j]
 
       options(warn = -1)
       slv <- tryCatch({
@@ -534,12 +541,25 @@ Loewe <- function (response.mat, quiet = TRUE, drug.col.model = NULL,
         y.loewe <- max(y.loewe1, y.loewe2)
       }
 
-      loewe.mat[j + 1, i + 1] <- ifelse(y.loewe > 100, 100, y.loewe)
+      loewe.mat[which(dose_row_mat == x2), which(dose_col_mat == x1)] <- 
+        ifelse(y.loewe > 100, 100, y.loewe)
+        
     }
   }
 
   synergy.mat <- response.mat - loewe.mat
 
+  # add synergy scores of single drugs into synergy matrix if input combo matrix
+  # doesn't contain single drugs
+  if (!0 %in% dose_col_mat) {
+    synergy.mat <- cbind(rep(0, nrow(synergy.mat)), synergy.mat)
+    colnames(synergy.mat)[1] <- "0"
+  }
+  if (!0 %in% dose_row_mat) {
+    synergy.mat <- rbind(rep(0, ncol(synergy.mat)), synergy.mat)
+    rownames(synergy.mat)[1] <- "0"
+  }
+  
   # Output results
   return(synergy.mat)
 
