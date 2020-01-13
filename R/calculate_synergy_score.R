@@ -158,22 +158,24 @@ ZIP <- function(response.mat, quiet = TRUE, drug.row.model = NULL,
   if (quiet) {
     options(warn = -1)
   }
+  dose_row_mat <- as.numeric(rownames(response.mat))
+  dose_col_mat <- as.numeric(colnames(response.mat))
+  dose_col <- dose_col_mat[dose_col_mat > 0]
+  dose_row <- dose_row_mat[dose_row_mat > 0]
+  
   if (is.null(drug.row.model)) {
     drug.row <- ExtractSingleDrug(response.mat, dim = "row")
     drug.row.model <- FitDoseResponse(drug.row)
   }
-  drug.row.fit <- suppressWarnings(stats::fitted(drug.row.model))
+  drug.row.fit <- predict(drug.row.model, newdata = data.frame(dose = dose_row))
 
   if (is.null(drug.col.model)) {
     drug.col <- ExtractSingleDrug(response.mat, dim = "col")
     drug.col.model <- FitDoseResponse(drug.col)
   }
-  drug.col.fit <- suppressWarnings(stats::fitted(drug.col.model))
+  drug.col.fit <- predict(drug.col.model, newdata = data.frame(dose = dose_col))
 
-  dose_row_mat <- as.numeric(rownames(response.mat))
-  dose_col_mat <- as.numeric(colnames(response.mat))
-  dose_col <- dose_col_mat[dose_col_mat > 0]
-  dose_row <- dose_row_mat[dose_row_mat > 0]
+
   n.row <- length(dose_row)
   n.col <- length(dose_col)
   # generate drug_row fitting matrix
