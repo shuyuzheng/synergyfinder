@@ -4,8 +4,13 @@
 \alias{ReshapeData}
 \title{Pre-processe the response data for furhter calculation and plot}
 \usage{
-ReshapeData(data, impute = TRUE, noise = TRUE, correction = "non",
-  data.type = "viability")
+ReshapeData(
+  data,
+  impute = TRUE,
+  noise = TRUE,
+  correction = "non",
+  data.type = "viability"
+)
 }
 \arguments{
 \item{data}{drug combination response data in a data frame format}

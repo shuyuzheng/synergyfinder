@@ -373,26 +373,33 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL,
   return(summary_score)
 }
 
+#' Make a smooth surface for scores
+#'
+#' @param scores.mat a matrix contains scores which will be visualized
+#' @param len length of the interval between plotted data points.
+#'
+#' @return a matrix which 
+#' @useDynLib synergyfinder
 .ExtendedScores <-  function (scores.mat, len) {
   # len: how many values need to be predicted between two adjacent elements
   #      of scores.dose
   options(scipen = 999)
   nr <- nrow(scores.mat)
   nc <- ncol(scores.mat)
-  
+
   # missing value imputation
   while (sum(is.na(scores.mat))) {
     scores.mat <- ImputeNA(scores.mat)
   }
   ext.row.len <- (nr - 1) * (len + 2) - (nr - 2)
   ext.col.len <- (nc - 1) * (len + 2) - (nc - 2)
-  
+
   extended.row.idx <- seq(1, nr, length = ext.row.len)
   extended.col.idx <- seq(1, nc, length = ext.col.len)
-  
+
   krig.coord <- cbind(rep(extended.row.idx, each = ext.col.len),
                       rep(extended.col.idx, times = ext.row.len))
-  extended.scores <- SpatialExtremes::kriging(data = c(scores.mat),
+  extended.scores <- kriging(data = c(scores.mat),
                                   data.coord = cbind(rep(seq_len(nr), nc),
                                                     rep(seq_len(nc), each=nr)),
                                   krig.coord = krig.coord,
@@ -401,25 +408,26 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL,
                                   smooth = 0.8)$krig.est
   extended.scores <- matrix(extended.scores, nrow = ext.row.len,
                             ncol = ext.col.len, byrow = TRUE)
-  
+
   # extended.scores = data.frame(extended.scores)
   extended.scores <- round(extended.scores, 3)
-  
+
   row.dose <- as.numeric(rownames(scores.mat))
   col.dose <- as.numeric(colnames(scores.mat))
-  
+
   extend.row.dose <- mapply(function(x, y){seq(from = x, to = y,
                                                length.out = len + 2)},
                             row.dose[-nr], row.dose[-1])
   extend.row.dose <- unique(round(c(extend.row.dose), 8))
-  
+
   extend.col.dose <- mapply(function(x, y){seq(from = x, to = y,
                                                length.out = len + 2)},
                             col.dose[-nc], col.dose[-1])
   extend.col.dose <- unique(round(c(extend.col.dose), 8))
-  
+
   rownames(extended.scores) <- extend.row.dose
   colnames(extended.scores) <- extend.col.dose
-  
+
   return(extended.scores)
 }
+

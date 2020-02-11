@@ -4,8 +4,7 @@
 \alias{ZIP}
 \title{Calculate Delta synergy score based on ZIP model}
 \usage{
-ZIP(response.mat, quiet = TRUE, drug.row.model = NULL,
-  drug.col.model = NULL)
+ZIP(response.mat, quiet = TRUE, drug.row.model = NULL, drug.col.model = NULL)
 }
 \arguments{
 \item{response.mat}{A drug cobination dose-response matrix. It's column name
@@ -52,7 +51,7 @@ ZIP.score <- ZIP(response.mat)
 drug.row.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="row"))
 drug.col.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="col"))
 
-ZIP.score <- ZIP(response.mat, drug.col.model=drug.col.model,
+ZIP.score2 <- ZIP(response.mat[-1, -1], drug.col.model=drug.col.model,
                  drug.row.model=drug.row.model)
 }
 \references{

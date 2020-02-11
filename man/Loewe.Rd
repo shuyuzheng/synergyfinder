@@ -4,8 +4,7 @@
 \alias{Loewe}
 \title{Calculate Loewe synergy score}
 \usage{
-Loewe(response.mat, quiet = TRUE, drug.col.model = NULL,
-  drug.row.model = NULL)
+Loewe(response.mat, quiet = TRUE, drug.col.model = NULL, drug.row.model = NULL)
 }
 \arguments{
 \item{response.mat}{A drug cobination dose-response matrix. It's column name
@@ -51,7 +50,7 @@ Loewe.score <- Loewe(response.mat)
 # Single drug dose response models have been fitted before.
 drug.row.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="row"))
 drug.col.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="col"))
-Loewe.score <- Loewe(response.mat, drug.col.model=drug.col.model,
+Loewe.score2 <- Loewe(response.mat, drug.col.model=drug.col.model,
                      drug.row.model=drug.row.model)
 }
 \references{
