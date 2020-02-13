@@ -167,13 +167,13 @@ ZIP <- function(response.mat, quiet = TRUE, drug.row.model = NULL,
     drug.row <- ExtractSingleDrug(response.mat, dim = "row")
     drug.row.model <- FitDoseResponse(drug.row)
   }
-  drug.row.fit <- predict(drug.row.model, newdata = data.frame(dose = dose_row))
+  drug.row.fit <- stats::predict(drug.row.model, newdata = data.frame(dose = dose_row))
 
   if (is.null(drug.col.model)) {
     drug.col <- ExtractSingleDrug(response.mat, dim = "col")
     drug.col.model <- FitDoseResponse(drug.col)
   }
-  drug.col.fit <- predict(drug.col.model, newdata = data.frame(dose = dose_col))
+  drug.col.fit <- stats::predict(drug.col.model, newdata = data.frame(dose = dose_col))
 
 
   n.row <- length(dose_row)

@@ -379,7 +379,7 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL,
 #' @param len length of the interval between plotted data points.
 #'
 #' @return a matrix which 
-#' @useDynLib synergyfinder
+#' @useDynLib synergyfinder, .registration=TRUE
 .ExtendedScores <-  function (scores.mat, len) {
   # len: how many values need to be predicted between two adjacent elements
   #      of scores.dose

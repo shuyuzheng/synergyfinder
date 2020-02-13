@@ -47,6 +47,7 @@
 #' href{https://onlinelibrary.wiley.com/doi/book/10.1002/0471725315}{Nonlinear
 #' Regression, New York}: Wiley \& Sons (p. 330).
 #'
+#' @importFrom methods is
 #' @export
 #' 
 #' @examples

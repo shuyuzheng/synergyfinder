@@ -85,7 +85,7 @@ kriging <- function(data, data.coord, krig.coord, cov.mod = "whitmat",
       stop("''data'' and ''data.coord'' don't match")
   }
   
-  distMat <- as.matrix(dist(data.coord, diag = TRUE, upper = TRUE))
+  distMat <- as.matrix(stats::dist(data.coord, diag = TRUE, upper = TRUE))
   
   icovMat <- covariance(nugget = 0, sill = sill, range = range, smooth = smooth,
                         smooth2 = smooth2, cov.mod = cov.mod, plot = FALSE,
