@@ -8,7 +8,7 @@ ZIP(response.mat, quiet = TRUE, drug.row.model = NULL, drug.col.model = NULL)
 }
 \arguments{
 \item{response.mat}{A drug cobination dose-response matrix. It's column name
-and row name are representing the concerntrations of drug added to column 
+and row name are representing the concerntrations of drug added to column
 and row, respectively. The values in matrix indicate the inhibition rate to
 cell growth.}
 
@@ -26,18 +26,18 @@ A matrix of \eqn{\Delta} score calculated via Zero Interaction
 Potency (ZIP) method.
 }
 \description{
-\code{ZIP} calculates the \eqn{\Delta} score matrix from a dose-response 
+\code{ZIP} calculates the \eqn{\Delta} score matrix from a dose-response
 matrix by using Zero Interaction Potency (ZIP) method.
 }
 \details{
-Zero Interaction Potency (ZIP) is a reference model for evaluating 
-  the conbimation effect of two drugs. It captures the effect of drug 
-  combination by comparing the change in the potency of the dose-response 
+Zero Interaction Potency (ZIP) is a reference model for evaluating
+  the conbimation effect of two drugs. It captures the effect of drug
+  combination by comparing the change in the potency of the dose-response
   curves between individual drugs and their combinations. \cr
   \cr
-  The optional arguments \code{drug.col.model}, \code{drug.row.model} are 
-  designed for reuse the single drug dose response model fitting results, 
-  if it has been down before. Functions \code{\link{FitDoseResponse}} and 
+  The optional arguments \code{drug.col.model}, \code{drug.row.model} are
+  designed for reuse the single drug dose response model fitting results,
+  if it has been down before. Functions \code{\link{FitDoseResponse}} and
   \code{\link{ExtractSingleDrug}} could be used to calculate these arguments.
 }
 \examples{
