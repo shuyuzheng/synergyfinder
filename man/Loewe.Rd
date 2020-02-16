@@ -8,7 +8,7 @@ Loewe(response.mat, quiet = TRUE, drug.col.model = NULL, drug.row.model = NULL)
 }
 \arguments{
 \item{response.mat}{A drug cobination dose-response matrix. It's column name
-and row name are representing the concerntrations of drug added to column 
+and row name are representing the concerntrations of drug added to column
 and row, respectively. The values in matrix indicate the inhibition rate to
 cell growth.}
 
@@ -30,14 +30,14 @@ A matrix for Synergy score calculated via reference model introduced
 by using a druginteraction reference model introduced by Loewe in 1953.
 }
 \details{
-Loewe model is a reference model for evaluating the combination 
-effect of two drugs. The basic assumption of this model is "The referece 
-effect of drug combination is the expected effect of a drug combined with 
+Loewe model is a reference model for evaluating the combination
+effect of two drugs. The basic assumption of this model is "The referece
+effect of drug combination is the expected effect of a drug combined with
 itself". \cr
 \cr
-The optional arguments \code{drug.col.model}, \code{drug.row.model} are 
-designed for reuse the single drug dose response model fitting results, 
-if it has been down before. Functions \code{\link{FitDoseResponse}} and 
+The optional arguments \code{drug.col.model}, \code{drug.row.model} are
+designed for reuse the single drug dose response model fitting results,
+if it has been down before. Functions \code{\link{FitDoseResponse}} and
 \code{\link{ExtractSingleDrug}} could be used to calculate these arguments.
 }
 \examples{
