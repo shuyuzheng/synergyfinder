@@ -1,13 +1,13 @@
 Package: synergyfinder
 Type: Package
 Title: Calculate and Visualize Synergy Scores for Drug Combinations
-Version: 2.0.8
+Version: 2.0.9
 Date: 2019-02-16
 Author: Liye He <liye.he@helsinki.fi>, Jing Tang <jing.tang@helsinki.fi>,
         Shuyu Zheng <shuyu.zheng@helsinki.fi>
 Maintainer: Shuyu Zheng <shuyu.zheng@helsinki.fi>
 Depends: R (>= 3.6.0)
-Imports: drc (>= 2.5-12), reshape2 (>= 1.4.1),
+Imports: drc (>= 2.5-12), reshape2 (>= 1.4.1), methods,
          ggplot2 (>= 2.1.0), grid (>= 3.2.4), lattice (>= 0.20-33), 
          nleqslv(>= 3.0), stats (>= 3.3.0), graphics (>= 3.3.0), 
          grDevices (>= 3.3.0)
