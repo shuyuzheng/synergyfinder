@@ -248,8 +248,20 @@ ZIP <- function(response.mat, quiet = TRUE, drug.row.model = NULL,
   # add synergy scores of single drugs into delta.mat
   delta.mat <- cbind(rep(0, nrow(delta.mat)), delta.mat)
   delta.mat <- rbind(rep(0, ncol(delta.mat)), delta.mat)
-  colnames(delta.mat) <- colnames(response.mat)
-  rownames(delta.mat) <- rownames(response.mat)
+  
+  if (length(colnames(response.mat)) < length(colnames(delta.mat))){
+    colnames(delta.mat) <- c(rep("0", length(colnames(delta.mat)) - n.col), 
+                             colnames(response.mat))
+  } else {
+    colnames(delta.mat) <- colnames(response.mat)
+  }
+  
+  if (length(rownames(response.mat)) < length(rownames(delta.mat))){
+    rownames(delta.mat) <- c(rep("0", length(rownames(delta.mat)) - n.row), 
+                             rownames(response.mat))
+  } else {
+    rownames(delta.mat) <- rownames(response.mat)
+  }
 
   return(delta.mat)
 
