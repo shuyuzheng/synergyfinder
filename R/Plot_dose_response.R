@@ -16,6 +16,14 @@
 #' @param pair.index a parameter to specify which drug combination if there are
 #'   many drug combinations in the data. By default, it is NULL so that the
 #'   visualization of all the drug combinations in the data is returned.
+#' @param color.low.response a charactor in R color format. It indicates the 
+#' color for the response lower than 0. Default setting is "green".
+#' @param color.high.response a charactor in R color format. It indicates the 
+#' color for the response higher than 0. Default setting is "red".
+#' @param color.conc a charactor in R color format. It indicates the 
+#' color for the concentrations label for axises. Default setting is "red".
+#' @param color.point a charactor in R color format. It indicates the 
+#' color for the data point in the plot. Default setting is "red".
 #' @param save.file a parameter to specify if the visualization results are 
 #'   saved as pdf files in current working directory or not. If it is FALSE, 
 #'   the results are returned as a list of the plots. It is FALSE by default.
@@ -25,6 +33,7 @@
 #' @param file.name a character vector. It indicates the file names, if 
 #'   user chose to save the plot to local directory.If it is not defined by
 #'   user, a default name will be assigned.
+#'   
 #' @param ... further graphical parameters from \code{\link[graphics]{plot}} for
 #'   plotting the single drug dose-response curve. Use e.g., cex.lab to change 
 #'   the axis label size and cex.axis to change the tick size of axises. 
@@ -45,7 +54,9 @@
 #' data <- ReshapeData(mathews_screening_data)
 #' PlotDoseResponse(data)
 PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
-                              save.file=FALSE, file.type="pdf", file.name=NULL, 
+                              color.low.response = "green", color.point = "red", 
+                              color.high.response = "red", color.conc = "red", 
+                              save.file=FALSE, file.type="pdf", file.name=NULL,
                               ...) {
   # 1. Check the input data
   if (!is.list(data)) {
@@ -105,7 +116,8 @@ PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
                                     aes(x=conc_c, y=conc_r, fill=Inhibition)) +
       ggplot2::geom_tile() +
       ggplot2::geom_text(ggplot2::aes(label = Inhibition)) +
-      ggplot2::scale_fill_gradient2(low = "green", high = "red",
+      ggplot2::scale_fill_gradient2(low = color.low.response, 
+                                    high = color.high.response,
                                     midpoint = 0, name = "Inhibition (%)") +
       ggplot2::scale_x_discrete(labels = axis.x.text) +
       ggplot2::scale_y_discrete(labels = axis.y.text) +
@@ -119,10 +131,10 @@ PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
     
     # Set label's style of heatmap
     dose.response.p <- dose.response.p + 
-      ggplot2::theme(axis.text.x = ggplot2::element_text(color = "red", 
+      ggplot2::theme(axis.text.x = ggplot2::element_text(color = color.conc, 
                                                          face = "bold", 
                                                          size = 15),
-                     axis.text.y = ggplot2::element_text(color = "red",
+                     axis.text.y = ggplot2::element_text(color = color.conc,
                                                          face = "bold",
                                                          size = 15),
                      axis.title = ggplot2::element_text(size = 15))
@@ -137,7 +149,7 @@ PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
     suppressWarnings(graphics::par(mgp=c(3, .5, 0)))
     x.lab <- paste("Concentration", runit.text, sep = " ")
     graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)",
-                   type = "obs", col = "red", cex = 1.5, pch = 16)#, ...)
+                   type = "obs", col = color.point, cex = 1.5, pch = 16)#, ...)
     graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", 
                    type = "none", cex = 1.5, add = TRUE, lwd = 3)
     graphics::title(paste("Dose-response curve for drug:", drug.row, "in Block", 
@@ -150,7 +162,7 @@ PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
     # plot the curve for the col drug
     x.lab <- paste("Concentration", cunit.text, sep = " ")
     graphics::plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)",
-                   type = "obs", col = "red", cex = 1.5, pch = 16)#, ...)
+                   type = "obs", col = color.point, cex = 1.5, pch = 16)#, ...)
     graphics::plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)",
                    type = "none", cex = 1.5, add = TRUE, lwd = 3)
     graphics::title(paste("Dose-response curve for drug:", drug.col, "in Block",

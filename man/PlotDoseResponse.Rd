@@ -8,6 +8,10 @@ PlotDoseResponse(
   data,
   adjusted = TRUE,
   pair.index = NULL,
+  color.low.response = "green",
+  color.point = "red",
+  color.high.response = "red",
+  color.conc = "red",
   save.file = FALSE,
   file.type = "pdf",
   file.name = NULL,
@@ -24,6 +28,18 @@ be plotted.}
 \item{pair.index}{a parameter to specify which drug combination if there are
 many drug combinations in the data. By default, it is NULL so that the
 visualization of all the drug combinations in the data is returned.}
+
+\item{color.low.response}{a charactor in R color format. It indicates the 
+color for the response lower than 0. Default setting is "green".}
+
+\item{color.point}{a charactor in R color format. It indicates the 
+color for the data point in the plot. Default setting is "red".}
+
+\item{color.high.response}{a charactor in R color format. It indicates the 
+color for the response higher than 0. Default setting is "red".}
+
+\item{color.conc}{a charactor in R color format. It indicates the 
+color for the concentrations label for axises. Default setting is "red".}
 
 \item{save.file}{a parameter to specify if the visualization results are 
 saved as pdf files in current working directory or not. If it is FALSE, 

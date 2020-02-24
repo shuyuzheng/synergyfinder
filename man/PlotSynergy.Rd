@@ -14,6 +14,8 @@ PlotSynergy(
   legend.end = NULL,
   row.range = NULL,
   col.range = NULL,
+  color.low.value = "green",
+  color.high.value = "red",
   file.name = NULL,
   file.type = "pdf"
 )
@@ -55,6 +57,12 @@ so all the concentrations are used.}
 of the drug on x-axis. Use e.g., c(1, 3) to specify that only from 1st to 
 3rd concentrations of the drug on x-axis are used. By default, it is NULl 
 so all the concentrations are used.}
+
+\item{color.low.value}{a charactor in R color format. It indicates the 
+color for the synergy score lower than 0. Default setting is "green".}
+
+\item{color.high.value}{a charactor in R color format. It indicates the 
+color for the synergy score higher than 0. Default setting is "red".}
 
 \item{file.name}{a character vector. It indicates the file names, if 
 user chose to save the plot to local directory.If it is not defined by
