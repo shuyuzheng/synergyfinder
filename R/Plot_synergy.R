@@ -32,6 +32,10 @@
 #' @param legend.end a parameter to specify the ending point of the legend. By 
 #'    defualt, it is NULL so the legend ending point is fixed by the data 
 #'    automatically.
+#' @param color.low.value a charactor in R color format. It indicates the 
+#' color for the synergy score lower than 0. Default setting is "green".
+#' @param color.high.value a charactor in R color format. It indicates the 
+#' color for the synergy score higher than 0. Default setting is "red".
 #' @param col.range a parameter to specify the starting and ending concentration 
 #'    of the drug on x-axis. Use e.g., c(1, 3) to specify that only from 1st to 
 #'    3rd concentrations of the drug on x-axis are used. By default, it is NULl 
@@ -64,6 +68,7 @@
 PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL, 
                         len = 3, legend.start = NULL, legend.end = NULL, 
                         row.range = NULL, col.range = NULL,
+                        color.low.value = "green", color.high.value = "red", 
                         file.name = NULL, file.type = "pdf"){
   # 1. Check input data
   if (!is.list(data)) {
@@ -155,10 +160,10 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL,
     
     # colors
     levels <- seq(start.point, end.point, by = 2)
-    col1 <- grDevices::colorRampPalette(c('green', 
+    col1 <- grDevices::colorRampPalette(c(color.low.value, 
                                         "#FFFFFF"))(length(which(levels <= 0)))
     col2 <- grDevices::colorRampPalette(c("#FFFFFF", 
-                                          'red'))(length(which(levels >= 0)))
+                                 color.high.value))(length(which(levels >= 0)))
     col <- c(col1, col2[-1])
     
 
