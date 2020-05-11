@@ -29,7 +29,7 @@
 #'   the results are returned as a list of the plots. It is FALSE by default.
 #' @param file.type a character. It indicates the format of files you want to 
 #'   save as. Default is "pdf". Available values are "jpeg", "bmp", "png", 
-#'   "tiff", "pdf".
+#'   "tiff", "pdf", "svg".
 #' @param file.name a character vector. It indicates the file names, if 
 #'   user chose to save the plot to local directory.If it is not defined by
 #'   user, a default name will be assigned.
@@ -191,16 +191,21 @@ PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
         file <- file.name[i]
         i <- i + 1
       }
-      
-      if (!file.type %in% c("jpeg", "bmp", "png", "tiff", "pdf")){
+      width <- 12
+      height <- 6
+      if (!file.type %in% c("jpeg", "bmp", "png", "tiff", "pdf", "svg")){
         warning("Can not save plot in ", file.type, " format. Avaliable formats
-                are 'jpeg', 'bmp', 'png', 'tiff',and 'pdf'.")
+                are 'svg', 'jpeg', 'bmp', 'png', 'tiff',and 'pdf'.")
       } else if (file.type  == "pdf") {
-        grDevices::pdf(paste(file, file.type, sep="."), width=12, height=6)
+        grDevices::pdf(paste(file, file.type, sep = "."), 
+                       width = width, height = height)
+      } else if (file.type == "svg"){
+        grDevices::svg(paste(file, file.type, sep = "."), 
+                       width = width, height = height)
       } else {
         do.call(file.type, args=list(filename=paste(file, file.type, sep="."),
-                                     width = 12, height = 6, units = "in",
-                                     res = 600))
+                                     width = width, height = height, 
+                                     units = "in", res = 600))
       }
       #
       #grDevices::jpeg(file.name, width = 800, height = 600)

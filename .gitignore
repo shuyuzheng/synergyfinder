@@ -4,6 +4,7 @@
 .Ruserdata
 doc
 Meta
+.DS_Store
 *.renviron
 *.rprofile
 *.rproj
