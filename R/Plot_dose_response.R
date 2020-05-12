@@ -34,7 +34,7 @@
 #'   user chose to save the plot to local directory.If it is not defined by
 #'   user, a default name will be assigned.
 #'   
-#' @param ... further graphical parameters from \code{\link[graphics]{plot}} for
+#' @param ... further graphical parameters from \code{plot} for
 #'   plotting the single drug dose-response curve. Use e.g., cex.lab to change 
 #'   the axis label size and cex.axis to change the tick size of axises. 
 #' @return NULL. The plot will be saved into a local file if 

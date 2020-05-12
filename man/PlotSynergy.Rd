@@ -70,7 +70,7 @@ user, a default name will be assigned.}
 
 \item{file.type}{a character. It indicates the format of files you want to 
 save as. Default is "pdf". Available values are "jpeg", "bmp", "png", 
-"tiff", "pdf".}
+"tiff", "pdf", "svg".}
 }
 \value{
 a numeric value. It is the summarized synergy score.

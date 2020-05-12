@@ -47,13 +47,13 @@ the results are returned as a list of the plots. It is FALSE by default.}
 
 \item{file.type}{a character. It indicates the format of files you want to 
 save as. Default is "pdf". Available values are "jpeg", "bmp", "png", 
-"tiff", "pdf".}
+"tiff", "pdf", "svg".}
 
 \item{file.name}{a character vector. It indicates the file names, if 
 user chose to save the plot to local directory.If it is not defined by
 user, a default name will be assigned.}
 
-\item{...}{further graphical parameters from \code{\link[graphics]{plot}} for
+\item{...}{further graphical parameters from \code{plot} for
 plotting the single drug dose-response curve. Use e.g., cex.lab to change 
 the axis label size and cex.axis to change the tick size of axises.}
 }
