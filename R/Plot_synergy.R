@@ -50,6 +50,19 @@
 #' @param file.type a character. It indicates the format of files you want to 
 #'   save as. Default is "pdf". Available values are "jpeg", "bmp", "png", 
 #'   "tiff", "pdf", "svg".
+#' @param width a numeric value. It indicates the width of the output plot.
+#' @param height a numeric value. It indicates the height of the output plot.
+#' If it is \code{NULL} (default setting), it will be automatically set according
+#' to the \code{width} and \code{type} parameters. If the \code{type} is "all",
+#' height = width, otherwise height = width/2.
+#' @param legend.lab.cex a numeric value. The magnification to be used for legend
+#' labels.
+#' @param main.title.cex a numeric value. The magnification to be used for axis
+#' annotation.
+#' @param axis.lab.cex a numeric value. The magnification to be used for x, y and z 
+#' axis labels.
+#' @param axis.title.cex a numeric value. The magnification to be used for main titles.
+#'
 #' @return a numeric value. It is the summarized synergy score.
 #'    
 #' @author \itemize{
@@ -67,9 +80,12 @@
 #' PlotSynergy(scores, "3D", save.file = TRUE, file.name = c("plot1", "plot2"))
 PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL, 
                         len = 3, legend.start = NULL, legend.end = NULL, 
-                        row.range = NULL, col.range = NULL,
-                        color.low.value = "green", color.high.value = "red", 
-                        file.name = NULL, file.type = "pdf"){
+                        legend.lab.cex = 1, row.range = NULL, col.range = NULL, 
+                        color.low.value = "green", main.title.cex = 1,
+                        axis.lab.cex = 0.8, axis.title.cex = 1, 
+                        color.high.value = "red", 
+                        file.name = NULL, file.type = "pdf",
+                        height = NULL, width = 12){
   # 1. Check input data
   if (!is.list(data)) {
       stop("Input data is not a list format!")
@@ -188,20 +204,21 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL,
       
       
       par1 <- list(arrows = FALSE, distance = c(0.8,0.8,0.8), col = 1,
-                   cex = 0.8, z = list(tick.number = 6),
+                   cex = axis.lab.cex, z = list(tick.number = 6),
                    x=xaxis, y = yaxis)
       zlabs <- list(expression("Synergy score"), rot = 90, 
-                    cex = 1, axis.key.padding = 0)
-      xpar <- list(as.character(drug.col_unit), cex = 1, rot = 20)
-      ypar <- list(as.character(drug.row_unit), cex = 1, rot = -50)
+                    cex = axis.title.cex, axis.key.padding = 0)
+      xpar <- list(as.character(drug.col_unit), cex = axis.title.cex, rot = 20)
+      ypar <- list(as.character(drug.row_unit), cex = axis.title.cex, rot = -50)
       
       fig <- lattice::wireframe(t(mat.tmp),scales = par1, drape = TRUE,
-                          colorkey = list(space = "top",width = 0.5),
+                          colorkey = list(space = "top",width = 0.5, 
+                                          labels = list(cex = legend.lab.cex)),
                           screen = list(z = 30, x = -55),
                           zlab = zlabs, xlab = xpar, ylab = ypar,
                           zlim = c(start.point, end.point),
                           col.regions = col,
-                          main = plot.title,
+                          main = list(label = plot.title, cex = main.title.cex),
                           at = lattice::do.breaks(c(start.point, end.point), 
                                          length(col)),
                           par.settings=list(axis.line=list(col="transparent")),
@@ -212,7 +229,7 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL,
       # grDevices::dev.new(noRStudioGD = TRUE)
       graphics::layout(matrix(c(1, 2), nrow = 2L, ncol = 1L), 
                        heights = c(0.1, 1))
-      graphics::par(mar = c(0, 6.1, 2.1, 4.1))
+      graphics::par(mar = c(0, 8.1, 2.1, 4.1))
       suppressWarnings(graphics::par(mgp = c(3, -1.5, 0)))
       #levels <- seq(start.point, end.point, by = 2)
       #col <- colorpanel(end.point, low = "green", mid = "white", high = "red")
@@ -223,9 +240,11 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL,
                      col = col, border = NA)
       graphics::axis(3,tick = FALSE, at = lattice::do.breaks(c(start.point, 
                                                                end.point), 
-                                      round((end.point - start.point)/10, 2)))
+                                      round((end.point - start.point)/10, 2)),
+                     cex.axis = legend.lab.cex)
       graphics::title(plot.title)
-      graphics::par(mar = c(5.1,4.1,1.1,2.1))
+      graphics::par(mar = c(6.1,6.1,1.1,2.1), cex.axis = axis.lab.cex,
+                    cex.main = main.title.cex)
       suppressWarnings(graphics::par(mgp = c(2,1,0)))
       graphics::plot.new()
       mat.tmp <- t(mat.tmp)
@@ -237,8 +256,8 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL,
       ## grid(dim(c)[1] - 1, dim(c)[2] - 1, col = "gray", lty = "solid", 
       ## lwd = 0.3)
       graphics::box()
-      graphics::mtext(drug.col_unit, 1, cex = 1, padj = 3)
-      graphics::mtext(drug.row_unit, 2, cex = 1, las = 3, padj = -3)
+      graphics::mtext(drug.col_unit, 1, cex = axis.title.cex, padj = 3)
+      graphics::mtext(drug.row_unit, 2, cex = axis.title.cex, padj = -3)
       if(!is.null(row.range)) {
         yconc <- round(row.conc[row.range[1]:row.range[2]], 3)
       } else {
@@ -280,20 +299,21 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL,
       
       
       par1 <- list(arrows=FALSE, distance=c(0.8,0.8,0.8), col = 1,
-                   cex = 0.8, z = list(tick.number = 6),
+                   cex = axis.lab.cex, z = list(tick.number = 6), 
                    x=xaxis, y = yaxis)
       zlabs <- list(expression("Synergy score"), rot = 90, 
-                    cex = 1, axis.key.padding = 0)
-      xpar <- list(as.character(drug.col_unit), cex = 1, rot = 20)
-      ypar <- list(as.character(drug.row_unit), cex = 1, rot = -50)
+                    cex = axis.title.cex, axis.key.padding = 0)
+      xpar <- list(as.character(drug.col_unit), cex = axis.title.cex, rot = 20)
+      ypar <- list(as.character(drug.row_unit), cex = axis.title.cex, rot = -50)
       
-      syn.3d.plot <- lattice::wireframe(t(mat.tmp),scales = par1,
-                       drape = TRUE, colorkey = list(space = "top",width = 0.5),
+      syn.3d.plot <- lattice::wireframe(t(mat.tmp),scales = par1, drape = TRUE,
+                       colorkey = list(space = "top",width = 0.5,
+                                          labels = list(cex = legend.lab.cex)),
                        screen = list(z = 30, x = -55),
                        zlab = zlabs, xlab = xpar, ylab = ypar,
                        zlim = c(start.point, end.point),
                        col.regions = col,
-                       main = plot.title,
+                       main = list(label = plot.title, cex = main.title.cex),
                        at = lattice::do.breaks(c(start.point, end.point), 
                                                length(col)),
                        par.settings = list(axis.line=list(col="transparent")),
@@ -301,7 +321,7 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL,
       # 2d plot
       graphics::layout(matrix(c(1, 2, 3, 3), nrow = 2L, ncol = 2L),
                        heights = c(0.1, 1))
-      graphics::par(mar = c(0, 6.1, 2.1, 4.1))
+      graphics::par(mar = c(0, 8.1, 2.1, 4.1))
       suppressWarnings(graphics::par(mgp = c(3, -0.8, 0)))
       graphics::plot.new()
       graphics::plot.window(ylim = c(0, 1), xlim = range(levels),
@@ -310,9 +330,11 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL,
                      col = col, border = NA)
       graphics::axis(3, tick = FALSE,
                      at = lattice::do.breaks(c(start.point, end.point),
-                                             end.point/10))
+                                             end.point/10),
+                     cex.axis = legend.lab.cex)
       graphics::title(plot.title)
-      graphics::par(mar = c(5.1,4.1,1.1,2.1))
+      graphics::par(mar = c(6.1,6.1,1.1,2.1), cex.axis = axis.lab.cex,
+                    cex.main = main.title.cex)
       suppressWarnings(graphics::par(mgp = c(2,1,0)))
       graphics::plot.new()
       mat.tmp <- t(mat.tmp)
@@ -322,8 +344,8 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL,
                             "", xaxs = "i", yaxs = "i")
       graphics::.filled.contour(x.2D, y.2D, z = mat.tmp, levels, col = col)
       graphics::box()
-      graphics::mtext(drug.col_unit, 1, cex = 1, padj = 3)
-      graphics::mtext(drug.row_unit, 2, cex = 1, las = 3, padj = -3)
+      graphics::mtext(drug.col_unit, 1, cex = axis.title.cex, padj = 3)
+      graphics::mtext(drug.row_unit, 2, cex = axis.title.cex, las = 3, padj = -3)
       if(!is.null(row.range)) {
         yconc <- round(row.conc[row.range[1]:row.range[2]], 3)
       } else {
@@ -353,13 +375,16 @@ PlotSynergy <- function(data, type = "2D", save.file = FALSE, pair.index = NULL,
         i <- i + 1
       }
       # Set width and height according to plot types
-      if (type == "all"){
-        width <- 12
-        height <- 6
-      } else {
-        width <- 10
-        height <- 10
+      if (is.null(height)){
+        if (type == "all"){
+          height <- width/2
+        } else if (type == "2D") {
+          height <- width
+        } else if (type == "3D") {
+          height <- width
+        }
       }
+
       if (!file.type %in% c("jpeg", "bmp", "png", "tiff", "pdf", "svg")){
         warning("Can not save plot in ", file.type, " format. Avaliable formats
                 are 'svg', 'jpeg', 'bmp', 'png', 'tiff',and 'pdf'.")

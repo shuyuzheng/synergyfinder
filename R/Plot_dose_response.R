@@ -33,7 +33,8 @@
 #' @param file.name a character vector. It indicates the file names, if 
 #'   user chose to save the plot to local directory.If it is not defined by
 #'   user, a default name will be assigned.
-#'   
+#' @param width a numeric value. It indicates the width of saved file.
+#' @param height a numeric value. It indicates the height of saved file.
 #' @param ... further graphical parameters from \code{plot} for
 #'   plotting the single drug dose-response curve. Use e.g., cex.lab to change 
 #'   the axis label size and cex.axis to change the tick size of axises. 
@@ -57,7 +58,7 @@ PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
                               color.low.response = "green", color.point = "red", 
                               color.high.response = "red", color.conc = "red", 
                               save.file=FALSE, file.type="pdf", file.name=NULL,
-                              ...) {
+                              width = 12, height = 6, ...) {
   # 1. Check the input data
   if (!is.list(data)) {
     stop("Input data is not a list format!")
@@ -149,7 +150,7 @@ PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
     suppressWarnings(graphics::par(mgp=c(3, .5, 0)))
     x.lab <- paste("Concentration", runit.text, sep = " ")
     graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)",
-                   type = "obs", col = color.point, cex = 1.5, pch = 16)#, ...)
+                   type = "obs", col = color.point, cex = 1.5, pch = 16, ...)
     graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", 
                    type = "none", cex = 1.5, add = TRUE, lwd = 3)
     graphics::title(paste("Dose-response curve for drug:", drug.row, "in Block", 
@@ -162,7 +163,7 @@ PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
     # plot the curve for the col drug
     x.lab <- paste("Concentration", cunit.text, sep = " ")
     graphics::plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)",
-                   type = "obs", col = color.point, cex = 1.5, pch = 16)#, ...)
+                   type = "obs", col = color.point, cex = 1.5, pch = 16, ...)
     graphics::plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)",
                    type = "none", cex = 1.5, add = TRUE, lwd = 3)
     graphics::title(paste("Dose-response curve for drug:", drug.col, "in Block",
@@ -191,8 +192,7 @@ PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
         file <- file.name[i]
         i <- i + 1
       }
-      width <- 12
-      height <- 6
+
       if (!file.type %in% c("jpeg", "bmp", "png", "tiff", "pdf", "svg")){
         warning("Can not save plot in ", file.type, " format. Avaliable formats
                 are 'svg', 'jpeg', 'bmp', 'png', 'tiff',and 'pdf'.")
