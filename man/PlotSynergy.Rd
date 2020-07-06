@@ -12,12 +12,18 @@ PlotSynergy(
   len = 3,
   legend.start = NULL,
   legend.end = NULL,
+  legend.lab.cex = 1,
   row.range = NULL,
   col.range = NULL,
   color.low.value = "green",
+  main.title.cex = 1,
+  axis.lab.cex = 0.8,
+  axis.title.cex = 1,
   color.high.value = "red",
   file.name = NULL,
-  file.type = "pdf"
+  file.type = "pdf",
+  height = NULL,
+  width = 12
 )
 }
 \arguments{
@@ -48,6 +54,9 @@ automatically.}
 defualt, it is NULL so the legend ending point is fixed by the data 
 automatically.}
 
+\item{legend.lab.cex}{a numeric value. The magnification to be used for legend
+labels.}
+
 \item{row.range}{a parameter to specify the starting and ending concentration 
 of the drug on y-axis. Use e.g., c(1, 3) to specify that only from 1st to 
 3rd concentrations of the drug on y-axis are used. By default, it is NULl 
@@ -61,6 +70,14 @@ so all the concentrations are used.}
 \item{color.low.value}{a charactor in R color format. It indicates the 
 color for the synergy score lower than 0. Default setting is "green".}
 
+\item{main.title.cex}{a numeric value. The magnification to be used for axis
+annotation.}
+
+\item{axis.lab.cex}{a numeric value. The magnification to be used for x, y and z 
+axis labels.}
+
+\item{axis.title.cex}{a numeric value. The magnification to be used for main titles.}
+
 \item{color.high.value}{a charactor in R color format. It indicates the 
 color for the synergy score higher than 0. Default setting is "red".}
 
@@ -71,6 +88,13 @@ user, a default name will be assigned.}
 \item{file.type}{a character. It indicates the format of files you want to 
 save as. Default is "pdf". Available values are "jpeg", "bmp", "png", 
 "tiff", "pdf", "svg".}
+
+\item{height}{a numeric value. It indicates the height of the output plot.
+If it is \code{NULL} (default setting), it will be automatically set according
+to the \code{width} and \code{type} parameters. If the \code{type} is "all",
+height = width, otherwise height = width/2.}
+
+\item{width}{a numeric value. It indicates the width of the output plot.}
 }
 \value{
 a numeric value. It is the summarized synergy score.
