@@ -15,6 +15,8 @@ PlotDoseResponse(
   save.file = FALSE,
   file.type = "pdf",
   file.name = NULL,
+  width = 12,
+  height = 6,
   ...
 )
 }
@@ -52,6 +54,10 @@ save as. Default is "pdf". Available values are "jpeg", "bmp", "png",
 \item{file.name}{a character vector. It indicates the file names, if 
 user chose to save the plot to local directory.If it is not defined by
 user, a default name will be assigned.}
+
+\item{width}{a numeric value. It indicates the width of saved file.}
+
+\item{height}{a numeric value. It indicates the height of saved file.}
 
 \item{...}{further graphical parameters from \code{plot} for
 plotting the single drug dose-response curve. Use e.g., cex.lab to change 
