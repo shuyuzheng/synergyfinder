@@ -182,9 +182,9 @@ ZIP <- function(response.mat, quiet = TRUE, drug.row.model = NULL,
   tmp <- data.frame(dose = dose_row)
   updated.col.mat <- response.mat[rownames(response.mat) != "0",
                                   colnames(response.mat) != "0"]
-  if (n.col == 1 & n.row == 1){
-    updated.col.mat <- as.matrix(updated.col.mat)
-  } else{
+  if (n.col == 1 | n.row == 1){
+    updated.col.mat <- matrix(updated.col.mat, nrow = n.row, ncol = n.col)
+  } else {
     for (i in 1:n.col) {
       # nonzero concentrations to take the log
       tmp$response <- updated.col.mat[, i]
@@ -209,9 +209,9 @@ ZIP <- function(response.mat, quiet = TRUE, drug.row.model = NULL,
   tmp <- data.frame(dose = dose_col)
   updated.row.mat <- response.mat[rownames(response.mat) != "0",
                                   colnames(response.mat) != "0"]
-  if (n.col == 1 & n.row == 1){
-    updated.row.mat <- as.matrix(updated.row.mat)
-  } else{
+  if (n.col == 1 | n.row == 1){ # for 2x2 combination matrix
+    updated.row.mat <- matrix(updated.row.mat, nrow = n.row, ncol = n.col)
+  } else {
     for (i in 1:n.row) {
       # nonzero concentrations to take the log
       tmp$response <- updated.row.mat[i, ]

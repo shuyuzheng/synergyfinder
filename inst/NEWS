@@ -1,3 +1,8 @@
+# synergyfinder 2.3.5 (2020-12-01)
+## Changes
+
+* Enable the "ZIP" function to handle the N x 2 or 2 x N drug combination matrices.
+
 # synergyfinder 2.1.2 (2019-11-08)
 ## Changes
 

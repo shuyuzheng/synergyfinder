@@ -23,6 +23,8 @@
 #'   will be imputed by \code{\link{ImputeNA}}. Default is \code{TRUE}.
 #' @param noise a logical value. It indicates whether or not adding noise to
 #'   to the "response" values in the matrix. Default is \code{TRUE}.
+#' @param seed a single value, interpreted as an integer, or NULL. It is the 
+#'   random seed for calculating the noise. Default setting is \code{NULL}
 #' @param correction a character. This argument is extended from the argument 
 #'   \code{method} of \code{\link{CorrectBaseLine}} function. There are three 
 #'   available valuse: \code{non}, \code{part}, \code{all}. 
@@ -56,8 +58,8 @@
 #' # set a random number seed for generating the noises
 #' set.seed(1) 
 #' data <- ReshapeData(mathews_screening_data)
-ReshapeData <- function(data, impute=TRUE, noise=TRUE, correction = "non",
-                        data.type = "viability") {
+ReshapeData <- function(data, impute=TRUE, noise=TRUE, seed = NULL, 
+                        correction = "non", data.type = "viability") {
   # 1. Check the input data
   # Adjust column names
   colnames(data) <- tolower(gsub("([a-z])([A-Z])", "\\1_\\L\\2", 
