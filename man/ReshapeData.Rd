@@ -8,6 +8,7 @@ ReshapeData(
   data,
   impute = TRUE,
   noise = TRUE,
+  seed = NULL,
   correction = "non",
   data.type = "viability"
 )
@@ -20,6 +21,9 @@ will be imputed by \code{\link{ImputeNA}}. Default is \code{TRUE}.}
 
 \item{noise}{a logical value. It indicates whether or not adding noise to
 to the "response" values in the matrix. Default is \code{TRUE}.}
+
+\item{seed}{a single value, interpreted as an integer, or NULL. It is the 
+random seed for calculating the noise. Default setting is \code{NULL}}
 
 \item{correction}{a character. This argument is extended from the argument 
 \code{method} of \code{\link{CorrectBaseLine}} function. There are three 

@@ -125,6 +125,7 @@ ReshapeData <- function(data, impute=TRUE, noise=TRUE, seed = NULL,
         response.mat <- ImputeNA(response.mat)
       }
       if (noise){
+        set.seed(seed)
         response.mat <- AddNoise(response.mat)
       } 
         response.mat <- CorrectBaseLine(response.mat, method = correction)
