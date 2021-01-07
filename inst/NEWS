@@ -1,3 +1,8 @@
+# synergyfinder 2.5.2 (2021-01-07)
+## Changes
+
+* "CorrectBaseLine": Use the minimu value (instead of mean) of the fitted single drug response as the baseline.
+
 # synergyfinder 2.3.5 (2020-12-01)
 ## Changes
 

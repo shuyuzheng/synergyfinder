@@ -1,0 +1,44 @@
+---
+title: "test_plotly"
+author: "Shuyu Zheng"
+date: "12/29/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r cars}
+library(plotly)
+data("mathews_screening_data")
+data <- ReshapeData(mathews_screening_data)
+scores <- CalculateSynergy(data)
+s <- .ExtendedScores(scores$scores[[1]], 3)
+df <- reshape2::melt(s)
+```
+```{r}
+ax <- list(
+  title = "",
+  zeroline = FALSE,
+  showline = FALSE,
+  showticklabels = FALSE,
+  showgrid = FALSE
+)
+scene = list(
+  xaxis = ax,
+  yaxis = ax,
+  zaxis = ax,
+  showlegend = FALSE,
+  camera = list(eye = list(x = -1.25, y = 1.25, z = 1.25)))
+fig <- plot_ly(z = ~s, showscale = FALSE) %>% 
+  layout(scene = scene) %>% 
+  add_contour
+fig
+```
+
+```{r}
+fig <- plot_ly(df, x = ~Var1, y = ~Var2, z = ~value, mode="lines")
+fig
+```
+

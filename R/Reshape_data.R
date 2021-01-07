@@ -305,7 +305,7 @@ CorrectBaseLine <- function(response.mat, method = c("non", "part", "all")){
     drug.col <- ExtractSingleDrug(response.mat, dim = "col")
     drug.col.fit <- suppressWarnings(stats::fitted(FitDoseResponse(drug.col)))
 
-    baseline <- mean(c(min(as.numeric(drug.row.fit)),
+    baseline <- min(c(min(as.numeric(drug.row.fit)),
                        min(as.numeric(drug.col.fit))))
     response.mat[negative.ind] <- vapply(response.mat[negative.ind],
                                          function(x) {
@@ -319,7 +319,7 @@ CorrectBaseLine <- function(response.mat, method = c("non", "part", "all")){
     drug.col <- ExtractSingleDrug(response.mat, dim = "col")
     drug.col.fit <- suppressWarnings(stats::fitted(FitDoseResponse(drug.col)))
 
-    baseline <- mean(c(min(as.numeric(drug.row.fit)),
+    baseline <- min(c(min(as.numeric(drug.row.fit)),
                        min(as.numeric(drug.col.fit))))
     response.mat <- response.mat - ((100 - response.mat) / 100 * baseline)
     return(response.mat)
