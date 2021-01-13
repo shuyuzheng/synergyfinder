@@ -2,7 +2,7 @@
 % Please edit documentation in R/Reshape_data.R
 \name{ReshapeData}
 \alias{ReshapeData}
-\title{Pre-processe the response data for furhter calculation and plot}
+\title{Pre-process the response data for further calculation and plot}
 \usage{
 ReshapeData(
   data,

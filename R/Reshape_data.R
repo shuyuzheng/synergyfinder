@@ -3,13 +3,42 @@
 #
 # Functions in this page:
 #
+# AdjustColumnName: Adjust column names of input data table
 # ReshapeData: pre-process the response data for further calculation and plot.
 # ImputeNear: Impute missing value with nearest values
 # AddNoise: Add noise to response value
 # ExtractSingleDrug: Extract single drug response from matrix
 # CorrectBaseLine: Do base line correction to dose-response matrix.
 
-#' Pre-processe the response data for furhter calculation and plot
+
+#' Adjust column names of input data table
+#' 
+#' This function changes the column names in other format into the snake style.
+#' i.e. block_id, drug_row, drug_col, .etc.
+#'
+#' @param data 
+#'
+#' @return The data frame with the changed column names. 
+#' 
+#' @export
+AdjustColumnName <- function(data){
+  colnames(data) <- tolower(gsub("([a-z])([A-Z])", "\\1_\\L\\2", 
+                                 colnames(data), perl = TRUE))
+  colnames(data) <- gsub("conc_col", "conc_c", colnames(data), perl = TRUE)
+  colnames(data) <- gsub("conc_row", "conc_r", colnames(data), perl = TRUE)
+  
+  colnames(data) <- gsub("drug1", "drug_row", colnames(data), perl = TRUE)
+  colnames(data) <- gsub("drug2", "drug_col", colnames(data), perl = TRUE)
+  colnames(data) <- gsub("conc1", "conc_r", colnames(data), perl = TRUE)
+  colnames(data) <- gsub("conc2", "conc_c", colnames(data), perl = TRUE)
+  colnames(data) <- gsub("conc_unit", "conc_r_unit", colnames(data), perl = TRUE)
+  colnames(data) <- gsub("conc_unit1", "conc_r_unit", colnames(data), perl = TRUE)
+  colnames(data) <- gsub("conc_unit2", "conc_c_unit", colnames(data), perl = TRUE)
+  colnames(data) <- gsub("pair_index", "block_id", colnames(data), perl = TRUE)
+  return(data)
+}
+
+#' Pre-process the response data for further calculation and plot
 #'
 #' A function to transform the response data from data frame format to 
 #' dose-response matrices. Several processes could be chose to add noise, impute
@@ -60,19 +89,20 @@
 #' data <- ReshapeData(mathews_screening_data)
 ReshapeData <- function(data, impute=TRUE, noise=TRUE, seed = NULL, 
                         correction = "non", data.type = "viability") {
-  # 1. Check the input data
-  # Adjust column names
-  colnames(data) <- tolower(gsub("([a-z])([A-Z])", "\\1_\\L\\2", 
-                                 colnames(data), perl = TRUE))
-  colnames(data) <- gsub("conc_col", "conc_c", colnames(data), perl = TRUE)
-  colnames(data) <- gsub("conc_row", "conc_r", colnames(data), perl = TRUE)
+  data <- AdjustColumnName(data)
   # 1.1 check column names
+  
   if (!all(c("block_id", "drug_row", "drug_col", "response", "conc_r", "conc_c",
              "conc_r_unit", "conc_c_unit") %in%
            colnames(data)))
-    stop("The input data must contain the following columns: block_id, ",
-         "drug_row, drug_col, response, conc_r, conc_c, conc_r_unit,",
-         "conc_c_unit")
+    stop("The input data must contain the following columns: (block_id/BlockId/PairIndex), ",
+         "(drug_row/DrugRow/Drug1), (drug_col/DrugCol/Drug2), (response/response),",
+         "(conc_r/ConcRow/Conc1), (conc_c/ConcCol/Conc2), (ConcUnit/conc_r_unit/ConcUnit1)")
+  
+  if (!"conc_c_unit" %in% colnames(data)){
+    data$conc_c_unit <- data$conc_r_unit
+  }
+  
   # 1.2 Check the data type
   if (data.type == "viability") {
     data$response <- 100 - data$response
@@ -82,12 +112,13 @@ ReshapeData <- function(data, impute=TRUE, noise=TRUE, seed = NULL,
     stop("Please tell me the data type of response valuse: 'viability' or ",
          "'inhibition'.")
   }
+  
   # 1.3 Check missing values
   if (!impute & sum(is.na(data$response))) {
     stop("There are missing values in input data. Please run 'ReshapeData' ", 
          "with 'impute=TRUE'.")
   }
-
+  
   # obtain block IDs
   blocks <- unique(data$block_id)
   
