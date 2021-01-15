@@ -1,7 +1,7 @@
 Package: synergyfinder
 Type: Package
 Title: Calculate and Visualize Synergy Scores for Drug Combinations
-Version: 2.5.2
+Version: 2.5.3
 Date: 2020-01-07
 Author: Liye He <liye.he@helsinki.fi>, Jing Tang <jing.tang@helsinki.fi>,
         Shuyu Zheng <shuyu.zheng@helsinki.fi>
@@ -14,7 +14,9 @@ Imports: drc (>= 2.5-12), reshape2 (>= 1.4.1),
 Description: Efficient implementations for all the popular synergy scoring 
     models for drug combinations, including HSA, Loewe, Bliss and ZIP and 
     visualization of the synergy scores as either a two-dimensional or a 
-    three-dimensional interaction surface over the dose matrix.
+    three-dimensional interaction surface over the dose matrix. Based on this
+    package, we also provide a web application (http://synergyfind.org/) for users
+    who prefer more friendly user interface.
 License: Mozilla Public License 2.0
 Encoding: UTF-8
 RoxygenNote: 7.1.1
