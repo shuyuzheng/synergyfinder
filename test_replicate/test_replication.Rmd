@@ -1,0 +1,346 @@
+---
+title: "Test replicate function"
+author: "Shuyu Zheng"
+date: "`r Sys.Date()`"
+output: pdf_document 
+---
+
+# 1. Functions
+
+```{r include=FALSE}
+library(tidyverse)
+library(drc)
+library(synergyfinder)
+# library(TidyComb)
+library(readxl)
+source("./calculate_synergy_score.R")
+```
+```{r}
+repResponse <- function(data){
+  sum.data <- data %>% 
+    dplyr::group_by(PairIndex, Conc1, Conc2) %>% 
+    dplyr::summarise(mean = mean(Response),
+                     sd = sd(Response),
+                     n = n(), .groups = "keep") %>% 
+    mutate(sem = sd/sqrt(n)) %>% 
+    mutate(error = qt(0.975,df=n-1)*sem,
+           lower_95CI = mean - error,
+           upper_95CI = mean + error) 
+}
+
+repSynergy <- function(data, method){
+  pair <- unique(data$PairIndex)
+  scores <- NULL
+  for (p in pair){
+    tmp <- dplyr::filter(data, PairIndex == p)
+    repN <- tmp %>% 
+      dplyr::group_by(PairIndex, Conc1, Conc2) %>% 
+      dplyr::summarise(count = n(), .groups = "keep") %>%
+      ungroup() %>% 
+      dplyr::select(count) %>% 
+      unique() %>% 
+      unlist()
+    if (length(unique(repN)) == 1){
+      rest <- tmp %>% 
+        mutate(index = seq(1, n()))
+      response <- NULL
+      for (i in seq(1, (repN - 1))){
+        t <- rest %>% 
+          dplyr::group_by(PairIndex, Conc1, Conc2) %>% 
+          dplyr::sample_n(1) %>% 
+          dplyr::mutate(block_id = i)
+        response <- rbind.data.frame(response, t)
+        rest <- rest %>% 
+          dplyr::filter(!index %in% t$index)
+      }
+      response <- rbind.data.frame(response, dplyr::mutate(rest, block_id = repN))
+      # Calculate scoree
+      blocks <- unique(response$block_id)
+      score <- NULL
+      for (i in blocks){
+        response.mat <- reshape2::acast(Conc1 ~ Conc2, data = response[which(response$block_id == i),], 
+                                        value.var = "Response")
+        t <- switch(method,
+                        ZIP = ZIP(response.mat),
+                        HSA = HSA(response.mat),
+                        Bliss = Bliss(response.mat),
+                        Loewe = Loewe(response.mat))
+        t <- reshape2::melt(t)
+        colnames(t) <- c("Conc1", "Conc2", "synergy")
+        score <- rbind.data.frame(score, t)
+      }
+      sum.score <- score %>% 
+        dplyr::group_by(Conc1, Conc2) %>% 
+        dplyr::summarise(mean = mean(synergy),
+                         sd = sd(synergy),
+                         n = n(), .groups = "keep") %>% 
+        mutate(sem = sd/sqrt(n)) %>% 
+        mutate(error = qt(0.975,df=n-1)*sem,
+               lower_95CI = mean - error,
+               upper_95CI = mean + error) %>% 
+        mutate(PairIndex = p)
+      scores <- rbind.data.frame(scores, sum.score)
+    }
+  }
+  return(scores)
+}
+
+plot2DrugRes <- function(data.plot, block = 1, metric = NULL, color.conc = "black",
+                         color.low.response = "green", color.high.response = "red"){
+  drug.pairs <- data.plot$drug.pair
+
+  response.df<- data.plot$response
+    # Transform conc into factor
+  response.df[, c("conc_r", "conc_c")] <-
+    lapply(response.df[, c("conc_r", "conc_c")], factor)
+  
+  # Round the response values and their statistics
+  response.df[, !grepl("(block_id|conc)", colnames(response.df), perl = TRUE)] <-
+    sapply(response.df[, !grepl("(block_id|conc)", colnames(response.df), perl = TRUE)],
+           signif, digits = 3)
+  if (!is.null(metric)){
+    avail_metrics <- grep("(response|conc_r|conc_c|block_id)", 
+                          colnames(response.df), perl = TRUE, value = TRUE,
+                          invert = TRUE)
+    if (length(avail_metrics) == 0){
+      warning("The input dataset doesn't contain the statistic metrics for replicates.")
+      response.df <- response.df %>% 
+        dplyr::mutate(text = response)
+    } else {
+      if (metric %in% colnames(response.df)){
+        response.df <- response.df %>% 
+          dplyr::mutate(text = paste0(response, "\n \u00B1 ", !!as.name(metric)))
+      } else {
+        warning("Specified metric '", metric, "' is not available. Available ",
+                "metrics are: '", paste(avail_metrics, collapse = "', '"), "'")
+        response.df <- response.df %>% 
+          dplyr::mutate(text = response)
+      }
+    }
+  } else {
+    response.df <- response.df %>% 
+      dplyr::mutate(text = response)
+  }
+
+  plot.title <- paste("Dose-response matrix (inhibition)", "\nBlockID:",
+                      block, sep = " ")
+  
+  # plot heatmap for dose-response matrix
+  axis.x.text <- signif(as.numeric(levels(response.df$conc_c)), 4)
+  axis.y.text <- signif(as.numeric(levels(response.df$conc_r)), 4)
+  dose.response.p <- ggplot2::ggplot(data = response.df, 
+                                     aes(x=conc_c, y=conc_r, fill=response)) +
+    ggplot2::geom_tile() +
+    ggplot2::geom_text(ggplot2::aes(label = text), size = 2.4) +
+    ggplot2::scale_fill_gradient2(low = color.low.response, 
+                                  high = color.high.response,
+                                  midpoint = 0, name = "Inhibition (%)") +
+    ggplot2::scale_x_discrete(labels = axis.x.text) +
+    ggplot2::scale_y_discrete(labels = axis.y.text) +
+    ggplot2::xlab(paste0(drug.pairs$drug_col, " (", drug.pairs$conc_c_unit, ")")) +
+    ggplot2::ylab(paste0(drug.pairs$drug_row, " (", drug.pairs$conc_r_unit, ")"))
+  
+  # Add the title for heatmap
+  dose.response.p <- dose.response.p + 
+    ggplot2::ggtitle(plot.title) + 
+    ggplot2::theme(plot.title = ggplot2::element_text(size = 20))
+  
+  # Set label's style of heatmap
+  dose.response.p <- dose.response.p + 
+    ggplot2::theme(axis.text.x = ggplot2::element_text(color = color.conc, 
+                                                       face = "bold", 
+                                                       size = 15),
+                   axis.text.y = ggplot2::element_text(color = color.conc,
+                                                       face = "bold",
+                                                       size = 15),
+                   axis.title = ggplot2::element_text(size = 15))
+  return(dose.response.p)
+}
+```
+
+# 1. Caculate statistics for response (%inhibition) value
+
+```{r include=FALSE}
+data <- readxl::read_xlsx("./ReplExample.xlsx")
+
+res <- repResponse(data)
+
+```
+
+# 2. Visualize dose response
+
+Plotting function requires a input data (`data.plot`). It is a list contains 2 data frames for **only one block**:
+
+1. **data.pairs** must contain columns:
+  * drug_row
+  * drug_col
+  * conc_r_unit
+  * conc_c_unit
+  
+2. **response** must contain columns:
+  * conc_r
+  * conc_c
+  * response (main value which will be plotted in the heatmap)
+  * ... several columns for the response value. 
+
+```{r include=FALSE}
+plot.block <- 1 # Select the block_id 
+plot.metric <- "sd" # Select the metric. It must be one of the column name in the data.plot$response table
+```
+
+```{r echo=FALSE}
+# prepare input list
+drug.pairs <- data %>% 
+  dplyr::select(block_id = PairIndex, drug_row = Drug1, drug_col = Drug2, conc_r_unit = ConcUnit) %>% 
+  dplyr::filter(block_id == plot.block) %>% 
+  unique() %>% 
+  dplyr::mutate(conc_c_unit = conc_r_unit)
+
+response.df <- res %>% 
+  dplyr::rename(block_id = PairIndex, conc_r = Conc1, conc_c = Conc2, response = mean) %>% 
+  filter(block_id == plot.block)
+
+data.plot <- list(drug.pairs = drug.pairs,
+                  response = response.df)
+
+p <- plot2DrugRes(data.plot, block = plot.block, metric = plot.metric)
+p
+```
+
+# 3. Calculate synergy scores
+
+```{r include=FALSE, warning=FALSE}
+scores <- data %>% 
+  dplyr::select(PairIndex, Conc1, Conc2) %>%
+  unique()
+
+for (s in  c("ZIP", "Loewe", "Bliss", "HSA")){
+  tmp <- repSynergy(data, s)
+  colnames(tmp)[which(!colnames(tmp) %in% c("PairIndex", "Conc1", "Conc2"))] <- paste(s, colnames(tmp)[which(!colnames(tmp) %in% c("PairIndex", "Conc1", "Conc2"))], sep = "_" )
+  scores <- left_join(scores, tmp, by = c("PairIndex", "Conc1", "Conc2"))
+}
+
+table <- res %>% 
+  dplyr::select("PairIndex", "Conc1", "Conc2", mean, sd, n, sem) %>% 
+  left_join(dplyr::select(scores, "PairIndex", "Conc1", "Conc2", Bliss_mean, ZIP_mean, HSA_mean, Loewe_mean))
+table_all <- res %>% 
+  dplyr::select("PairIndex", "Conc1", "Conc2", mean, sd, n, sem) %>% 
+  left_join(scores, by = c("PairIndex", "Conc1", "Conc2"))
+write.csv(table_all, "synergy_score_statistics.csv", row.names = FALSE)
+```
+
+# 4. Visualize synergy scores
+
+```{r include=FALSE}
+plot.block <- 1 # Select the block_id 
+plot.score <- "ZIP" # Select the score for ploting: "ZIP", "HSA", "Loewe", "Bliss"
+plot.metric <- "error" # Select the metric. It must be one of the column name in the data.plot$response table
+```
+
+```{r echo=FALSE}
+# prepare input list
+drug.pairs <- data %>% 
+  dplyr::select(block_id = PairIndex, drug_row = Drug1, drug_col = Drug2, conc_r_unit = ConcUnit) %>% 
+  dplyr::filter(block_id == plot.block) %>% 
+  unique() %>% 
+  dplyr::mutate(conc_c_unit = conc_r_unit)
+
+response.df <- table_all %>% 
+  dplyr::select(block_id = PairIndex, conc_r = Conc1, conc_c = Conc2, response = !!as.name(paste0(plot.score, "_mean")), colnames(table_all)[grepl(plot.score, colnames(table_all))]) %>% 
+  filter(block_id == plot.block)
+colnames(response.df) <- gsub(paste0(plot.score, "_"), "", colnames(response.df))
+data.plot <- list(drug.pairs = drug.pairs,
+                  response = response.df)
+
+p <- plot2DrugRes(data.plot, block = plot.block, metric = plot.metric)
+p
+```
+
+
+# 5. table from SynergyFinder 2
+
+```{r include=FALSE}
+scores2 <-  data %>% 
+  dplyr::select("PairIndex", "Conc1", "Conc2") %>%
+  unique()
+for (s in  c("ZIP", "Loewe", "Bliss", "HSA")){
+  file <- paste0("result_", s, "_2021-01-07.xlsx")
+  tmp <- readxl::read_xlsx(file)
+  tmp <- dplyr::select(tmp, "PairIndex", "Conc1", "Conc2", Synergy)
+  colnames(tmp)[which(colnames(tmp) =="Synergy")] <- paste(s, colnames(tmp)[which(colnames(tmp) =="Synergy")], sep = "_" )
+  scores2 <- full_join(scores2, tmp, by = c("PairIndex", "Conc1", "Conc2"))
+}
+
+table2 <- readxl::read_xlsx(file) %>% 
+  dplyr::select(-Synergy, -concUnit, -Drug1, -Drug2) %>% 
+  left_join(scores2, by = c("PairIndex", "Conc1", "Conc2"))
+```
+
+# 6. Compare
+
+```{r include=FALSE}
+diff <- table %>% 
+  full_join(table2, by = c("PairIndex", "Conc1", "Conc2"))
+```
+
+## Response mean
+
+```{r echo=FALSE}
+cat("Maximum absolute difference: ", max(abs(diff$mean - diff$Relative_inhibition)), "\n")
+cor.test(diff$mean, diff$Relative_inhibition)
+plot(diff$mean, diff$Relative_inhibition, xlab = "synergyfinder", ylab = "synergyfinder2")
+```
+
+## Response SD
+
+```{r echo=FALSE}
+cat("SD: \n")
+cat("Maximum absolute difference: ", max(abs(diff$sd - diff$SD)), "\n")
+cor.test(diff$sd, diff$SD)
+plot(diff$sd, diff$SD, xlab = "synergyfinder", ylab = "synergyfinder2")
+```
+
+## Response SEM
+
+```{r echo=FALSE}
+cat("SEM: \n")
+cat("Maximum absolute difference: ", max(abs(diff$sem - diff$SEM)), "\n")
+cor.test(diff$sem, diff$SEM)
+plot(diff$sem, diff$SEM, xlab = "synergyfinder", ylab = "synergyfinder2")
+```
+
+## ZIP
+
+```{r echo=FALSE}
+cat("ZIP: \n")
+cat("Maximum absolute difference: ", max(abs(diff$ZIP_mean - diff$ZIP_Synergy)), "\n")
+cor.test(diff$ZIP_mean, diff$ZIP_Synergy)
+plot(diff$ZIP_mean, diff$ZIP_Synergy, xlab = "synergyfinder", ylab = "synergyfinder2")
+```
+
+## HSA
+
+```{r echo=FALSE}
+cat("HSA: \n")
+cat("Maximum absolute difference: ", max(abs(diff$HSA_mean - diff$HSA_Synergy)), "\n")
+cor.test(diff$HSA_mean, diff$HSA_Synergy)
+plot(diff$HSA_mean, diff$HSA_Synergy, xlab = "synergyfinder", ylab = "synergyfinder2")
+```
+
+## Bliss
+
+```{r echo=FALSE}
+cat("Bliss: \n")
+cat("Maximum absolute difference: ", max(abs(diff$Bliss_mean - diff$Bliss_Synergy)), "\n")
+cor.test(diff$Bliss_mean, diff$Bliss_Synergy)
+plot(diff$Bliss_mean, diff$Bliss_Synergy, xlab = "synergyfinder", ylab = "synergyfinder2")
+```
+
+## Loewe
+
+```{r echo=FALSE}
+cat("Loewe: \n")
+cat("Maximum absolute difference: ", max(abs(diff$Loewe_mean - diff$Loewe_Synergy)), "\n")
+cor.test(diff$Loewe_mean, diff$Loewe_Synergy)
+plot(diff$Loewe_mean, diff$Loewe_Synergy, xlab = "synergyfinder", ylab = "synergyfinder2")
+```
