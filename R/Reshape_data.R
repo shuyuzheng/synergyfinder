@@ -86,6 +86,8 @@ AdjustColumnName <- function(data){
 #'     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 #'  }
 #'  
+#' @importFrom magrittr %>%
+#'  
 #' @export
 #' 
 #' @examples
@@ -183,10 +185,10 @@ ReshapeData <- function(data, impute=TRUE, noise=TRUE, seed = NULL,
       }
       if ("replicate.response" %in% names(data)){ 
         data$replicate.response <- data$replicate.response %>% 
-          left_join(tmp.df, by = c("block_id", "conc1", "conc2"))
+          dplyr::left_join(tmp.df, by = c("block_id", "conc1", "conc2"))
       }
       data$response.df <- data$response.df %>% 
-        left_join(tmp.df, by = c("block_id", "conc1", "conc2"))
+        dplyr::left_join(tmp.df, by = c("block_id", "conc1", "conc2"))
     }
   }
   return(data)
@@ -306,27 +308,19 @@ ExtractSingleDrug <- function(response.mat, dim = "row") {
   return(single.drug)
 }
 
-ExtractSingleDrugDf <- function(response.df, conc.name = "conc_r") {
+ExtractSingleDrugDf <- function(response.df, conc.name) {
   other.conc <- grep("(conc)", colnames(response.df), perl = TRUE, value = TRUE)
   other.conc <- other.conc[other.conc != conc.name]
-  tmp.df <- response.df %>% 
+  single.drug <- response.df %>% 
     dplyr::ungroup() %>% 
-    dplyr::filter(across(!!as.name(other.conc), equeal))
-    
+    dplyr::rowwise() %>% 
+    dplyr::mutate(conc_sum = ifelse(length(other.conc) == 1,
+                                    !!as.name(other.conc),
+                                    sum(c(!!as.name(other.conc))))) %>% 
+    #dplyr::mutate(conc_sum = sum(c(conc1, conc2))) %>% 
+    dplyr::filter(conc_sum == 0) %>% 
+    dplyr::select(dose = !!as.name(conc.name), response = response)
   
-  
-  
-  ###########################################
-
-  single.drug <- data.frame(response = response.mat[, dose_col == 0],
-                              dose = dose_row)
-  } else if (dim == "col") {
-    single.drug <- data.frame(response = response.mat[dose_row == 0, ],
-                              dose = dose_col)
-  } else {
-    stop("Values for 'dim' should be eighther 'row' or 'col'!")
-  }
-  rownames(single.drug) <- NULL
   return(single.drug)
 }
 
@@ -398,48 +392,48 @@ CorrectBaseLine <- function(response.mat, method = c("non", "part", "all")){
     return(response.mat)
   }
 }
-
-ReshapeDataMultiDrug <- function(data, noise=TRUE, seed = NULL, data.type = "viability") {
-  data <- AdjustColumnName(data)
-  # 1.1 check column names
-  
-  if (!all(c("block_id", "drug1", "drug2", "drug3", "response", "conc1", "conc2", "conc3",
-             "conc_unit1") %in%
-           colnames(data)))
-    stop("The input data must contain the following columns: (block_id/BlockId/PairIndex), ",
-         "(Drug1/drug1), (Drug2/drug2), (Drug3/drug3), (response/Response), (Conc1/conc1), ",
-         "(Conc2/conc2), (Conc3/conc3), (ConcUnit/ConcUnit1,ConcUnit2,ConcUnit3).")
-  
-  # 1.2 Check the data type
-  if (data.type == "viability") {
-    data$response <- 100 - data$response
-  } else if (data.type == "inhibition") {
-    data <- data
-  } else {
-    stop("Please tell me the data type of response valuse: 'viability' or ",
-         "'inhibition'.")
-  }
-  
-  # obtain block IDs
-  blocks <- unique(data$block_id)
-  
-  # 2. Create containers
-  # 2.1 List dose.response.mats for storing all the dose-response matrices.
-  #     Setting the block_id as the name of each element.
-  dose.response.mats <- vector(mode="list", length=length(blocks))
-  names(dose.response.mats) <- blocks
-  
-  
-  # 2.3 Data frame drug.pairs for storing all the drug name, concentration unit.
-  drug.pairs <- unique(data[, !grepl("(response|conc\\d)", colnames(data), perl = TRUE)])
-  
-  # 3. Reshape the data
-  for (block in blocks) {
-    response.mat <- data[data$block_id == block, grepl("(response|conc\\d)", colnames(data), perl = TRUE)]
-    block <- as.character(block)
-    # save dose-response matrix
-    dose.response.mats[[block]] <- response.mat
-  }
-  return(list(dose.response.mats = dose.response.mats, 
-                drug.pairs = drug.pairs))
-}
+# 
+# ReshapeDataMultiDrug <- function(data, noise=TRUE, seed = NULL, data.type = "viability") {
+#   data <- AdjustColumnName(data)
+#   # 1.1 check column names
+#   
+#   if (!all(c("block_id", "drug1", "drug2", "drug3", "response", "conc1", "conc2", "conc3",
+#              "conc_unit1") %in%
+#            colnames(data)))
+#     stop("The input data must contain the following columns: (block_id/BlockId/PairIndex), ",
+#          "(Drug1/drug1), (Drug2/drug2), (Drug3/drug3), (response/Response), (Conc1/conc1), ",
+#          "(Conc2/conc2), (Conc3/conc3), (ConcUnit/ConcUnit1,ConcUnit2,ConcUnit3).")
+#   
+#   # 1.2 Check the data type
+#   if (data.type == "viability") {
+#     data$response <- 100 - data$response
+#   } else if (data.type == "inhibition") {
+#     data <- data
+#   } else {
+#     stop("Please tell me the data type of response valuse: 'viability' or ",
+#          "'inhibition'.")
+#   }
+#   
+#   # obtain block IDs
+#   blocks <- unique(data$block_id)
+#   
+#   # 2. Create containers
+#   # 2.1 List dose.response.mats for storing all the dose-response matrices.
+#   #     Setting the block_id as the name of each element.
+#   dose.response.mats <- vector(mode="list", length=length(blocks))
+#   names(dose.response.mats) <- blocks
+#   
+#   
+#   # 2.3 Data frame drug.pairs for storing all the drug name, concentration unit.
+#   drug.pairs <- unique(data[, !grepl("(response|conc\\d)", colnames(data), perl = TRUE)])
+#   
+#   # 3. Reshape the data
+#   for (block in blocks) {
+#     response.mat <- data[data$block_id == block, grepl("(response|conc\\d)", colnames(data), perl = TRUE)]
+#     block <- as.character(block)
+#     # save dose-response matrix
+#     dose.response.mats[[block]] <- response.mat
+#   }
+#   return(list(dose.response.mats = dose.response.mats, 
+#                 drug.pairs = drug.pairs))
+# }

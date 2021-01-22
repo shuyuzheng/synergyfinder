@@ -13,6 +13,6 @@ AdjustColumnName(data)
 The data frame with the changed column names.
 }
 \description{
-This function changes the column names in other format into the snake style.
-i.e. block_id, drug_row, drug_col, .etc.
+This function changes the column names in other format into the style:
+block_id, drug1, drug2, conc1, conc2, response, conc_unit1, conc_unit2.
 }

@@ -4,7 +4,7 @@ repResponse <- function(data){
                                               colnames(data$response.df))]) %>% 
     dplyr::summarise(sd = sd(response),
                      response = mean(response),
-                     n = n(), .groups = "keep")
+                     n = dplyr::n(), .groups = "keep")
   rep_block <- unique(sum.rep$block_id[which(sum.rep$n > 1)])
   if (length(rep_block) > 1){
     data[['replicate.response']] <- sum.rep %>% 

@@ -53,8 +53,10 @@ dose-response matrices. Several processes could be chose to add noise, impute
 missing values or correct base line to the dose-response matrix.
 }
 \details{
-The input data must contain the following columns: block_id, 
-  drug_row, drug_col, response, conc_r, conc_c, conc_r_unit, conc_c_unit.
+The input data must contain the following columns: (block_id/BlockId/PairIndex),
+(drug_row/DrugRow/Drug1), (drug_col/DrugCol/Drug2), (response/Response),
+(conc_r/ConcRow/Conc1), (conc_c/ConcCol/Conc2), and (ConcUnit/conc_r_unit, 
+conc_c_unit/ConcUnit1, ConcUnit2, ConcUnit3)
 }
 \examples{
 data("mathews_screening_data")

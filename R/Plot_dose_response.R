@@ -55,7 +55,7 @@
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
 #' PlotDoseResponse(data)
-PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
+PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL, metric = NULL,
                               color.low.response = "green", color.point = "red", 
                               color.high.response = "red", color.conc = "red", 
                               save.file=FALSE, file.type="pdf", file.name=NULL,
@@ -100,97 +100,40 @@ PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
   
   i <- 1
   for (block in blocks) {
-
-    response <- response.df[which(response.df$block_id == block), ] %>% 
-      rename(conc_r = conc1, conc_c = conc2)
-    
-    drug.pairs <- data$drug.pairs[which(data$drug.pairs$block_id == block), ] %>% 
-      rename(drug_row = drug1, drug_col = drug2, conc_unit_r = conc_unit1,
-             conc_unit_c = conc_unit2)
-    
+    # generate data.plot list
+    response <- response.df[which(response.df$block_id == block), ]
+    drug.pairs <- data$drug.pairs[which(data$drug.pairs$block_id == block), ]
     data.plot <- list(response = response,
                       drug.pairs = drug.pairs) 
+    
+    # ggplot object for heatmap
+    dose.response.p <- heatmap2D(data.plot, metric = metric,
+                                 color.conc = color.conc,
+                                 color.low.response = color.low.response,
+                                 color.high.response = color.high.response)
+    graphics::plot.new()
+    graphics::layout(matrix(c(1, 3, 2, 3), 2, 2, byrow = TRUE))
 
-    # plot.title <- paste("Dose-response matrix (inhibition)", "\nBlockID:",
-    #                       block, sep = " ")
-    # 
-    # # plot heatmap for dose-response matrix
-    # axis.x.text <- signif(as.numeric(levels(data.plot$conc_c)), 4)
-    # axis.y.text <- signif(as.numeric(levels(data.plot$conc_r)), 4)
-    # dose.response.p <- ggplot2::ggplot(data = data.plot, 
-    #                                 aes(x=conc_c, y=conc_r, fill=Inhibition)) +
-    #   ggplot2::geom_tile() +
-    #   ggplot2::geom_text(ggplot2::aes(label = Inhibition)) +
-    #   ggplot2::scale_fill_gradient2(low = color.low.response, 
-    #                                 high = color.high.response,
-    #                                 midpoint = 0, name = "Inhibition (%)") +
-    #   ggplot2::scale_x_discrete(labels = axis.x.text) +
-    #   ggplot2::scale_y_discrete(labels = axis.y.text) +
-    #   ggplot2::xlab(paste0(drug.pairs$drug2, " (", drug.pairs$conc_unit2, ")")) +
-    #   ggplot2::ylab(paste0(drug.pairs$drug1, " (", drug.pairs$conc_unit1, ")"))
-    # 
-    # # Add the title for heatmap
-    # dose.response.p <- dose.response.p + 
-    #   ggplot2::ggtitle(plot.title) + 
-    #   ggplot2::theme(plot.title = ggplot2::element_text(size = 20))
-    # 
-    # # Set label's style of heatmap
-    # dose.response.p <- dose.response.p + 
-    #   ggplot2::theme(axis.text.x = ggplot2::element_text(color = color.conc, 
-    #                                                      face = "bold", 
-    #                                                      size = 15),
-    #                  axis.text.y = ggplot2::element_text(color = color.conc,
-    #                                                      face = "bold",
-    #                                                      size = 15),
-    #                  axis.title = ggplot2::element_text(size = 15))
-    # 
-    #  
-    # # Fit model for the row drug
-    # drug.row.response <- ExtractSingleDrug(response.mat, dim = "row")
-    # drug.row.model <- FitDoseResponse(drug.row.response)#, ...)
-    # 
-    # graphics::layout(matrix(c(1, 3, 2, 3), 2, 2, byrow = TRUE))
-    # # plot the curve for the row drug
-    # suppressWarnings(graphics::par(mgp=c(3, .5, 0)))
-    # x.lab <- paste0("Concentration (", drug.pairs$conc_unit1, ")")
-    # graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)",
-    #                type = "obs", col = color.point, cex = 1.5, pch = 16, ...)
-    # graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", 
-    #                type = "none", cex = 1.5, add = TRUE, lwd = 3)
-    # graphics::title(paste("Dose-response curve for drug:", drug.row, "in Block", 
-    #                      block), cex.main = 1)
-    # 
-    # # Fit model for the col drug
-    # drug.col.response <- ExtractSingleDrug(response.mat, dim = "col")
-    # drug.col.model <- FitDoseResponse(drug.col.response)#, ...)
-    # 
-    # # plot the curve for the col drug
-    # x.lab <- paste0("Concentration (", drug.pairs$conc_unit2, ")")
-    # graphics::plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)",
-    #                type = "obs", col = color.point, cex = 1.5, pch = 16, ...)
-    # graphics::plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)",
-    #                type = "none", cex = 1.5, add = TRUE, lwd = 3)
-    # graphics::title(paste("Dose-response curve for drug:", drug.col, "in Block",
-    #                       block), cex.main = 1)
-    # 
-    # graphics::plot.new()
-    # #vps <- baseViewports()
-    # #pushViewport()
-    # print(dose.response.p, vp = grid::viewport(height = grid::unit(1, "npc"), 
-    #                                            width = grid::unit(0.5, "npc"), 
-    #                                            just = c("left","top"),
-    #                                            y = 1, x = 0.5))
-    # #popViewport()
-    # merge.plot <- grDevices::recordPlot()
+    curve1D(data.plot, drug = "drug1")
+    curve1D(data.plot, drug = "drug2")
+    #vps <- baseViewports()
+    #pushViewport()
+    print(dose.response.p, vp = grid::viewport(height = grid::unit(1, "npc"), 
+                                               width = grid::unit(0.6, "npc"), 
+                                               just = c("left","top"),
+                                               y = 1, x = 0.4))
+    #popViewport()
+    merge.plot <- grDevices::recordPlot()
+    
     plots[[block]] <- merge.plot
     if(save.file) {
       if(is.null(file.name)){
         if (adjusted) {
-          file <- paste(drug.row, drug.col, "adjusted_dose_response_block",
-                            block, sep = "_")
+          file <- paste(drug.pairs$drug1, drug.pairs$drug2, "adjusted_dose_response_block",
+                        drug.pairs$block_id, sep = "_")
         } else {
-          file <- paste(drug.row, drug.col, "original_dose_response_block",
-                            block, sep = "_")
+          file <- paste(drug.pairs$drug1, drug.pairs$drug2,"original_dose_response_block",
+                        drug.pairs$block_id, sep = "_")
         }
       } else {
         file <- file.name[i]
@@ -224,19 +167,27 @@ PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL,
  return(NULL)
 }
 
-plot2DrugRes <- function(data.plot, metric = NULL, color.conc = "black"){
+# 2 drugs plot ------------------------------------------------------------
+
+
+heatmap2D <- function(data.plot, metric = NULL, color.conc = "black",
+                      color.low.response = "green",
+                      color.high.response = "red"){
   drug.pairs <- data.plot$drug.pair
+  data.plot <- data.plot$response
   
   # Transform conc into factor
-  response.df[, c("conc_r", "conc_c")] <- lapply(response.df[, c("conc_r", "conc_c")], factor)
+  data.plot[, c("conc1", "conc2")] <- lapply(data.plot[, c("conc1", "conc2")],
+                                                 factor)
   # Round the response values and their statistics
-  response.df[, !grepl("(block_id|conc)", colnames(response.df), perl = TRUE)] <- sapply(response.df[, !grepl("(block_id|conc)", colnames(response.df), perl = TRUE)],
-                                                                                         signif, digits = 3)
-  data.plot <- data.plot$response
+  values <- grep("(conc1|conc2|block_id)", colnames(data.plot), perl = TRUE,
+                 value = TRUE, invert = TRUE)
+  data.plot[, values] <- 
+    sapply(data.plot[, values],
+           signif, digits = 3)
+
   if (!is.null(metric)){
-    avail_metrics <- grep("(response|conc_r|conc_c|block_id)", 
-                          colnames(data.plot), perl = TRUE, value = TRUE,
-                          invert = TRUE)
+    avail_metrics <- values[which(values != "response")]
     if (length(avail_metrics) == 0){
       warning("The input dataset doesn't contain the statistic metrics for replicates.")
       data.plot <- data.plot %>% 
@@ -244,7 +195,7 @@ plot2DrugRes <- function(data.plot, metric = NULL, color.conc = "black"){
     } else {
       if (metric %in% colnames(data.plot)){
         data.plot <- data.plot %>% 
-          dplyr::mutate(text = paste0(response, "\n +-", !!as.name(metric)))
+          dplyr::mutate(text = paste0(response, "\n \u00B1", !!as.name(metric)))
       } else {
         warning("Specified metric '", metric, "' is not available. Available ",
                 "metrics are: '", paste(avail_metrics, collapse = "', '"), "'")
@@ -258,13 +209,13 @@ plot2DrugRes <- function(data.plot, metric = NULL, color.conc = "black"){
   }
 
   plot.title <- paste("Dose-response matrix (inhibition)", "\nBlockID:",
-                      block, sep = " ")
+                      drug.pairs$block_id, sep = " ")
   
   # plot heatmap for dose-response matrix
-  axis.x.text <- signif(as.numeric(levels(data.plot$conc_c)), 4)
-  axis.y.text <- signif(as.numeric(levels(data.plot$conc_r)), 4)
+  axis.x.text <- signif(as.numeric(levels(data.plot$conc2)), 4)
+  axis.y.text <- signif(as.numeric(levels(data.plot$conc1)), 4)
   dose.response.p <- ggplot2::ggplot(data = data.plot, 
-                                     aes(x=conc_c, y=conc_r, fill=response)) +
+                                     aes(x=conc2, y=conc1, fill=response)) +
     ggplot2::geom_tile() +
     ggplot2::geom_text(ggplot2::aes(label = text)) +
     ggplot2::scale_fill_gradient2(low = color.low.response, 
@@ -272,13 +223,13 @@ plot2DrugRes <- function(data.plot, metric = NULL, color.conc = "black"){
                                   midpoint = 0, name = "Inhibition (%)") +
     ggplot2::scale_x_discrete(labels = axis.x.text) +
     ggplot2::scale_y_discrete(labels = axis.y.text) +
-    ggplot2::xlab(paste0(drug.pairs$drug_col, " (", drug.pairs$conc_unit_c, ")")) +
-    ggplot2::ylab(paste0(drug.pairs$drug_row, " (", drug.pairs$conc_unit_r, ")"))
+    ggplot2::xlab(paste0(drug.pairs$drug2, " (", drug.pairs$conc_unit2, ")")) +
+    ggplot2::ylab(paste0(drug.pairs$drug1, " (", drug.pairs$conc_unit1, ")"))
   
   # Add the title for heatmap
   dose.response.p <- dose.response.p + 
     ggplot2::ggtitle(plot.title) + 
-    ggplot2::theme(plot.title = ggplot2::element_text(size = 20))
+    ggplot2::theme(plot.title = ggplot2::element_text(size = 15))
   
   # Set label's style of heatmap
   dose.response.p <- dose.response.p + 
@@ -289,43 +240,59 @@ plot2DrugRes <- function(data.plot, metric = NULL, color.conc = "black"){
                                                        face = "bold",
                                                        size = 15),
                    axis.title = ggplot2::element_text(size = 15))
-  
-  
-  # Fit model for the row drug
-  drug.row.response <- ExtractSingleDrugDf(response.mat, dim = "row")
-  drug.row.model <- FitDoseResponse(drug.row.response)#, ...)
-  
-  graphics::layout(matrix(c(1, 3, 2, 3), 2, 2, byrow = TRUE))
-  # plot the curve for the row drug
-  suppressWarnings(graphics::par(mgp=c(3, .5, 0)))
-  x.lab <- paste0("Concentration (", drug.pairs$conc_unit1, ")")
-  graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)",
-                 type = "obs", col = color.point, cex = 1.5, pch = 16, ...)
-  graphics::plot(drug.row.model, xlab = x.lab, ylab = "Inhibition (%)", 
-                 type = "none", cex = 1.5, add = TRUE, lwd = 3)
-  graphics::title(paste("Dose-response curve for drug:", drug.row, "in Block", 
-                        block), cex.main = 1)
-  
-  # Fit model for the col drug
-  drug.col.response <- ExtractSingleDrug(response.mat, dim = "col")
-  drug.col.model <- FitDoseResponse(drug.col.response)#, ...)
-  
-  # plot the curve for the col drug
-  x.lab <- paste0("Concentration (", drug.pairs$conc_unit2, ")")
-  graphics::plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)",
-                 type = "obs", col = color.point, cex = 1.5, pch = 16, ...)
-  graphics::plot(drug.col.model, xlab = x.lab, ylab = "Inhibition (%)",
-                 type = "none", cex = 1.5, add = TRUE, lwd = 3)
-  graphics::title(paste("Dose-response curve for drug:", drug.col, "in Block",
-                        block), cex.main = 1)
-  
-  graphics::plot.new()
-  #vps <- baseViewports()
-  #pushViewport()
-  print(dose.response.p, vp = grid::viewport(height = grid::unit(1, "npc"), 
-                                             width = grid::unit(0.5, "npc"), 
-                                             just = c("left","top"),
-                                             y = 1, x = 0.5))
-  #popViewport()
-  merge.plot <- grDevices::recordPlot()
+  return(dose.response.p)
 }
+
+curve1D <- function(data.plot, drug = "drug1", color.point = "red"){
+  drug.pairs <- data.plot$drug.pairs
+  data.plot <- data.plot$response
+  
+  # Check drug parameter and extract single cell
+  columns <- mapUnitConcDrug(drug.pairs = drug.pairs, input.drug = drug)
+  conc_unit <- drug.pairs[columns['unit']]
+  # Extract single drug dose response df
+  drug.response <- ExtractSingleDrugDf(data.plot, 
+                    conc.name = columns['conc'])
+
+  # Fit model for the row drug
+  drug.model <- FitDoseResponse(drug.response)#, ...)
+
+  # plot the curve for the drug
+  # dev.control('inhibit')
+  # graphics::plot.new()
+  suppressWarnings(graphics::par(mgp=c(3, .5, 0)))
+  x.lab <- paste0("Concentration (", drug.pairs[columns['unit']], ")")
+  graphics::plot(drug.model, xlab = x.lab, ylab = "Inhibition (%)",
+                 type = "obs", col = color.point, cex = 1.5, pch = 16)#, ...)
+  graphics::plot(drug.model, xlab = x.lab, ylab = "Inhibition (%)", 
+                 type = "none", cex = 1.5, add = TRUE, lwd = 3)
+  graphics::title(paste("Dose-response curve for drug:",
+                        drug.pairs[columns['drug']], "in Block", 
+                        drug.pairs$block_id), cex.main = 1)
+  # p <- grDevices::recordPlot()
+  # return(p)
+}
+
+
+mapUnitConcDrug <- function(drug.pairs, input.drug){
+  colname.avail <- grep("drug+", colnames(drug.pairs), value = TRUE)
+  drug.avail <- drug.pairs[1, colname.avail]
+  if (input.drug %in% colname.avail){
+    drug.colname <- input.drug
+  } else {
+    if (input.drug %in% drug.avail){
+      drug.colname <- colnames(drug.avail)[which(drug.avail[1, ] == input.drug)]
+    } else {
+      stop("The specified drug '", input.drug, "' is not in the input dataset. The ",
+           "available values are either columne names ('", 
+           paste(colname.avail, collapse = "', '"), "') or the drug names ('",
+           paste(drug.avail, collapse = "', '"),
+           "') in the data.plot$drug.pairs table")
+    }
+  }
+  conc.colname <- gsub("drug", "conc", drug.colname)
+  unit.colname <- gsub("drug", "conc_unit", drug.colname)
+  columns <- c(drug.colname, unit.colname, conc.colname)
+  names(columns) <- c("drug", "unit", "conc")
+  return(columns)
+} 
