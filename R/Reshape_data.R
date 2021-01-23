@@ -102,13 +102,20 @@ ReshapeData <- function(data, impute=TRUE, noise=TRUE, seed = NULL,
   
   if (!all(c("block_id", "drug1", "drug2", "response", "conc1", "conc2",
              "conc_unit1") %in%
-           colnames(data)))
+           colnames(data))){
     stop("The input data must contain the following columns: (block_id/BlockId/PairIndex), ",
-         "(drug_row/DrugRow/Drug1), (drug_col/DrugCol/Drug2), (response/Response),",
-         "(conc_r/ConcRow/Conc1), (conc_c/ConcCol/Conc2), (ConcUnit/conc_r_unit/ConcUnit1)")
+         "(drug_row/DrugRow/Drug1/drug1), (drug_col/DrugCol/Drug2/drug2), (response/Response),",
+         "(conc_r/ConcRow/Conc1/conc1), (conc_c/ConcCol/Conc2/conc2), 
+         (ConcUnit/conc_r_unit/ConcUnit1/conc_unit1)")
+  }
   
-  if (!"conc_unit2" %in% colnames(data)){
-    data$conc_unit2 <- data$conc_unit1
+  drugs <- grep('drug\\d+', colnames(data), value = TRUE)
+  conc_units <- gsub("conc_unit", "drug", drugs)
+  
+  for (i in 1:length(conc_units)){
+    if (!conc_units[i] %in% colnames(data)){
+      data[conc_units[i]] <- data$conc_unit1
+    }
   }
   
   # 1.2 Check missing values
@@ -135,17 +142,19 @@ ReshapeData <- function(data, impute=TRUE, noise=TRUE, seed = NULL,
   }
   
   # 4. Dealing with replicates
-  if (sum(duplicated(dplyr::select(data$response.df, -response))) > 0){
+  data$replicate <- sum(duplicated(dplyr::select(data$response.df, -response))) > 0
+  if (data$replicate){
     data <- repResponse(data)
-  } else {
-    data$drug.pairs$replicate <- rep(FALSE, nrow(data$drug.pairs))
   }
   
-
-  # 4. Adjust dose response values
-  if (sum(grepl("^drug\\d$", colnames(data$drug.pair), perl = TRUE)) > 2){ # more than two drugs combination
+  # 5. Mark multi-drug data
+  multidrug <- sum(grepl("^drug\\d$", colnames(data$drug.pair), perl = TRUE)) > 2
+  data$multidrug <- multidrug
+  
+  # 6. Adjust dose response values
+  if (multidrug){ # more than two drugs combination
     if (noise){
-      if ("replicate.response" %in% names(data)){
+      if (data$replicate){
         data$replicate.response$response_adj <- data$replicate.response$response + 
           stats::rnorm(nrow(data$replicate.response), 0, 0.001)
       } else {
@@ -153,10 +162,11 @@ ReshapeData <- function(data, impute=TRUE, noise=TRUE, seed = NULL,
           stats::rnorm(nrow(data$response.df), 0, 0.001)
       }
     }
+    
   } else { # 2 drugs combination
     if (impute | noise | correction != "non") {
       tmp.df <- NULL
-      if ("replicate.response" %in% names(data)){
+      if (data$replicate){
         response.df <- data$replicate.response
       } else {
         response.df <- data$response.df
@@ -183,7 +193,7 @@ ReshapeData <- function(data, impute=TRUE, noise=TRUE, seed = NULL,
           tmp.mat$block_id <- b
           tmp.df <- rbind.data.frame(tmp.df, tmp.mat)
       }
-      if ("replicate.response" %in% names(data)){ 
+      if (data$replicate){ 
         data$replicate.response <- data$replicate.response %>% 
           dplyr::left_join(tmp.df, by = c("block_id", "conc1", "conc2"))
       }

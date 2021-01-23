@@ -75,7 +75,7 @@ PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL, metric = NUL
          argument 'adjusted' is setting as TRUE.")
   }
   # 2. Select the dose response table for plotting.
-  if ("replicate.response" %in% names(data)){
+  if (data$replicate){
     response.df <- data$replicate.response
   } else {
     response.df <- data$response.df

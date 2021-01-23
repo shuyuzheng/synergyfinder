@@ -9,7 +9,7 @@ repResponse <- function(data){
   if (length(rep_block) > 1){
     data[['replicate.response']] <- sum.rep %>% 
       dplyr::mutate(sem = ifelse(n > 1, sd/sqrt(n), NA),
-                    "95% confidence interval" = ifelse(n > 1, qt(0.975,df=n-1)*sem, NA))
+                    CI95 = ifelse(n > 1, qt(0.975,df=n-1)*sem, NA))
   }
   data$drug.pairs <- data$drug.pairs %>% 
     dplyr::mutate(replicate = block_id %in% rep_block)
@@ -17,58 +17,57 @@ repResponse <- function(data){
 }
 
 repSynergy <- function(response.df, method){
-  pair <- unique(data$block_id)
+  pair <- unique(response.df$block_id)
   scores <- NULL
   for (p in pair){
-    tmp <- dplyr::filter(data, PairIndex == p)
+    tmp <- dplyr::filter(response.df, block_id == p)
     repN <- tmp %>% 
-      dplyr::group_by(PairIndex, Conc1, Conc2) %>% 
-      dplyr::summarise(count = n(), .groups = "keep") %>%
-      ungroup() %>% 
+      dplyr::group_by(block_id, conc1, conc2) %>% 
+      dplyr::summarise(count = dplyr::n(), .groups = "keep") %>%
+      dplyr::ungroup() %>% 
       dplyr::select(count) %>% 
       unique() %>% 
       unlist()
     if (length(unique(repN)) == 1){# the replicates in all wells are same
       rest <- tmp %>% 
-        mutate(index = seq(1, n()))
+        dplyr::mutate(index = seq(1, dplyr::n()))
       response <- NULL
       for (i in seq(1, (repN - 1))){
         t <- rest %>% 
-          dplyr::group_by(PairIndex, Conc1, Conc2) %>% 
+          dplyr::group_by(block_id, conc1, conc2) %>% 
           dplyr::sample_n(1) %>% 
-          dplyr::mutate(block_id = i)
+          dplyr::mutate(sub_block_id = i)
         response <- rbind.data.frame(response, t)
         rest <- rest %>% 
           dplyr::filter(!index %in% t$index)
       } #else { # the replicates in each well are not same
         
       #}
-      response <- rbind.data.frame(response, dplyr::mutate(rest, block_id = repN))
+      response <- rbind.data.frame(response, dplyr::mutate(rest, sub_block_id = repN))
       # Calculate scoree
-      blocks <- unique(response$block_id)
+      blocks <- unique(response$sub_block_id)
       score <- NULL
       for (i in blocks){
-        response.mat <- reshape2::acast(Conc1 ~ Conc2, data = response[which(response$block_id == i),], 
-                                        value.var = "Response")
+        response.mat <- reshape2::acast(conc1 ~ conc2,
+                                        data = response[which(response$sub_block_id == i),], 
+                                        value.var = "response")
         t <- switch(method,
                     ZIP = ZIP(response.mat),
                     HSA = HSA(response.mat),
                     Bliss = Bliss(response.mat),
                     Loewe = Loewe(response.mat))
         t <- reshape2::melt(t)
-        colnames(t) <- c("Conc1", "Conc2", "synergy")
+        colnames(t) <- c("conc1", "conc2", "synergy")
         score <- rbind.data.frame(score, t)
       }
       sum.score <- score %>% 
-        dplyr::group_by(Conc1, Conc2) %>% 
+        dplyr::group_by(conc1, conc2) %>% 
         dplyr::summarise(mean = mean(synergy),
                          sd = sd(synergy),
-                         n = n(), .groups = "keep") %>% 
-        mutate(sem = sd/sqrt(n)) %>% 
-        mutate(error = qt(0.975,df=n-1)*sem,
-               lower_95CI = mean - error,
-               upper_95CI = mean + error) %>% 
-        mutate(PairIndex = p)
+                         n = dplyr::n(), .groups = "keep") %>% 
+        dplyr::mutate(sem = sd/sqrt(n)) %>% 
+        dplyr::mutate(CI95 = qt(0.975,df=n-1)*sem) %>% 
+        dplyr::mutate(block_id = p)
       scores <- rbind.data.frame(scores, sum.score)
     }
   }

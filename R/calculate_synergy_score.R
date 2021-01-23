@@ -52,45 +52,59 @@
 #' scores <- CalculateSynergy(data)
 CalculateSynergy <- function(data, method="ZIP", adjusted = TRUE) {
   options(scipen = 999)
-  # 1. Check input data
+  # 1. Check the input data
   if (!is.list(data)) {
-    stop("Input data is not a list format!")
+    stop("Input data is not in list format!")
   }
-  # 2. Extract dose.response.mats
+  if (!all(c("drug.pairs", "response.df") %in% names(data))) {
+    stop("Input data should contain at least tow elements: 'drug.pairs' and 
+         'response.df'. Please prepare your data with 'ReshapeData' function.")
+  }
+  if (adjusted & !("response_adj" %in% c(colnames(data$response.df),
+                                         colnames(data$replicate.response)))) {
+    
+    stop("'adjusted.response.mats' element is required in input data, when
+         argument 'adjusted' is setting as TRUE.")
+  }
+  
+  
+  # 2. Select the dose response table for plotting.
   if (adjusted) {
-    if ("adjusted.response.mats" %in% names(data)) {
-      dose.response.mats <- data$adjusted.response.mats
-    } else {
-      stop("The element 'adjusted.response.mats' is missing in input data.")
-    }
+    response.df <- data$response.df %>% 
+      dplyr::select(-response) %>% 
+      dplyr::rename(response = response_adj)
   } else {
-    dose.response.mats <- data$dose.response.mats
+    response.df <- data$response.df %>% 
+      dplyr::select(- response_adj) 
   }
-
-  blocks <- names(dose.response.mats)
-
-  # Generate containers
-  # List for saving synergy score matrices
-  scores <- vector(mode="list", length=length(blocks))
-  names(scores) <- blocks
-
   # 3. Calculate synergy scores
   if(!method %in% c("ZIP", "HSA", "Bliss", "Loewe")) {
     stop("The method parameter can only be one of the following: ZIP, HSA, Bliss
        and Loewe.")
   }
-  for (block in blocks) {
-    block <- as.character(block)
-    response.mat <- dose.response.mats[[block]]
-    scores[[block]] <- switch(method,
-                              ZIP = ZIP(response.mat),
-                              HSA = HSA(response.mat),
-                              Bliss = Bliss(response.mat),
-                              Loewe = Loewe(response.mat))
+  
+  if (data$replicate & !data$multidrug){ # two drug with replicate
+    scores <- repSynergy(response.df, method = method)
+  } else { # two drugs no replicate
+    blocks <- unique(response.df$block_id)
+    score <- NULL
+    for (i in blocks){
+      response.mat <- reshape2::acast(conc1 ~ conc2,
+                                      data = response[which(response$sub_block_id == i),], 
+                                      value.var = "response")
+      t <- switch(method,
+                  ZIP = ZIP(response.mat),
+                  HSA = HSA(response.mat),
+                  Bliss = Bliss(response.mat),
+                  Loewe = Loewe(response.mat))
+      t <- reshape2::melt(t)
+      colnames(t) <- c("conc1", "conc2", paste0(method, "_synergy"))
+      scores <- rbind.data.frame(score, t)
+    }
   }
+  
   ## 4. Save data into the list
   data$scores <- scores
-  data$method <- method
   return(data)
   # clean up
   gc()
