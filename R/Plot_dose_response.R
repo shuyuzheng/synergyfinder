@@ -167,8 +167,7 @@ PlotDoseResponse <- function (data, adjusted=TRUE, pair.index=NULL, metric = NUL
  return(NULL)
 }
 
-# 2 drugs plot ------------------------------------------------------------
-
+# Single plots ------------------------------------------------------------
 
 heatmap2D <- function(data.plot, metric = NULL, color.conc = "black",
                       color.low.response = "green",
@@ -274,6 +273,10 @@ curve1D <- function(data.plot, drug = "drug1", color.point = "red"){
 }
 
 
+
+
+# Auxiliary functions -----------------------------------------------------
+
 mapUnitConcDrug <- function(drug.pairs, input.drug){
   colname.avail <- grep("drug+", colnames(drug.pairs), value = TRUE)
   drug.avail <- drug.pairs[1, colname.avail]
@@ -296,3 +299,4 @@ mapUnitConcDrug <- function(drug.pairs, input.drug){
   names(columns) <- c("drug", "unit", "conc")
   return(columns)
 } 
+
