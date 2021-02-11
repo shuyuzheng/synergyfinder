@@ -43,8 +43,10 @@ First use "L.4" model to fit the raw data. If error or waring occurs, use
 "LL.4" model to fit \code{log(raw data)}.
 }
 \examples{
-df <- data.frame(response = c(0, 29, 59, 60, 75, 90),
-                 dose = c(0.00, 9.7656, 39.0626, 156.25, 625, 2500))
+df <- data.frame(
+  response = c(0, 29, 59, 60, 75, 90),
+  dose = c(0.00, 9.7656, 39.0626, 156.25, 625, 2500)
+)
 model <- FitDoseResponse(df)
 }
 \references{

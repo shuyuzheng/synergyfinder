@@ -4,7 +4,7 @@
 \alias{Bliss}
 \title{Calculate Bliss synergy score}
 \usage{
-Bliss(response.mat)
+Bliss(response.df)
 }
 \arguments{
 \item{response.mat}{A drug cobination dose-response matrix. It's column name

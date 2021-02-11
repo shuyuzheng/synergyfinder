@@ -50,7 +50,7 @@
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
 #' scores <- CalculateSynergy(data)
-CalculateSynergy <- function(data, method="ZIP", adjusted = TRUE) {
+CalculateSynergy <- function(data, method = "ZIP", adjusted = TRUE) {
   options(scipen = 999)
   # 1. Check the input data
   if (!is.list(data)) {
@@ -60,54 +60,58 @@ CalculateSynergy <- function(data, method="ZIP", adjusted = TRUE) {
     stop("Input data should contain at least tow elements: 'drug.pairs' and 
          'response.df'. Please prepare your data with 'ReshapeData' function.")
   }
-  if (adjusted & !("response_adj" %in% c(colnames(data$response.df),
-                                         colnames(data$replicate.response)))) {
-    
+  if (adjusted & !("response_adj" %in% c(
+    colnames(data$response.df),
+    colnames(data$replicate.response)
+  ))) {
     stop("'adjusted.response.mats' element is required in input data, when
          argument 'adjusted' is setting as TRUE.")
   }
-  
-  
+
   # 2. Select the dose response table for plotting.
   if (adjusted) {
-    response.df <- data$response.df %>% 
-      dplyr::select(-response) %>% 
+    response.df <- data$response.df %>%
+      dplyr::select(-response) %>%
       dplyr::rename(response = response_adj)
   } else {
-    response.df <- data$response.df %>% 
-      dplyr::select(- response_adj) 
+    response.df <- data$response.df %>%
+      dplyr::select(-response_adj)
   }
   # 3. Calculate synergy scores
-  if(!method %in% c("ZIP", "HSA", "Bliss", "Loewe")) {
+  if (!all(method %in% c("ZIP", "HSA", "Bliss", "Loewe"))) {
     stop("The method parameter can only be one of the following: ZIP, HSA, Bliss
        and Loewe.")
   }
-  
-  if (data$replicate & !data$multidrug){ # two drug with replicate
+
+  if (data$replicate) { # data with replicate
+    reference.table_boot <- Bootstrapping(reference.table_rep[, c("conc1","conc2","response")])
     scores <- repSynergy(response.df, method = method)
-  } else { # two drugs no replicate
+  } else { # data without replicate
     blocks <- unique(response.df$block_id)
-    score <- NULL
-    for (i in blocks){
-      response.mat <- reshape2::acast(conc1 ~ conc2,
-                                      data = response[which(response$sub_block_id == i),], 
-                                      value.var = "response")
-      t <- switch(method,
-                  ZIP = ZIP(response.mat),
-                  HSA = HSA(response.mat),
-                  Bliss = Bliss(response.mat),
-                  Loewe = Loewe(response.mat))
-      t <- reshape2::melt(t)
-      colnames(t) <- c("conc1", "conc2", paste0(method, "_synergy"))
-      scores <- rbind.data.frame(score, t)
+    scores <- NULL
+    for (i in blocks) {
+      response <- response.df %>% 
+        dplyr::filter(block_id == i) %>% 
+        dplyr::select(- block_id)
+      if (length(method) == 1) {
+        tmp <- eval(call(method, response))
+      } else {
+        tmp <- lapply(method, function(x) eval(call(x, response)))
+        tmp <- tmp %>% 
+          purrr::reduce(dplyr::left_join, 
+                 by = grep("conc\\d", colnames(response), value = TRUE))
+      }
+      
+      tmp$block_id <- i
+      tmp <- dplyr::select(tmp, block_id, dplyr::everything())
+      scores <- rbind.data.frame(scores, tmp)
     }
   }
-  
+
   ## 4. Save data into the list
   data$scores <- scores
+  
   return(data)
-  # clean up
-  gc()
 }
 
 #' Calculate Delta synergy score based on ZIP model
@@ -125,16 +129,18 @@ CalculateSynergy <- function(data, method="ZIP", adjusted = TRUE) {
 #'   if it has been down before. Functions \code{\link{FitDoseResponse}} and
 #'   \code{\link{ExtractSingleDrug}} could be used to calculate these arguments.
 #'
-#' @param response.mat A drug cobination dose-response matrix. It's column name
-#'   and row name are representing the concerntrations of drug added to column
-#'   and row, respectively. The values in matrix indicate the inhibition rate to
-#'   cell growth.
+#' @param response A data frame. It must contain the columns: "conc1", "conc2",
+#' ..., for the concentration of the combined drugs and "response" for the
+#' observed %inhibition at certain combination.
+#' @param Emax The expected maximum response value in the 4 parameter 
+#' log-logistic model.
+#' @param Emin The expected minimum response value in the 4 parameter 
+#' log-logistic model.
 #' @param quiet A logical value. If it is \code{TRUE} then the warning message
-#'   will not show during calculation.
-#' @param drug.col.model (optional) a character. It indicates the model used for
-#'   fitting dose-response curve for drug added to columns.
-#' @param drug.row.model (optional) a character. It indicates the model type
-#'   used for fitting dose-response curve for drug added to rows.
+#' will not show during calculation.
+#'  
+#' @return A data frame containing the concentrations for drugs, reference
+#' response, fitted response and synergy score estimated by ZIP model.
 #'
 #' @author \itemize{
 #'    \item{Liye He \email{liye.he@helsinki.fi}}
@@ -149,139 +155,92 @@ CalculateSynergy <- function(data, method="ZIP", adjusted = TRUE) {
 #'    Model.} Comput Struct Biotechnol J, 13:504– 513.}
 #' }
 #'
-#' @return A matrix of \eqn{\Delta} score calculated via Zero Interaction
-#' Potency (ZIP) method.
-#'
 #' @export
 #'
 #' @examples
 #' # No single drug fitted modle before
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
-#' response.mat <- data$dose.response.mats[[1]]
-#' ZIP.score <- ZIP(response.mat)
-#'
-#' # Single drug dose response models have been fitted before.
-#' drug.row.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="row"))
-#' drug.col.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="col"))
-#'
-#' ZIP.score2 <- ZIP(response.mat[-1, -1], drug.col.model=drug.col.model,
-#'                  drug.row.model=drug.row.model)
-ZIP <- function(response.mat, quiet = TRUE, drug.row.model = NULL,
-                drug.col.model = NULL) {
+#' response <- data$response[data$response$block_id == 1, c("conc1", "conc2", "response")]
+#' ZIP.score <- ZIP(response)
+#' 
+#' # Parallel processing:
+#' if (future::supportsMulticore()) {
+#'   future::plan(future::multicore)
+#' } else {
+#'   future::plan(future::multisession)
+#' }
+#' ZIP(response)
+#' # future::plan(sequential) # Turn off the multicore setting
+#' 
+
+ZIP <- function(response, Emin = NA, Emax = NA, quiet = TRUE) {
   if (quiet) {
     options(warn = -1)
   }
-  dose_row_mat <- as.numeric(rownames(response.mat))
-  dose_col_mat <- as.numeric(colnames(response.mat))
-  dose_col <- dose_col_mat[dose_col_mat > 0]
-  dose_row <- dose_row_mat[dose_row_mat > 0]
-
-  if (is.null(drug.row.model)) {
-    drug.row <- ExtractSingleDrug(response.mat, dim = "row")
-    drug.row.model <- FitDoseResponse(drug.row)
-  }
-  drug.row.fit <- stats::predict(drug.row.model, newdata = data.frame(dose = dose_row))
-
-  if (is.null(drug.col.model)) {
-    drug.col <- ExtractSingleDrug(response.mat, dim = "col")
-    drug.col.model <- FitDoseResponse(drug.col)
-  }
-  drug.col.fit <- stats::predict(drug.col.model, newdata = data.frame(dose = dose_col))
-
-
-  n.row <- length(dose_row)
-  n.col <- length(dose_col)
-  # generate drug_row fitting matrix
-  tmp <- data.frame(dose = dose_row)
-  updated.col.mat <- response.mat[rownames(response.mat) != "0",
-                                  colnames(response.mat) != "0"]
-  if (n.col == 1 | n.row == 1){
-    updated.col.mat <- matrix(updated.col.mat, nrow = n.row, ncol = n.col)
-  } else {
-    for (i in 1:n.col) {
-      # nonzero concentrations to take the log
-      tmp$response <- updated.col.mat[, i]
-      if(nrow(tmp) == 1) {
-        # # no fitting
-        fitted.response <- tmp$response - 10 ^ -10
-      } else {
-        tmp.min <- drug.col.fit[i]
-        tmp.model <- FitDoseResponse(data = tmp, Emin = tmp.min, Emax = 100)
-        if (!is.null(tmp.model$convergence)){
-          fitted.response <- tmp$response
-        } else {
-          fitted.response <- suppressWarnings(stats::fitted(tmp.model))
-        }
-      }
-
-      updated.col.mat[, i] <- fitted.response
-    }
-  }
-
-  # generate drug_col fitting matrix
-  tmp <- data.frame(dose = dose_col)
-  updated.row.mat <- response.mat[rownames(response.mat) != "0",
-                                  colnames(response.mat) != "0"]
-  if (n.col == 1 | n.row == 1){ # for 2x2 combination matrix
-    updated.row.mat <- matrix(updated.row.mat, nrow = n.row, ncol = n.col)
-  } else {
-    for (i in 1:n.row) {
-      # nonzero concentrations to take the log
-      tmp$response <- updated.row.mat[i, ]
-      if(nrow(tmp) == 1) {
-        # # no fitting
-        fitted.response <- tmp$response - 10 ^ -10
-      } else {
-        tmp.min <- drug.row.fit[i]
-        tmp.model <- FitDoseResponse(data = tmp, Emin = tmp.min, Emax = 100)
-        if (!is.null(tmp.model$convergence)){
-          fitted.response <- tmp$response
-        } else {
-          fitted.response <- suppressWarnings(stats::fitted(tmp.model))
-        }
-      }
-      # if (fitted.inhibition[length(fitted.inhibition)] < 0)
-      #  fitted.inhibition[length(fitted.inhibition)] <- tmp.min
-      updated.row.mat[i, ] <- fitted.response
-    }
-  }
-
-  fitted.mat <- (updated.col.mat + updated.row.mat) / 2
-
-  zip.mat <- matrix(nrow = n.row, ncol = n.col)
-  for (i in seq_len((n.row))) {
-    for (j in seq_len((n.col))) {
-      zip.mat[i, j] <- drug.row.fit[i] + drug.col.fit[j] -
-        drug.row.fit[i] * drug.col.fit[j] / 100
-    }
-  }
-
-  delta.mat <- fitted.mat - zip.mat
-
-  # add synergy scores of single drugs into delta.mat
-  delta.mat <- cbind(rep(0, nrow(delta.mat)), delta.mat)
-  delta.mat <- rbind(rep(0, ncol(delta.mat)), delta.mat)
+  # 1. Calculate ZIP reference effect
   
-  if (length(colnames(response.mat)) < length(colnames(delta.mat))){
-    colnames(delta.mat) <- c(rep("0", length(colnames(delta.mat)) - n.col), 
-                             colnames(response.mat))
-  } else {
-    colnames(delta.mat) <- colnames(response.mat)
-  }
+  # Get predicted response for all single drugs
+  single.data <- ExtractSingleDrug(response) # single drug dose response data
+  single.pred <- lapply(single.data, 
+                         function(x) {
+                           data.frame(dose = x$dose,
+                                      pred = predict(FitDoseResponse(x, Emin = Emin, Emax = Emax)),
+                                      stringsAsFactors = FALSE)
+                           })
   
-  if (length(rownames(response.mat)) < length(rownames(delta.mat))){
-    rownames(delta.mat) <- c(rep("0", length(rownames(delta.mat)) - n.row), 
-                             rownames(response.mat))
-  } else {
-    rownames(delta.mat) <- rownames(response.mat)
-  }
-
-  return(delta.mat)
-
+  # Calculate the Bliss reference effect (y = 1 - product_all_drug(1-%Inhibition) * 100)
+  ref_zip <- expand.grid(lapply(single.pred, function(x) x$dose))
+  ref_zip$ref_zip <- apply(
+    expand.grid(lapply(single.pred, function(x) x$pred)),
+    1, function(x) {
+      (1 - prod(1 - x / 100)) * 100
+    }
+  )
+  
+  # 2. Calculate ZIP fitted effect
+  concs <- grep("conc\\d", colnames(response), value = TRUE)
+  response <- purrr::map(concs, function(conc){
+    response %>% 
+      dplyr::rename(dose = conc) %>% 
+      # Group table by conditions, and wrap as a input data for model fitting
+      tidyr::nest(any_of(c("dose", "response"))) %>% 
+      mutate(pred= furrr::future_map(data , function(x, conc) { # Parallelizable
+        condition.baseline <- x$response[which(x$dose == 0)]
+        model <- FitDoseResponse(x, Emin = condition.baseline,
+                                 Emax = NA) # Fit dose response curve
+        pred <- predict(model) # Predict response on corresponding dosage
+        return(pred)
+      })) %>% 
+      unnest() %>% 
+      dplyr::rename(!!conc := "dose")
+  })
+  
+  # Take the average of fitted response as the fit_zip
+  response <- response %>% 
+    purrr::reduce(left_join, by = c(concs, "response")) %>% 
+    mutate(fit_zip = rowMeans(select(., starts_with("pred"))))
+  
+  # 3. Calculate synegy score
+  response <- response %>% 
+    left_join(ref_zip, by = concs)
+  
+  # Assign response value to fit_zip in non-combination wells (single drug or DMSO)
+  no_comb_rows <- apply(
+    response[, grep("conc\\d", colnames(response), value = TRUE)], 1,
+    function(x) {
+      (length(x) - sum(x == 0)) <= 1
+    }
+  )
+  response$fit_zip[which(no_comb_rows)] <- response$response[which(no_comb_rows)]
+  response$ref_zip[which(no_comb_rows)] <- response$response[which(no_comb_rows)]
+  
+  response <- response %>% 
+    mutate(synergy_zip = fit_zip - ref_zip) %>% 
+    select(!!concs, fit_zip, ref_zip, synergy_zip)
+  
+  return(response)
   options(warn = 0)
-  # clean up
-  gc()
 }
 
 #' Calculate Bliss synergy score
@@ -294,13 +253,12 @@ ZIP <- function(response.mat, quiet = TRUE, drug.row.model = NULL,
 #' drugs. The basic assumption of this model is "The expected effect of two
 #' drugs acting independently".
 #'
-#' @param response.mat A drug cobination dose-response matrix. It's column name
-#' and row name are representing the concerntrations of drug added to column and
-#' row, respectively. The values in matrix indicate the inhibition rate to cell
-#' growth.
+#' @param response A data frame. It must contain the columns: "conc1", "conc2",
+#' ..., for the concentration of the combined drugs and "response" for the
+#' observed %inhibition at certain combination.
 #'
-#' @return A matrix for synergy score calculated via reference model introduced
-#' by C. I. Bliss.
+#' @return  A data frame containing the concentrations for drugs, reference
+#' response and synergy score estimated by Bliss model.
 #'
 #' @author \itemize{
 #'    \item{Liye He \email{liye.he@helsinki.fi}}
@@ -322,23 +280,38 @@ ZIP <- function(response.mat, quiet = TRUE, drug.row.model = NULL,
 #' @examples
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
-#' Bliss.score <- Bliss(data$dose.response.mats[[1]])
-Bliss <- function (response.mat) {
-  drug.row <- response.mat[, 1]
-  drug.col <- response.mat[1, ]
-  reference.mat <- response.mat
-  for (i in 2:nrow(response.mat)) {
-    for (j in 2:ncol(response.mat)) {
-      reference.mat[i, j] <- drug.row[i] + drug.col[j] -
-        drug.row[i] * drug.col[j]/100
+#' response <- data$response[data$response$block_id == 1, c("conc1", "conc2", "response")]
+#' Bliss.score <- Bliss(response)
+Bliss <- function(response) {
+  # Get all possible combinations of drug dosages
+  single.drugs <- ExtractSingleDrug(response = response)
+  bliss <- expand.grid(lapply(single.drugs, function(x) x$dose))
+
+  # Calculate the Bliss reference effect (y = 1 - product_all_drug(1-%Inhibition) * 100)
+  bliss$ref_bliss <- apply(
+    expand.grid(lapply(single.drugs, function(x) x$response)),
+    1, function(x) {
+      (1 - prod(1 - x / 100)) * 100
     }
-  }
-  synergy.mat <- response.mat - reference.mat
+  )
 
-  return(synergy.mat)
+  # Calculate Bliss synergy score
+  bliss <- response %>%
+    dplyr::left_join(bliss, by = grep("conc\\d", colnames(response),
+      value = TRUE
+    )) %>%
+    dplyr::mutate(synergy_bliss = response - ref_bliss)
 
-  # clean up
-  gc()
+  # Assign 0 to synergy scores in non-combination wells (single drug or DMSO)
+  no_comb_rows <- apply(
+    bliss[, grep("conc\\d", colnames(bliss), value = TRUE)], 1,
+    function(x) {
+      (length(x) - sum(x == 0)) <= 1
+    }
+  )
+  bliss$synergy_bliss[which(no_comb_rows)] <- 0
+  bliss <- dplyr::select(bliss, -response)
+  return(bliss)
 }
 
 #' Calculate HSA synergy score
@@ -350,13 +323,13 @@ Bliss <- function (response.mat) {
 #' drugs. The basic assumption of this model is "The reference effect of drug
 #' combination is the maximal single drug effect".
 #'
-#' @param response.mat A drug cobination dose-response matrix. It's column name
-#' and row name are representing the concerntrations of drug added to column and
-#' row, respectively. The values in matrix indicate the inhibition rate to cell
-#' growth.
+#' @param response A data frame. It must contain the columns: "conc1", "conc2",
+#' ..., for the concentration of the combined drugs and "response" for the
+#' observed %inhibition at certain combination.
 #'
-#' @return A matrix for synergy score calculated via Highest Single Agent (HSA).
-#'
+#' @return  A data frame containing the concentrations for drugs, reference
+#' response and synergy score estimated by HSA model.
+#' 
 #' @author \itemize{
 #'    \item{Liye He \email{liye.he@helsinki.fi}}
 #'    \item{Shuyu Zheng \email{shuyu.zheng@helsinki.fi}}
@@ -378,77 +351,36 @@ Bliss <- function (response.mat) {
 #' @examples
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
-#' HSA.score <- HSA(data$dose.response.mats[[1]])
-HSA <- function(response.mat) {
-  drug.row <- response.mat[, 1]
-  drug.col <- response.mat[1, ]
-  reference.mat <- response.mat
-  for (i in 2:nrow(response.mat)) {
-    for (j in 2:ncol(response.mat)) {
-      reference.mat[i, j] <- max(drug.row[i], drug.col[j])
+#' response <- data$response[data$response$block_id == 1, 
+#'                           c("conc1", "conc2", "response")]
+#' HSA.score <- HSA(response)
+HSA <- function(response) {
+  
+  # Get all possible combinations of drug dosages
+  single.drugs <- ExtractSingleDrug(response = response)
+  hsa <- expand.grid(lapply(single.drugs, function(x) x$dose))
+
+  # Calculate the HSA reference effect (max effect in all single drugs)
+  hsa$ref_hsa <- apply(
+    expand.grid(lapply(single.drugs, function(x) x$response)), 1, max)
+
+  # Calculate HSA synergy score
+  hsa <- response %>%
+    dplyr::left_join(hsa, by = grep("conc\\d", colnames(response),
+      value = TRUE
+    )) %>%
+    dplyr::mutate(synergy_hsa = response - ref_hsa)
+
+  # Assign 0 to synergy scores in non-combination wells
+  no_comb_rows <- apply(
+    hsa[, grep("conc\\d", colnames(hsa), value = TRUE)], 1,
+    function(x) {
+      (length(x) - sum(x == 0)) <= 1
     }
-  }
-  synergy.mat <- response.mat - reference.mat
-
-  return(synergy.mat)
-
-  #clean up
-  gc()
-}
-
-# Four functions to calculate loewe
-eq.LL4.LL4 <- function(x, x1, x2, drug.col.par, drug.row.par) {
-  x1 / (drug.col.par[4] * (((x - drug.col.par[3]) /
-                            (drug.col.par[2] - x)) ^ (1/drug.col.par[1]))) +
-    x2 / (drug.row.par[4] * (((x - drug.row.par[3]) /
-                              (drug.row.par[2] - x)) ^ (1/drug.row.par[1]))) - 1
-}# Eq.8 in the ZIP paper
-
-eq.L4.L4 <- function(x, x1, x2, drug.col.par, drug.row.par) {
-  x1 / exp((drug.col.par[4] + log((drug.col.par[3] - x) /
-                                    (x - drug.col.par[2])) / drug.col.par[1])) +
-    x2 / exp((drug.row.par[4] + log((drug.row.par[3] - x) /
-                                  (x - drug.row.par[2])) / drug.row.par[1])) -1
-}# x1, x2 to be log scaled
-
-eq.LL4.L4 <- function(x, x1, x2, drug.col.par, drug.row.par) {
-  x1 / (drug.col.par[4] * (((x - drug.col.par[3]) /
-                              (drug.col.par[2] - x)) ^ (1 / drug.col.par[1]))) +
-    x2 / exp((drug.row.par[4] + log((drug.row.par[3] - x) /
-                                  (x - drug.row.par[2])) / drug.row.par[1])) -1
-}# x2 to be log-scaled
-
-eq.L4.LL4 <- function(x, x1, x2, drug.col.par, drug.row.par) {
-  x1 / exp((drug.col.par[4] + log((drug.col.par[3] - x) /
-                                    (x - drug.col.par[2])) / drug.col.par[1])) +
-    x2 / (drug.row.par[4] * (((x - drug.row.par[3]) /
-                            (drug.row.par[2] - x)) ^ (1 / drug.row.par[1]))) - 1
-}# x1 to be log-scaled
-
-# function used to calculate loewe if termination code from 'nleqslv' function
-# is -10, 1, or 2, which mean:
-# * -10 User supplied Jacobian is most likely incorrect.
-# * 1 Function criterion is near zero. Convergence of function values has been
-# achieved.
-# * 2 x-values within tolerance. This means that the relative distance between
-# two consecutive x-values is smaller than xtol but that the function value
-# criterion is still larger than ftol. Function values may not be near zero;
-# therefore the user must check if function values are acceptably small.
-#
-fun <- function(col_conc, row_conc, drug.par, model) {
-  # LL.4, conc must be raw
-  if(model == "LL.4") {
-    conc = col_conc + row_conc
-    (drug.par[3] + drug.par[2] *
-        (conc / drug.par[4]) ^ drug.par[1]) /
-      (1 + (conc / drug.par[4]) ^ drug.par[1])
-  } else if (model == "L.4"){# L.4, conc must be logscaled, ie. log(conc)
-    conc = log(col_conc+row_conc)
-    (drug.par[2] + (drug.par[3] - drug.par[2]) /
-        (1 + exp(drug.par[1] * (conc - drug.par[4]))))
-  } else {
-    stop("Model type is incorrect. Available values are 'LL.4' or 'L.4' ")
-  }
+  )
+  hsa$synergy_hsa[which(no_comb_rows)] <- 0
+  hsa <- dplyr::select(hsa, -response)
+  return(hsa)
 }
 
 #' Calculate Loewe synergy score
@@ -466,19 +398,18 @@ fun <- function(col_conc, row_conc, drug.par, model) {
 #' if it has been down before. Functions \code{\link{FitDoseResponse}} and
 #' \code{\link{ExtractSingleDrug}} could be used to calculate these arguments.
 #'
-#' @param response.mat A drug cobination dose-response matrix. It's column name
-#'   and row name are representing the concerntrations of drug added to column
-#'   and row, respectively. The values in matrix indicate the inhibition rate to
-#'   cell growth.
+#' @param response A data frame. It must contain the columns: "conc1", "conc2",
+#' ..., for the concentration of the combined drugs and "response" for the
+#' observed %inhibition at certain combination.
+#' @param Emax The expected maximum response value in the 4 parameter 
+#' log-logistic model.
+#' @param Emin The expected minimum response value in the 4 parameter 
+#' log-logistic model.
 #' @param quiet A logical value. If it is \code{TRUE} then the warning message
 #'   will not show during calculation.
-#' @param drug.col.model (optional) a character. It indicates the model used for
-#'   fitting dose-response curve for drug added to columns.
-#' @param drug.row.model (optional) a character. It indicates the model type
-#'   used for fitting dose-response curve for drug added to rows.
 #'
-#' @return A matrix for Synergy score calculated via reference model introduced
-#'   by Loewe, S.
+#' @return A data frame containing the concentrations for drugs, reference
+#' response and synergy score estimated by Loewe model.
 #'
 #' @author \itemize{
 #'    \item{Liye He \email{liye.he@helsinki.fi}}
@@ -501,101 +432,179 @@ fun <- function(col_conc, row_conc, drug.par, model) {
 #' @export
 #'
 #' @examples
-#' # No single drug fitted modle before
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
-#' response.mat <- data$dose.response.mats[[1]]
-#' Loewe.score <- Loewe(response.mat)
+#' response <- data$response[data$response$block_id == 1, 
+#'                           c("conc1", "conc2", "response")]
+#' Loewe.score <- Loewe(response)
 #'
-#' # Single drug dose response models have been fitted before.
-#' drug.row.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="row"))
-#' drug.col.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="col"))
-#' Loewe.score2 <- Loewe(response.mat, drug.col.model=drug.col.model,
-#'                      drug.row.model=drug.row.model)
-Loewe <- function (response.mat, quiet = TRUE, drug.col.model = NULL,
-                            drug.row.model = NULL) {
+#' )
+
+Loewe <- function(response, Emin = NA, Emax = NA, quiet = TRUE) {
   if (quiet) {
     options(warn = -1)
   }
+  
+  ndrugs <- ncol(response) - 1
+  single.data <- ExtractSingleDrug(response)
+  single.model <- lapply(
+    single.data,
+    function(x) FitDoseResponse(x, Emin = Emin, Emax = Emax)
+  )
+  single.par <- lapply(single.model, FindModelPar)
+  single.type <- lapply(single.model, FindModelType)
 
-  con <- vapply(list(drug.col.model, drug.row.model), is.null, logical(1))
+  y.loewe <- c()
+  dist.loewe <- c()
+  for (i in 1:nrow(response)) {
+    x <- response[i, c(1:ndrugs)] # concentrations of drugs
+    y <- response$response[i] # the observed combination response
 
-  if (!all(!con)) {
-    drug.row <- ExtractSingleDrug(response.mat, dim = "row")
-    drug.col <- ExtractSingleDrug(response.mat, dim = "col")
-    drug.row.model <- FitDoseResponse(drug.row)
-    drug.col.model <- FitDoseResponse(drug.col)
-  }
-  drug.row.par <- stats::coef(drug.row.model)
-  drug.row.type <- FindModelType(drug.row.model)
-  drug.col.par <- stats::coef(drug.col.model)
-  drug.col.type <- FindModelType(drug.col.model)
-
-  # drug.row$dose[drug.row$dose == 0] = 10^-10 # avoid log(0)
-  # drug.col$dose[drug.col$dose == 0] = 10^-10 # avoid log(0)
-
-  loewe.mat <- response.mat
-  eq <- switch (paste(drug.col.type, drug.row.type),
-                "LL.4 LL.4" = eq.LL4.LL4,
-                "L.4 L.4"   = eq.L4.L4,
-                "LL.4 L.4"  = eq.LL4.L4,
-                "L.4 LL.4"  = eq.L4.LL4)
-
-  x <- max(drug.col.par[2], drug.row.par[2]) + 1
-
-  dose_col_mat <- as.numeric(colnames(response.mat))
-  dose_row_mat <- as.numeric(rownames(response.mat))
-  dose_col <- dose_col_mat[dose_col_mat > 0]
-  dose_row <- dose_row_mat[dose_row_mat > 0]
-
-  for (i in seq_len(length(dose_col))) {
-    for (j in seq_len(length(dose_row))) {
-      x1 <- dose_col[i]
-      x2 <- dose_row[j]
-
-      options(warn = -1)
-      slv <- tryCatch({
-        slv <- nleqslv::nleqslv(x, eq, method = "Newton", x1=x1, x2=x2,
-                                drug.col.par = drug.col.par,
-                                drug.row.par = drug.row.par)
-        }, error = function(e){
-          slv <- list(termcd = 999)
-        }
+    if (length(which(x > 0)) < 2) { # single drugs
+      y.loewe[i] <- y
+      dist.loewe[i] <- NA
+    } else {
+      # find the dose of single drugs that achieve the observed combination response
+      x_cap <- mapply(function(par, type) .ed(y, par, type),
+        par = single.par, type = single.type
       )
 
-      if (slv$termcd < 3) {
-        y.loewe <- slv$x
+      if (all(!is.finite(x_cap))) { # if none of drug achieve the combination response
+        # max of the single drug response
+        y.loewe[i] <- max(mapply(function(model) {
+          PredictModelSpecify(model, sum(x))
+        },
+        model = single.model
+        ))
+        dist.loewe[i] <- NA
       } else {
-        y.loewe1 <- fun(x1, x2, drug.par = drug.col.par,
-                        model = drug.col.type) # x1 col, x2 row
-        y.loewe2 <- fun(x1, x2, drug.par = drug.row.par,
-                        model = drug.row.type) # x1 col, x2 row
-        y.loewe <- max(y.loewe1, y.loewe2)
+        # determine the minimal distance
+        tmp <- .fsolver(x, single.par, single.type, nsteps = 100)
+        y.loewe[i] <- tmp$y.loewe
+        dist.loewe[i] <- tmp$distance
       }
-
-      loewe.mat[which(dose_row_mat == x2), which(dose_col_mat == x1)] <-
-        ifelse(y.loewe > 100, 100, y.loewe)
-
     }
   }
-
-  synergy.mat <- response.mat - loewe.mat
-
-  # add synergy scores of single drugs into synergy matrix if input combo matrix
-  # doesn't contain single drugs
-  if (!0 %in% dose_col_mat) {
-    synergy.mat <- cbind(rep(0, nrow(synergy.mat)), synergy.mat)
-    colnames(synergy.mat)[1] <- "0"
-  }
-  if (!0 %in% dose_row_mat) {
-    synergy.mat <- rbind(rep(0, ncol(synergy.mat)), synergy.mat)
-    rownames(synergy.mat)[1] <- "0"
-  }
-
-  # Output results
-  return(synergy.mat)
+  response$ref_loewe <- y.loewe
+  # response$dist <- dist.loewe
+  response$synergy_loewe <- response$response - y.loewe
+  response <- dplyr::select(response, -response)
+  # Output results as a long table format
+  return(response)
 
   options(warn = 0)
-  # clean up
-  gc()
+}
+
+
+
+# Auxiliary Functions -----------------------------------------------------
+
+# https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_plane
+# For two dimension point x0, the distance to the line w1*x+w2*y+b = 0
+# For three dimension point, the distance to the plan w1*x+w2*y+w3*z+b = 0
+# Add so on for higher dimensions
+.distance <- function(w, b, x0){
+  d <- abs(x0 %*% w + b) / sqrt(sum(w^2))
+  return(d)
+}
+
+# Load more my own functions
+# functions to calculate the expected dose (ed) for a given response in % inhibition
+.ed.LL4 <- function(y, drug.par){
+  res <- drug.par[4] * (((y - drug.par[3]) / (drug.par[2] - y)) ^ (1/drug.par[1]))
+  # if NAN it means the response cannot be achieved by the drug, the response 
+  # can be either too high or too low for the drug to achieve
+  if (is.nan(res) == TRUE){
+    res <- ifelse(y > max(drug.par[3], drug.par[2]), 1, -1)*Inf
+  }
+  return(res)
+}
+
+.ed.L4 <- function(y, drug.par) {
+  res <- exp((drug.par[4] + log((drug.par[3] - y) /
+                                 (y - drug.par[2])) / drug.par[1]))
+  if (is.nan(res) == TRUE) {
+    res <- ifelse(y > max(drug.par[3], drug.par[2]), 1, -1)*Inf
+  }
+  return(res)
+}
+
+.ed <- function(y, drug.par, drug.type){
+  switch(as.character(drug.type), 
+         "LL.4" = .ed.LL4(y, drug.par),
+         "L.4"  = .ed.L4(y, drug.par))
+}
+
+# another equivalent version for L.4 model
+# ed.L4 <- function(y, drug.par) {
+#   exp(drug.par[4])*((drug.par[3]-y)/(y-drug.par[2]))^(1/drug.par[1])
+# }
+
+# functions to calculate the response (in % inhibition) for a given dose %NOT in use
+# .f.LL4 <- function (conc, drug.par) {
+#   conc <- conc + 10^-10
+#   (drug.par[3] + drug.par[2] *
+#       (conc / drug.par[4]) ^ drug.par[1]) /
+#     (1 + (conc / drug.par[4]) ^ drug.par[1])
+# }
+# 
+# .f.L4 <- function (conc, drug.par) {
+#   conc <- conc + 10^-10
+#   logconc <- log(conc)
+#   (drug.par[2] + (drug.par[3] - drug.par[2]) /
+#       (1 + exp(drug.par[1] * (logconc - drug.par[4]))))
+# }
+# 
+# .f <- function(conc, drug.par, drug.type){
+#   switch(as.character(drug.type),
+#          "LL.4" = .f.LL4(conc, drug.par),
+#          "L.4"  = .f.L4(conc, drug.par))
+# }
+
+# solve the distance between x and the dose plane
+.fsolver <- function(x, drug.par, drug.type, nsteps = 100){
+  # x is the concentration vector
+  x <- as.matrix(x)
+  ndrugs <- length(x)
+  dist <- rep(0, nsteps)
+  X_test <- mat.or.vec(ndrugs, nsteps)
+  # Find the minimal response of all the drugs
+  minY <- min(unlist(lapply(drug.par, function(x) min(x[2],x[3])))) 
+  # Find the maximal response of all the drugs
+  maxY <- max(unlist(lapply(drug.par, function(x) max(x[2],x[3]))))
+  Y_test <- seq(minY, maxY, length.out = nsteps) # test nsteps responses
+  # Calculateexpected dose at each drug
+  for(i in 1:ndrugs){
+    X_test[i,] <- unlist(lapply(Y_test, 
+                                function(y) .ed(y,drug.par[[i]],drug.type[[i]])))
+  }
+  # Calculate distance between point x to the expected dose plane
+  for(j in 1:nsteps){ 
+    dist[j] = .distance(c(1/X_test[,j]), -1, x) # note the sign of -1
+  }
+  # output the y.loewe corresponding to the minimal distance
+  res <- list(y.loewe = Y_test[which(dist == min(dist, na.rm = T))], 
+             x.select = X_test[,which(dist == min(dist, na.rm = T))], 
+             distance = min(dist, na.rm = T)) 
+}
+
+FindModelPar <- function (model){
+  # b, c, d, e, 1
+  # fitted parameters
+  par <- model$fct$fixed
+  par[is.na(par)] <- model$coefficients
+  if (FindModelType(model) == "L.4"){
+    names(par) <- c("b_Hill", "c_Emin", "d_Emax", "e_log(EC50)", "f_Symmetry")
+  } else {
+    names(par) <- c("b_Hill", "c_Emin", "d_Emax", "e_EC50", "f_Symmetry")
+  }
+  return(par)
+}
+
+Bootstrapping <- function(response){
+  # unique dose conditions
+  condition = apply(response[, -ncol(response)], 1, function(x) paste(x, collapse = ";"))
+  response$condition = condition
+  res = data.frame(response%>%group_by(condition)%>%sample_n(1))
+  res = res[,-ncol(res)]
 }

@@ -4,16 +4,16 @@
 \alias{Loewe}
 \title{Calculate Loewe synergy score}
 \usage{
-Loewe(response.mat, quiet = TRUE, drug.col.model = NULL, drug.row.model = NULL)
+Loewe(response, Emin = NA, Emax = NA, quiet = TRUE)
 }
 \arguments{
+\item{quiet}{A logical value. If it is \code{TRUE} then the warning message
+will not show during calculation.}
+
 \item{response.mat}{A drug cobination dose-response matrix. It's column name
 and row name are representing the concerntrations of drug added to column
 and row, respectively. The values in matrix indicate the inhibition rate to
 cell growth.}
-
-\item{quiet}{A logical value. If it is \code{TRUE} then the warning message
-will not show during calculation.}
 
 \item{drug.col.model}{(optional) a character. It indicates the model used for
 fitting dose-response curve for drug added to columns.}
@@ -48,10 +48,12 @@ response.mat <- data$dose.response.mats[[1]]
 Loewe.score <- Loewe(response.mat)
 
 # Single drug dose response models have been fitted before.
-drug.row.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="row"))
-drug.col.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="col"))
-Loewe.score2 <- Loewe(response.mat, drug.col.model=drug.col.model,
-                     drug.row.model=drug.row.model)
+drug.row.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim = "row"))
+drug.col.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim = "col"))
+Loewe.score2 <- Loewe(response.mat,
+  drug.col.model = drug.col.model,
+  drug.row.model = drug.row.model
+)
 }
 \references{
 \itemize{

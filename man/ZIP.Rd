@@ -4,22 +4,21 @@
 \alias{ZIP}
 \title{Calculate Delta synergy score based on ZIP model}
 \usage{
-ZIP(response.mat, quiet = TRUE, drug.row.model = NULL, drug.col.model = NULL)
+ZIP(response.df, Emin = NA, Emax = NA, quiet = TRUE)
 }
 \arguments{
-\item{response.mat}{A drug cobination dose-response matrix. It's column name
-and row name are representing the concerntrations of drug added to column
-and row, respectively. The values in matrix indicate the inhibition rate to
-cell growth.}
+\item{response.df}{A data frame. It must contain the columns: "conc1", 
+"conc2", ..., for the concentration of the combined drugs and "response"
+for the observed %inhibition at certain combination.}
+
+\item{Emin}{The expected minimum response value in the 4 parameter 
+log-logistic model.}
+
+\item{Emax}{The expected maximum response value in the 4 parameter 
+log-logistic model.}
 
 \item{quiet}{A logical value. If it is \code{TRUE} then the warning message
 will not show during calculation.}
-
-\item{drug.row.model}{(optional) a character. It indicates the model type
-used for fitting dose-response curve for drug added to rows.}
-
-\item{drug.col.model}{(optional) a character. It indicates the model used for
-fitting dose-response curve for drug added to columns.}
 }
 \value{
 A matrix of \eqn{\Delta} score calculated via Zero Interaction
@@ -44,15 +43,9 @@ Zero Interaction Potency (ZIP) is a reference model for evaluating
 # No single drug fitted modle before
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
-response.mat <- data$dose.response.mats[[1]]
-ZIP.score <- ZIP(response.mat)
+response.df <- data$response[data$response$block_id == 0]
+ZIP.score <- ZIP(response.df)
 
-# Single drug dose response models have been fitted before.
-drug.row.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="row"))
-drug.col.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="col"))
-
-ZIP.score2 <- ZIP(response.mat[-1, -1], drug.col.model=drug.col.model,
-                 drug.row.model=drug.row.model)
 }
 \references{
 \itemize{

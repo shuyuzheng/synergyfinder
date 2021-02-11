@@ -4,7 +4,7 @@
 \alias{HSA}
 \title{Calculate HSA synergy score}
 \usage{
-HSA(response.mat)
+HSA(response.df)
 }
 \arguments{
 \item{response.mat}{A drug cobination dose-response matrix. It's column name

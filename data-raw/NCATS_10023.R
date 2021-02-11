@@ -1,12 +1,14 @@
 meta <- read.csv("data-raw/NCATS_10023/metadata.csv", stringsAsFactors = FALSE)
 response <- read.csv("data-raw/NCATS_10023/responses.csv", stringsAsFactors = FALSE)
-meta$Conc3 <- c(0.75, 0.375, 0.1875, 0.938, 0.469, 0.0234, 0.0117, 0.0059,
-                0.0029, 0.0015, 0.0007, 0)
+meta$Conc3 <- c(
+  0.75, 0.375, 0.1875, 0.938, 0.469, 0.0234, 0.0117, 0.0059,
+  0.0029, 0.0015, 0.0007, 0
+)
 meta$Drug3 <- rep("Piperaquine", 12)
 
 NCAST_10023 <- NULL
 
-for (i in 1:12){
+for (i in 1:12) {
   Conc1 <- as.numeric(unlist(strsplit(meta$RowConcs[i], ",")))
   Conc2 <- as.numeric(unlist(strsplit(meta$ColConcs[i], ",")))
   tmp <- response[which(response$BlockId == i), ]

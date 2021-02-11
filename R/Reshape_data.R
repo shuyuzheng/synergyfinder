@@ -12,30 +12,32 @@
 
 
 #' Adjust column names of input data table
-#' 
+#'
 #' This function changes the column names in other format into the style:
 #' block_id, drug1, drug2, conc1, conc2, response, conc_unit1, conc_unit2.
 #'
-#' @param data 
+#' @param data
 #'
-#' @return The data frame with the changed column names. 
-#' 
+#' @return The data frame with the changed column names.
+#'
 #' @export
-AdjustColumnName <- function(data){
+AdjustColumnName <- function(data) {
   colnames <- colnames(data)
-  colnames <- tolower(gsub("([a-z])([A-Z])", "\\1_\\L\\2", 
-                                 colnames, perl = TRUE))
+  colnames <- tolower(gsub("([a-z])([A-Z])", "\\1_\\L\\2",
+    colnames,
+    perl = TRUE
+  ))
   colnames <- gsub("^conc_col$", "conc2", colnames, perl = TRUE)
   colnames <- gsub("^conc_row$", "conc1", colnames, perl = TRUE)
   colnames <- gsub("^pair_index$", "block_id", colnames, perl = TRUE)
-  
-    colnames <- gsub("^drug_row$", "drug1", colnames, perl = TRUE)
-    colnames <- gsub("^drug_col$", "drug2", colnames, perl = TRUE)
-    colnames <- gsub("^conc_r$", "conc1", colnames, perl = TRUE)
-    colnames <- gsub("^conc_c$", "conc2", colnames, perl = TRUE)
-    colnames <- gsub("^conc_unit$", "conc_unit1", colnames, perl = TRUE)
-    colnames <- gsub("^conc_r_unit$", "conc_unit1", colnames, perl = TRUE)
-    colnames <- gsub("^conc_c_unit$", "conc_unit2", colnames, perl = TRUE)
+
+  colnames <- gsub("^drug_row$", "drug1", colnames, perl = TRUE)
+  colnames <- gsub("^drug_col$", "drug2", colnames, perl = TRUE)
+  colnames <- gsub("^conc_r$", "conc1", colnames, perl = TRUE)
+  colnames <- gsub("^conc_c$", "conc2", colnames, perl = TRUE)
+  colnames <- gsub("^conc_unit$", "conc_unit1", colnames, perl = TRUE)
+  colnames <- gsub("^conc_r_unit$", "conc_unit1", colnames, perl = TRUE)
+  colnames <- gsub("^conc_c_unit$", "conc_unit2", colnames, perl = TRUE)
 
 
   colnames(data) <- colnames
@@ -44,13 +46,13 @@ AdjustColumnName <- function(data){
 
 #' Pre-process the response data for further calculation and plot
 #'
-#' A function to transform the response data from data frame format to 
+#' A function to transform the response data from data frame format to
 #' dose-response matrices. Several processes could be chose to add noise, impute
 #' missing values or correct base line to the dose-response matrix.
-#'   
+#'
 #' @details The input data must contain the following columns: (block_id/BlockId/PairIndex),
 #' (drug_row/DrugRow/Drug1), (drug_col/DrugCol/Drug2), (response/Response),
-#' (conc_r/ConcRow/Conc1), (conc_c/ConcCol/Conc2), and (ConcUnit/conc_r_unit, 
+#' (conc_r/ConcRow/Conc1), (conc_c/ConcCol/Conc2), and (ConcUnit/conc_r_unit,
 #' conc_c_unit/ConcUnit1, ConcUnit2, ConcUnit3)
 #'
 #' @param data drug combination response data in a data frame format
@@ -58,19 +60,19 @@ AdjustColumnName <- function(data){
 #'   will be imputed by \code{\link{ImputeNA}}. Default is \code{TRUE}.
 #' @param noise a logical value. It indicates whether or not adding noise to
 #'   to the "response" values in the matrix. Default is \code{TRUE}.
-#' @param seed a single value, interpreted as an integer, or NULL. It is the 
+#' @param seed a single value, interpreted as an integer, or NULL. It is the
 #'   random seed for calculating the noise. Default setting is \code{NULL}
-#' @param correction a character. This argument is extended from the argument 
-#'   \code{method} of \code{\link{CorrectBaseLine}} function. There are three 
-#'   available valuse: \code{non}, \code{part}, \code{all}. 
+#' @param correction a character. This argument is extended from the argument
+#'   \code{method} of \code{\link{CorrectBaseLine}} function. There are three
+#'   available valuse: \code{non}, \code{part}, \code{all}.
 #'   The default setting is \code{non}.
-#' @param data.type a parameter to specify the response data type which can be 
+#' @param data.type a parameter to specify the response data type which can be
 #'   either "viability" or "inhibition".
-#' 
+#'
 #' @return a list of the following components:
 #'   \itemize{
-#'     \item \strong{dose.response.mats} a list of the dose-response matrices 
-#'       with \%inhibition as the response data. Row names and column names are 
+#'     \item \strong{dose.response.mats} a list of the dose-response matrices
+#'       with \%inhibition as the response data. Row names and column names are
 #'       drug concentrations.
 #'   \item \strong{adjusted.response.mats} The dose response matrix adjusted.
 #'     The processes are chosen by arguments \code{impute}, \code{noise}, and
@@ -79,125 +81,141 @@ AdjustColumnName <- function(data){
 #'   \item \strong{drug.pairs} a data frame contains the name of the row drug,
 #'     the name of the column drug, concentration unit and block IDs.
 #'   }
-#' 
-#' @author 
+#'
+#' @author
 #'   \itemize{
 #'     \item Liye He \email{liye.he@helsinki.fi}
 #'     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 #'  }
-#'  
+#'
 #' @importFrom magrittr %>%
-#'  
+#'
 #' @export
-#' 
+#'
 #' @examples
 #' data("mathews_screening_data")
 #' # set a random number seed for generating the noises
-#' set.seed(1) 
+#' set.seed(1)
 #' data <- ReshapeData(mathews_screening_data)
-ReshapeData <- function(data, impute=TRUE, noise=TRUE, seed = NULL, 
+ReshapeData <- function(data, impute = TRUE, noise = TRUE, seed = NULL,
                         correction = "non", data.type = "viability") {
   data <- AdjustColumnName(data)
   # 1.1 check column names
-  
-  if (!all(c("block_id", "drug1", "drug2", "response", "conc1", "conc2",
-             "conc_unit1") %in%
-           colnames(data))){
-    stop("The input data must contain the following columns: (block_id/BlockId/PairIndex), ",
-         "(drug_row/DrugRow/Drug1/drug1), (drug_col/DrugCol/Drug2/drug2), (response/Response),",
-         "(conc_r/ConcRow/Conc1/conc1), (conc_c/ConcCol/Conc2/conc2), 
-         (ConcUnit/conc_r_unit/ConcUnit1/conc_unit1)")
+
+  if (!all(c(
+    "block_id", "drug1", "drug2", "response", "conc1", "conc2",
+    "conc_unit1"
+  ) %in%
+    colnames(data))) {
+    stop(
+      "The input data must contain the following columns: (block_id/BlockId/PairIndex), ",
+      "(drug_row/DrugRow/Drug1/drug1), (drug_col/DrugCol/Drug2/drug2), (response/Response),",
+      "(conc_r/ConcRow/Conc1/conc1), (conc_c/ConcCol/Conc2/conc2), 
+         (ConcUnit/conc_r_unit/ConcUnit1/conc_unit1)"
+    )
   }
-  
-  drugs <- grep('drug\\d+', colnames(data), value = TRUE)
+
+  drugs <- grep("drug\\d+", colnames(data), value = TRUE)
   conc_units <- gsub("conc_unit", "drug", drugs)
-  
-  for (i in 1:length(conc_units)){
-    if (!conc_units[i] %in% colnames(data)){
+
+  for (i in 1:length(conc_units)) {
+    if (!conc_units[i] %in% colnames(data)) {
       data[conc_units[i]] <- data$conc_unit1
     }
   }
-  
+
   # 1.2 Check missing values
   if (!impute & sum(is.na(data$response))) {
-    stop("There are missing values in input data. Please fill it up or run 'ReshapeData' ", 
-         "with 'impute=TRUE'.")
+    stop(
+      "There are missing values in input data. Please fill it up or run 'ReshapeData' ",
+      "with 'impute=TRUE'."
+    )
   }
 
   # 2. Split data
-  data <- list(drug.pairs = unique(data[, !grepl("(response|conc\\d+)", 
-                                                 colnames(data), perl = TRUE)]),
-               response.df = unique(data[, grepl("(block_id|response|conc\\d+)",
-                              colnames(data), perl = TRUE)])
-               )
-  
+  data <- list(
+    drug.pairs = unique(data[, !grepl("(response|conc\\d+)",
+      colnames(data),
+      perl = TRUE
+    )]),
+    response.df = unique(data[, grepl("(block_id|response|conc\\d+)",
+      colnames(data),
+      perl = TRUE
+    )])
+  )
+
   # 3. Check the data type
   if (data.type == "viability") {
     data$response.df$response <- 100 - data$response.df$response
   } else if (data.type == "inhibition") {
     data$response.df$response <- data$response.df$response
   } else {
-    stop("Please tell me the data type of response valuse: 'viability' or ",
-         "'inhibition'.")
+    stop(
+      "Please tell me the data type of response valuse: 'viability' or ",
+      "'inhibition'."
+    )
   }
-  
+
   # 4. Dealing with replicates
   data$replicate <- sum(duplicated(dplyr::select(data$response.df, -response))) > 0
-  if (data$replicate){
+  if (data$replicate) {
     data <- repResponse(data)
+  } else {
+    data$drug.pairs$replicate <- FALSE
   }
-  
+
   # 5. Mark multi-drug data
   multidrug <- sum(grepl("^drug\\d$", colnames(data$drug.pair), perl = TRUE)) > 2
   data$multidrug <- multidrug
-  
+
   # 6. Adjust dose response values
-  if (multidrug){ # more than two drugs combination
-    if (noise){
-      if (data$replicate){
-        data$replicate.response$response_adj <- data$replicate.response$response + 
+  if (multidrug) { # more than two drugs combination
+    if (noise) {
+      if (data$replicate) {
+        data$replicate.response$response_adj <- data$replicate.response$response +
           stats::rnorm(nrow(data$replicate.response), 0, 0.001)
       } else {
-        data$response.df$response_adj <- data$response.df$response + 
+        data$response.df$response_adj <- data$response.df$response +
           stats::rnorm(nrow(data$response.df), 0, 0.001)
       }
     }
-    
   } else { # 2 drugs combination
     if (impute | noise | correction != "non") {
       tmp.df <- NULL
-      if (data$replicate){
+      if (data$replicate) {
         response.df <- data$replicate.response
       } else {
         response.df <- data$response.df
       }
       blocks <- unique(data$drug.pairs$block_id)
-      for (b in data$drug.pairs$block_id){
-          tmp.mat <- response.df %>% 
-            dplyr::filter(block_id == b)
-          tmp.mat <- reshape2::acast(conc1 ~ conc2, data = tmp.mat,
-                                     value.var = "response")
+      for (b in data$drug.pairs$block_id) {
+        tmp.mat <- response.df %>%
+          dplyr::filter(block_id == b)
+        tmp.mat <- reshape2::acast(conc1 ~ conc2,
+          data = tmp.mat,
+          value.var = "response"
+        )
         # process data according to setting of arguments
-    
-          if (impute) {
-            tmp.mat <- ImputeNA(tmp.mat)
-          }
-          if (noise){
-            set.seed(seed)
-            tmp.mat <- AddNoise(tmp.mat)
-          } 
-          tmp.mat <- CorrectBaseLine(tmp.mat, method = correction)
-          # change it back to data frame
-          tmp.mat <- reshape2::melt(tmp.mat)
-          colnames(tmp.mat) <- c("conc1", "conc2", "response_adj")
-          tmp.mat$block_id <- b
-          tmp.df <- rbind.data.frame(tmp.df, tmp.mat)
+
+        if (impute) {
+          tmp.mat <- ImputeNA(tmp.mat)
+        }
+        if (noise) {
+          set.seed(seed)
+          tmp.mat <- AddNoise(tmp.mat)
+        }
+        tmp.mat <- CorrectBaseLine(tmp.mat, method = correction)
+        # change it back to data frame
+        tmp.mat <- reshape2::melt(tmp.mat)
+        colnames(tmp.mat) <- c("conc1", "conc2", "response_adj")
+        tmp.mat$block_id <- b
+        tmp.df <- rbind.data.frame(tmp.df, tmp.mat)
       }
-      if (data$replicate){ 
-        data$replicate.response <- data$replicate.response %>% 
+      if (data$replicate) {
+        data$replicate.response <- data$replicate.response %>%
           dplyr::left_join(tmp.df, by = c("block_id", "conc1", "conc2"))
       }
-      data$response.df <- data$response.df %>% 
+      data$response.df <- data$response.df %>%
         dplyr::left_join(tmp.df, by = c("block_id", "conc1", "conc2"))
     }
   }
@@ -217,10 +235,10 @@ ReshapeData <- function(data, impute=TRUE, noise=TRUE, seed = NULL,
 #' imputed.
 #'
 #' @author Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
-#' 
+#'
 #' @export
-#' 
-#' @examples 
+#'
+#' @examples
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
 #' response.mat <- data$dose.response.mats[[1]]
@@ -229,14 +247,17 @@ ReshapeData <- function(data, impute=TRUE, noise=TRUE, seed = NULL,
 #' adjusted.mat <- ImputeNA(response.mat)
 ImputeNA <- function(response.mat) {
   while (sum(is.na(response.mat))) {
-  x <- array(c(rbind(response.mat[-1,], NA),
-               rbind(NA, response.mat[-nrow(response.mat), ]),
-               cbind(response.mat[,-1], NA),
-               cbind(NA, response.mat[, -ncol(response.mat)])),
-             dim=c(nrow(response.mat), ncol(response.mat), 4))
-  x.imp <- apply(x, c(1,2), mean, na.rm = TRUE)
-  index.na <- is.na(response.mat)
-  response.mat[index.na] <- x.imp[index.na]
+    x <- array(c(
+      rbind(response.mat[-1, ], NA),
+      rbind(NA, response.mat[-nrow(response.mat), ]),
+      cbind(response.mat[, -1], NA),
+      cbind(NA, response.mat[, -ncol(response.mat)])
+    ),
+    dim = c(nrow(response.mat), ncol(response.mat), 4)
+    )
+    x.imp <- apply(x, c(1, 2), mean, na.rm = TRUE)
+    index.na <- is.na(response.mat)
+    response.mat[index.na] <- x.imp[index.na]
   }
   return(response.mat)
 }
@@ -244,13 +265,13 @@ ImputeNA <- function(response.mat) {
 #' Add noise to response value
 #'
 #' Function \code{AddNoise} calculates and add a noise to values in response
-#' matrix. The noises obey normal distribution ~N(0, 0.001) wich are generated 
+#' matrix. The noises obey normal distribution ~N(0, 0.001) wich are generated
 #' by fucntion \code{rnorm}.
 #'
-#' \strong{Note}: If the analysis requires for reproductiblity, plesase set the 
+#' \strong{Note}: If the analysis requires for reproductiblity, plesase set the
 #' random seed before calling this function.
 #'
-#' @param response.mat A matrix. It contains the response data for one drug 
+#' @param response.mat A matrix. It contains the response data for one drug
 #' combination.
 #'
 #' @return A matrix. It contains the response value added with noises.
@@ -258,35 +279,35 @@ ImputeNA <- function(response.mat) {
 #' @author Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 #'
 #' @export
-#' 
-#' @examples 
+#'
+#' @examples
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
 #' response.mat <- data$dose.response.mats[[1]]
 #' set.seed(1)
 #' adjusted.mat <- AddNoise(response.mat)
 AddNoise <- function(response.mat) {
-    noise <- matrix(stats::rnorm(nrow(response.mat) * ncol(response.mat),
-                                 0, 0.001),
-                    nrow = nrow(response.mat),
-                    ncol = ncol(response.mat))
+  noise <- matrix(stats::rnorm(
+    nrow(response.mat) * ncol(response.mat),
+    0, 0.001
+  ),
+  nrow = nrow(response.mat),
+  ncol = ncol(response.mat)
+  )
   response.mat <- response.mat + noise
   return(response.mat)
 }
 
 #' Extract single drug response from matrix
 #'
-#' \code{ExtractSingleDrug} extracts the dose-response values of single drug (
-#' drug added in column or row) from a drug combination dose-response matrix.
+#' \code{ExtractSingleDrug} extracts the dose-response values of single drug
+#'  from a drug combination dose-response matrix.
 #'
-#' @param response.mat A drug cobination dose-response matrix. It's column name
-#'   and row name are representing the concerntrations of drug added to column 
-#'   and row, respectively. The values in matrix indicate the inhibition rate to
-#'   cell growth.
-#' @param dim A character. It should be either "col" or "row" to indicate which
-#'   drug's dose-response value will be extracted.
+#' @param response A data frame. It must contain the columns: "conc1", "conc2",
+#' ..., for the concentration of the combined drugs and "response" for the
+#' observed %inhibition at certain combination.
 #'
-#' @return A data frame. It contains two variables:
+#' @return A list contains several data frames each of which contains two columns:
 #'   \itemize{
 #'     \item \strong{dose} The concertration of drug.
 #'     \item \strong{response} The cell's response (inhibation rate) to
@@ -296,41 +317,24 @@ AddNoise <- function(response.mat) {
 #' @author Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 #'
 #' @export
-#' 
-#' @examples 
+#'
+#' @examples
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
-#' response.mat <- data$dose.response.mats[[1]]
-#' drug.row <- ExtractSingleDrug(response.mat, dim = "row")
-ExtractSingleDrug <- function(response.mat, dim = "row") {
-  dose_col <- as.numeric(colnames(response.mat))
-  dose_row <- as.numeric(rownames(response.mat))
-  if (dim == "row") {
-    single.drug <- data.frame(response = response.mat[, dose_col == 0],
-                              dose = dose_row)
-  } else if (dim == "col") {
-    single.drug <- data.frame(response = response.mat[dose_row == 0, ],
-                              dose = dose_col)
-  } else {
-    stop("Values for 'dim' should be eighther 'row' or 'col'!")
+#' response <- data$response[data$response$block_id == 1, c("conc1", "conc2", "response")]
+#' single <- ExtractSingleDrug(response.df)
+ExtractSingleDrug <- function(response) {
+  concs <- grep("(conc)", colnames(response), perl = TRUE, value = TRUE)
+  single.drug <- vector("list", length(concs))
+  names(single.drug) <- concs
+  conc_sum <- rowSums(response[, concs])
+  for (conc in concs) {
+    index <- which(response[, conc] == conc_sum)
+    single.drug[[conc]] <- data.frame(
+      dose = response[index, conc],
+      response = response[index, "response"]
+    )
   }
-  rownames(single.drug) <- NULL
-  return(single.drug)
-}
-
-ExtractSingleDrugDf <- function(response.df, conc.name) {
-  other.conc <- grep("(conc)", colnames(response.df), perl = TRUE, value = TRUE)
-  other.conc <- other.conc[other.conc != conc.name]
-  single.drug <- response.df %>% 
-    dplyr::ungroup() %>% 
-    dplyr::rowwise() %>% 
-    dplyr::mutate(conc_sum = ifelse(length(other.conc) == 1,
-                                    !!as.name(other.conc),
-                                    sum(c(!!as.name(other.conc))))) %>% 
-    #dplyr::mutate(conc_sum = sum(c(conc1, conc2))) %>% 
-    dplyr::filter(conc_sum == 0) %>% 
-    dplyr::select(dose = !!as.name(conc.name), response = response)
-  
   return(single.drug)
 }
 
@@ -340,7 +344,7 @@ ExtractSingleDrugDf <- function(response.df, conc.name) {
 #' dose-response matrix to make it closer to 0.
 #'
 #' @param response.mat A drug cobination dose-response matrix. It's column name
-#'   and row name are representing the concerntrations of drug added to column 
+#'   and row name are representing the concerntrations of drug added to column
 #'   and row, respectively. The values in matrix indicate the inhibition rate to
 #'   cell growth.
 #' @param method A character value to indicate using which method to do
@@ -359,14 +363,13 @@ ExtractSingleDrugDf <- function(response.df, conc.name) {
 #' }
 #'
 #' @export
-#' 
-#' @examples 
+#'
+#' @examples
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
 #' response.mat <- data$dose.response.mats[[1]]
 #' adjusted.mat <- CorrectBaseLine(response.mat, method = "part")
-CorrectBaseLine <- function(response.mat, method = c("non", "part", "all")){
-
+CorrectBaseLine <- function(response.mat, method = c("non", "part", "all")) {
   method <- match.arg(method)
 
   if (method == "non") {
@@ -381,69 +384,31 @@ CorrectBaseLine <- function(response.mat, method = c("non", "part", "all")){
 
     drug.col <- ExtractSingleDrug(response.mat, dim = "col")
     drug.col.fit <- suppressWarnings(stats::fitted(FitDoseResponse(drug.col)))
-
-    baseline <- min(c(min(as.numeric(drug.row.fit)),
-                       min(as.numeric(drug.col.fit))))
-    response.mat[negative.ind] <- vapply(response.mat[negative.ind],
-                                         function(x) {
-                                           x - ((100 - x) / 100 * baseline)
-                                         }, numeric(1))
+    drug.3 <- ExtractSingleDrug(response.mat, dim = "col")
+    drug.3.fit <- suppressWarnings(stats::fitted(FitDoseResponse(drug.col)))
+    baseline <- min(c(
+      min(as.numeric(drug.row.fit)),
+      min(as.numeric(drug.col.fit))
+    ))
+    response.mat[negative.ind] <- vapply(
+      response.mat[negative.ind],
+      function(x) {
+        x - ((100 - x) / 100 * baseline)
+      }, numeric(1)
+    )
     return(response.mat)
-  } else if (method == "all"){
+  } else if (method == "all") {
     drug.row <- ExtractSingleDrug(response.mat, dim = "row")
     drug.row.fit <- suppressWarnings(stats::fitted(FitDoseResponse(drug.row)))
 
     drug.col <- ExtractSingleDrug(response.mat, dim = "col")
     drug.col.fit <- suppressWarnings(stats::fitted(FitDoseResponse(drug.col)))
 
-    baseline <- min(c(min(as.numeric(drug.row.fit)),
-                       min(as.numeric(drug.col.fit))))
+    baseline <- min(c(
+      min(as.numeric(drug.row.fit)),
+      min(as.numeric(drug.col.fit))
+    ))
     response.mat <- response.mat - ((100 - response.mat) / 100 * baseline)
     return(response.mat)
   }
 }
-# 
-# ReshapeDataMultiDrug <- function(data, noise=TRUE, seed = NULL, data.type = "viability") {
-#   data <- AdjustColumnName(data)
-#   # 1.1 check column names
-#   
-#   if (!all(c("block_id", "drug1", "drug2", "drug3", "response", "conc1", "conc2", "conc3",
-#              "conc_unit1") %in%
-#            colnames(data)))
-#     stop("The input data must contain the following columns: (block_id/BlockId/PairIndex), ",
-#          "(Drug1/drug1), (Drug2/drug2), (Drug3/drug3), (response/Response), (Conc1/conc1), ",
-#          "(Conc2/conc2), (Conc3/conc3), (ConcUnit/ConcUnit1,ConcUnit2,ConcUnit3).")
-#   
-#   # 1.2 Check the data type
-#   if (data.type == "viability") {
-#     data$response <- 100 - data$response
-#   } else if (data.type == "inhibition") {
-#     data <- data
-#   } else {
-#     stop("Please tell me the data type of response valuse: 'viability' or ",
-#          "'inhibition'.")
-#   }
-#   
-#   # obtain block IDs
-#   blocks <- unique(data$block_id)
-#   
-#   # 2. Create containers
-#   # 2.1 List dose.response.mats for storing all the dose-response matrices.
-#   #     Setting the block_id as the name of each element.
-#   dose.response.mats <- vector(mode="list", length=length(blocks))
-#   names(dose.response.mats) <- blocks
-#   
-#   
-#   # 2.3 Data frame drug.pairs for storing all the drug name, concentration unit.
-#   drug.pairs <- unique(data[, !grepl("(response|conc\\d)", colnames(data), perl = TRUE)])
-#   
-#   # 3. Reshape the data
-#   for (block in blocks) {
-#     response.mat <- data[data$block_id == block, grepl("(response|conc\\d)", colnames(data), perl = TRUE)]
-#     block <- as.character(block)
-#     # save dose-response matrix
-#     dose.response.mats[[block]] <- response.mat
-#   }
-#   return(list(dose.response.mats = dose.response.mats, 
-#                 drug.pairs = drug.pairs))
-# }
