@@ -4,16 +4,16 @@
 \alias{HSA}
 \title{Calculate HSA synergy score}
 \usage{
-HSA(response.df)
+HSA(response)
 }
 \arguments{
-\item{response.mat}{A drug cobination dose-response matrix. It's column name
-and row name are representing the concerntrations of drug added to column and
-row, respectively. The values in matrix indicate the inhibition rate to cell
-growth.}
+\item{response}{A data frame. It must contain the columns: "conc1", "conc2",
+..., for the concentration of the combined drugs and "response" for the
+observed %inhibition at certain combination.}
 }
 \value{
-A matrix for synergy score calculated via Highest Single Agent (HSA).
+A data frame containing the concentrations for drugs, reference
+  effect and synergy score estimated by HSA model.
 }
 \description{
 \code{HSA} calculates the synergy score matrix for a block of
@@ -27,7 +27,9 @@ combination is the maximal single drug effect".
 \examples{
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
-HSA.score <- HSA(data$dose.response.mats[[1]])
+response <- data$response[data$response$block_id == 1, 
+                          c("conc1", "conc2", "response")]
+HSA.score <- HSA(response)
 }
 \references{
 \itemize{
@@ -43,7 +45,7 @@ HSA.score <- HSA(data$dose.response.mats[[1]])
 }
 \author{
 \itemize{
-   \item{Liye He \email{liye.he@helsinki.fi}}
-   \item{Shuyu Zheng \email{shuyu.zheng@helsinki.fi}}
-}
+    \item Jing Tang \email{jing.tang@helsinki.fi}
+    \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+ }
 }

@@ -4,12 +4,12 @@
 \alias{ZIP}
 \title{Calculate Delta synergy score based on ZIP model}
 \usage{
-ZIP(response.df, Emin = NA, Emax = NA, quiet = TRUE)
+ZIP(response, Emin = NA, Emax = NA, quiet = TRUE)
 }
 \arguments{
-\item{response.df}{A data frame. It must contain the columns: "conc1", 
-"conc2", ..., for the concentration of the combined drugs and "response"
-for the observed %inhibition at certain combination.}
+\item{response}{A data frame. It must contain the columns: "conc1", "conc2",
+..., for the concentration of the combined drugs and "response" for the
+observed %inhibition at certain combination.}
 
 \item{Emin}{The expected minimum response value in the 4 parameter 
 log-logistic model.}
@@ -21,8 +21,8 @@ log-logistic model.}
 will not show during calculation.}
 }
 \value{
-A matrix of \eqn{\Delta} score calculated via Zero Interaction
-Potency (ZIP) method.
+A data frame containing the concentrations for drugs, reference
+  effect, fitted response and synergy score estimated by ZIP model.
 }
 \description{
 \code{ZIP} calculates the \eqn{\Delta} score matrix from a dose-response
@@ -30,35 +30,44 @@ matrix by using Zero Interaction Potency (ZIP) method.
 }
 \details{
 Zero Interaction Potency (ZIP) is a reference model for evaluating
-  the conbimation effect of two drugs. It captures the effect of drug
-  combination by comparing the change in the potency of the dose-response
-  curves between individual drugs and their combinations. \cr
-  \cr
-  The optional arguments \code{drug.col.model}, \code{drug.row.model} are
-  designed for reuse the single drug dose response model fitting results,
-  if it has been down before. Functions \code{\link{FitDoseResponse}} and
-  \code{\link{ExtractSingleDrug}} could be used to calculate these arguments.
+the conbimation effect of two drugs. It captures the effect of drug
+combination by comparing the change in the potency of the dose-response
+curves between individual drugs and their combinations. \cr
+\cr
+The optional arguments \code{drug.col.model}, \code{drug.row.model} are
+designed for reuse the single drug dose response model fitting results, if
+it has been down before. Functions \code{\link{FitDoseResponse}} and
+\code{\link{ExtractSingleDrug}} could be used to calculate these arguments.
 }
 \examples{
 # No single drug fitted modle before
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
-response.df <- data$response[data$response$block_id == 0]
-ZIP.score <- ZIP(response.df)
+response <- data$response[data$response$block_id == 1, 
+                          c("conc1", "conc2", "response")]
+ZIP.score <- ZIP(response)
+
+# Parallel processing:
+if (future::supportsMulticore()) {
+  future::plan(future::multicore)
+} else {
+  future::plan(future::multisession)
+}
+ZIP(response)
+# future::plan(future::sequential) # Turn off the multicore setting
 
 }
 \references{
 \itemize{
-   \item{Yadav B, Wennerberg K, Aittokallio T, Tang J. (2015).
-   \href{https://doi.org/10.1016/j.csbj.2015.09.001}{Searching for Drug
-   Synergy in Complex Dose-Response Landscape Using an Interaction Potency
-   Model.} Comput Struct Biotechnol J, 13:504– 513.}
-}
+    \item{Yadav B, Wennerberg K, Aittokallio T, Tang J. (2015).
+    \href{https://doi.org/10.1016/j.csbj.2015.09.001}{Searching for Drug
+    Synergy in Complex Dose-Response Landscape Using an Interaction Potency
+    Model.} Comput Struct Biotechnol J, 13:504– 513.}
+  }
 }
 \author{
 \itemize{
-   \item{Liye He \email{liye.he@helsinki.fi}}
-   \item{Jing Tang \email{jing.tang@helsinki.fi}}
-   \item{Shuyu Zheng \email{shuyu.zheng@helsinki.fi}}
-}
+    \item Jing Tang \email{jing.tang@helsinki.fi}
+    \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  }
 }

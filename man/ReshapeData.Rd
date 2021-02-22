@@ -7,17 +7,22 @@
 ReshapeData(
   data,
   impute = TRUE,
+  impute_method = NULL,
   noise = TRUE,
   seed = NULL,
-  correction = "non",
-  data.type = "viability"
+  data_type = "viability"
 )
 }
 \arguments{
 \item{data}{drug combination response data in a data frame format}
 
 \item{impute}{a logical value. If it is \code{TRUE}, the \code{NA} values
-will be imputed by \code{\link{ImputeNA}}. Default is \code{TRUE}.}
+will be imputed by \code{\link[mice]{mice}}. Default is \code{TRUE}.}
+
+\item{impute_method}{a single string. It sets the \code{method} parameter
+in function \code{\link[mice]{mice}} to specify the imputation method. 
+Please check the documentation of \code{\link[mice]{mice}} to find the
+available methods.}
 
 \item{noise}{a logical value. It indicates whether or not adding noise to
 to the "response" values in the matrix. Default is \code{TRUE}.}
@@ -25,26 +30,30 @@ to the "response" values in the matrix. Default is \code{TRUE}.}
 \item{seed}{a single value, interpreted as an integer, or NULL. It is the
 random seed for calculating the noise. Default setting is \code{NULL}}
 
+\item{data_type}{a parameter to specify the response data type which can be
+either "viability" or "inhibition".}
+
 \item{correction}{a character. This argument is extended from the argument
 \code{method} of \code{\link{CorrectBaseLine}} function. There are three
 available valuse: \code{non}, \code{part}, \code{all}.
 The default setting is \code{non}.}
-
-\item{data.type}{a parameter to specify the response data type which can be
-either "viability" or "inhibition".}
 }
 \value{
 a list of the following components:
   \itemize{
-    \item \strong{dose.response.mats} a list of the dose-response matrices
-      with \%inhibition as the response data. Row names and column names are
-      drug concentrations.
-  \item \strong{adjusted.response.mats} The dose response matrix adjusted.
-    The processes are chosen by arguments \code{impute}, \code{noise}, and
-    \code{correction}. If no process was chosen, the final result will not
-    contain this result.
-  \item \strong{drug.pairs} a data frame contains the name of the row drug,
-    the name of the column drug, concentration unit and block IDs.
+    \item \strong{drug_pairs} A data frame contains the name of all the
+    tested drugs, concentration unit, block IDs and a logical column 
+    "replicate" to indicate whether there are replicates in the corresponding
+    block.
+    \item \strong{response} A data frame contains the columns: "concX" 
+    concentrations for drugs from input data; "response_origin" response
+    values from input data; "response" % inhibition value for downstream
+    analysis.
+  \item \strong{response_statistics} A data frame. It will be output if
+    there is block have replicated response values. It contains the
+    block ID, the concentrations for all the tested drugs, and statistics for
+    % inhibition values across replicates (including mean, standard
+    deviation, standard error of mean and 95% confidence interval).
   }
 }
 \description{
@@ -53,10 +62,11 @@ dose-response matrices. Several processes could be chose to add noise, impute
 missing values or correct base line to the dose-response matrix.
 }
 \details{
-The input data must contain the following columns: (block_id/BlockId/PairIndex),
-(drug_row/DrugRow/Drug1), (drug_col/DrugCol/Drug2), (response/Response),
-(conc_r/ConcRow/Conc1), (conc_c/ConcCol/Conc2), and (ConcUnit/conc_r_unit,
-conc_c_unit/ConcUnit1, ConcUnit2, ConcUnit3)
+The input data must contain the following columns:
+(block_id/BlockId/PairIndex), (drug_row/DrugRow/Drug1),
+(drug_col/DrugCol/Drug2), (response/Response), (conc_r/ConcRow/Conc1),
+(conc_c/ConcCol/Conc2), and (ConcUnit/conc_r_unit, conc_c_unit/ConcUnit1,
+ConcUnit2, ConcUnit3)
 }
 \examples{
 data("mathews_screening_data")

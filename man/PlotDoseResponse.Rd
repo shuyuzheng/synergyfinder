@@ -7,15 +7,20 @@
 PlotDoseResponse(
   data,
   adjusted = TRUE,
-  pair.index = NULL,
-  metric = NULL,
-  color.low.response = "green",
-  color.point = "red",
-  color.high.response = "red",
-  color.conc = "red",
-  save.file = FALSE,
-  file.type = "pdf",
-  file.name = NULL,
+  block_ids = NULL,
+  drugs = c(1, 2),
+  statistic = NULL,
+  title_color = "#635F5D",
+  subtitle_color = "#635F5D",
+  axis_text_color = "#635F5D",
+  axis_title_color = "#635F5D",
+  high_response_color = "#B2182B",
+  low_response_color = "#2166AC",
+  point_color = "#C20F00",
+  curve_color = "black",
+  save_file = FALSE,
+  file_type = "pdf",
+  file_name = NULL,
   width = 12,
   height = 6,
   ...
@@ -28,31 +33,19 @@ PlotDoseResponse(
 matrix will be plotted. If it is \code{TRUE}, adjusted response matrix will
 be plotted.}
 
-\item{pair.index}{a parameter to specify which drug combination if there are
-many drug combinations in the data. By default, it is NULL so that the
+\item{block_ids}{A vector characters or NULL. It contains the block IDs for
+the blocks user want to visualize. By default, it is NULL so that the
 visualization of all the drug combinations in the data is returned.}
 
-\item{color.low.response}{a charactor in R color format. It indicates the
-color for the response lower than 0. Default setting is "green".}
-
-\item{color.point}{a charactor in R color format. It indicates the
-color for the data point in the plot. Default setting is "red".}
-
-\item{color.high.response}{a charactor in R color format. It indicates the
-color for the response higher than 0. Default setting is "red".}
-
-\item{color.conc}{a charactor in R color format. It indicates the
-color for the concentrations label for axises. Default setting is "red".}
-
-\item{save.file}{a parameter to specify if the visualization results are
+\item{save_file}{a parameter to specify if the visualization results are
 saved as pdf files in current working directory or not. If it is FALSE,
 the results are returned as a list of the plots. It is FALSE by default.}
 
-\item{file.type}{a character. It indicates the format of files you want to
+\item{file_type}{a character. It indicates the format of files you want to
 save as. Default is "pdf". Available values are "jpeg", "bmp", "png",
 "tiff", "pdf", "svg".}
 
-\item{file.name}{a character vector. It indicates the file names, if
+\item{file_name}{a character vector. It indicates the file names, if
 user chose to save the plot to local directory.If it is not defined by
 user, a default name will be assigned.}
 
@@ -63,6 +56,18 @@ user, a default name will be assigned.}
 \item{...}{further graphical parameters from \code{plot} for
 plotting the single drug dose-response curve. Use e.g., cex.lab to change
 the axis label size and cex.axis to change the tick size of axises.}
+
+\item{color.low.response}{a charactor in R color format. It indicates the
+color for the response lower than 0. Default setting is "green".}
+
+\item{color.high.response}{a charactor in R color format. It indicates the
+color for the response higher than 0. Default setting is "red".}
+
+\item{color.conc}{a charactor in R color format. It indicates the
+color for the concentrations label for axises. Default setting is "red".}
+
+\item{Point_color}{a charactor in R color format. It indicates the
+color for the data point in the plot. Default setting is "red".}
 }
 \value{
 NULL. The plot will be saved into a local file if

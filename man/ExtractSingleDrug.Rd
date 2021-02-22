@@ -4,16 +4,15 @@
 \alias{ExtractSingleDrug}
 \title{Extract single drug response from matrix}
 \usage{
-ExtractSingleDrug(response.df)
+ExtractSingleDrug(response)
 }
 \arguments{
-\item{response.mat}{A drug cobination dose-response matrix. It's column name
-and row name are representing the concerntrations of drug added to column
-and row, respectively. The values in matrix indicate the inhibition rate to
-cell growth.}
+\item{response}{A data frame. It must contain the columns: "conc1", "conc2",
+..., for the concentration of the combined drugs and "response" for the
+observed %inhibition at certain combination.}
 }
 \value{
-A list contains several data frames each of which contains two columns:
+A list contains several data frames each of which contains 2 columns:
   \itemize{
     \item \strong{dose} The concertration of drug.
     \item \strong{response} The cell's response (inhibation rate) to
@@ -27,8 +26,9 @@ A list contains several data frames each of which contains two columns:
 \examples{
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
-response.mat <- data$dose.response.mats[[1]]
-drug.row <- ExtractSingleDrug(response.df)
+response <- data$response[data$response$block_id == 1,
+                          c("conc1", "conc2", "response")]
+single <- ExtractSingleDrug(response.df)
 }
 \author{
 Shuyu Zheng \email{shuyu.zheng@helsinki.fi}

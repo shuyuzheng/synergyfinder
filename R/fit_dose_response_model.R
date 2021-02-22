@@ -173,3 +173,18 @@ PredictModelSpecify <- function(model, dose) {
   }
   return(pred)
 }
+
+
+FindModelPar <- function (model){
+  # b, c, d, e, 1
+  # fitted parameters
+  par <- model$fct$fixed
+  par[is.na(par)] <- model$coefficients
+  if (FindModelType(model) == "L.4"){
+    names(par) <- c("b_Hill", "c_Emin", "d_Emax", "e_log(EC50)", "f_Symmetry")
+  } else {
+    names(par) <- c("b_Hill", "c_Emin", "d_Emax", "e_EC50", "f_Symmetry")
+  }
+  return(par)
+}
+
