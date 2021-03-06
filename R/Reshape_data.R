@@ -238,9 +238,14 @@ ReshapeData <- function(data, impute = TRUE, impute_method = NULL,
     dplyr::mutate(
       response_sem = response_sd / sqrt(n),
       response_CI95 = qt(0.975, df = n - 1) * response_sem,
+      response_ci_left = response_mean - response_CI95,
+      response_ci_right = response_mean + response_CI95,
       response_origin_sem = response_origin_sd / sqrt(n),
       response_origin_CI95 = qt(0.975, df = n - 1) * response_origin_sem,
-    )
+      response_origin_ci_left = response_origin_mean - response_origin_CI95,
+      response_origin_ci_right = response_origin_mean + response_origin_CI95
+    ) %>% 
+    dplyr::select(-dplyr::ends_with("_sd"), -dplyr::ends_with("_CI95"))
   dup_blocks <- replicate_response$block_id
   drug_pairs$replicate <- drug_pairs$block_id %in% dup_blocks
 

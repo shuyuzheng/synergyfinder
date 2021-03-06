@@ -5,7 +5,8 @@
 #
 # CalculateSynergy: Calculate the synergy scores for drug combinations
 # ZIP/Bliss/HSA/Loewe: 4 functions to calculate synergy scores.
-# eq.LL4/L4.LL4/L4: 4 functions to calculate loewe score in CalculateLoewe.
+# solveExpDose/L4/LL4: 3 functions to solve the expected dose of drug at which
+#                      it could achieve the given % inhibition.
 # fun: Function used in CalculateLoewe
 
 #' Calculate the synergy scores for drug combinations
@@ -55,6 +56,8 @@
 #'     and fitted response values (only for "ZIP" model) across results from
 #'     iterations.
 #'  }
+#'  This function also add mean of synergy scores across whole combination
+#'  matrix to the \code{data$drug_pair} table.
 #'
 #' @author
 #'   \itemize{
@@ -134,13 +137,12 @@ CalculateSynergy <- function(data,
         for (i in s){
           tmp_m[[i]] <- rowMeans(dplyr::select(iter, dplyr::starts_with(i)))
           tmp_score_statistic_m[[paste0(i, "_mean")]] <- tmp_m[[i]]
-          tmp_score_statistic_m[[paste0(i, "_sd")]] <- 
-            apply(dplyr::select(iter, dplyr::starts_with(i)), 1, sd)
           tmp_score_statistic_m[[paste0(i, "_sem")]] <- 
-            tmp_score_statistic_m[[paste0(i, "_sd")]] / iteration
-          tmp_score_statistic_m[[paste0(i, "_CI95")]] <- 
-            stats::qt(0.975, df = iteration - 1) * 
-            tmp_score_statistic_m[[paste0(i, "_sem")]]
+            apply(dplyr::select(iter, dplyr::starts_with(i)), 1, sd)
+          tmp_score_statistic_m[[paste0(i, "_CI95_left")]] <- 
+            apply(dplyr::select(iter, dplyr::starts_with(i)), 1, function(x) quantile(x, probs = 0.025))
+          tmp_score_statistic_m[[paste0(i, "_CI95_right")]] <- 
+            apply(dplyr::select(iter, dplyr::starts_with(i)), 1, function(x) quantile(x, probs = 0.975))
         }
         tmp_scores_statistic <- dplyr::left_join(tmp_scores_statistic, 
                                                  tmp_score_statistic_m,
@@ -153,6 +155,8 @@ CalculateSynergy <- function(data,
       scores_statistics <- rbind.data.frame(scores_statistics, 
                                            tmp_scores_statistic)
     } else { # Blocks without replicates
+      # Correct base line
+      response_one_block <- CorrectBaseLine(response_one_block)
       tmp <- dplyr::select(response_one_block, dplyr::all_of(concs)) %>% 
         unique()
       for (m in method) {
@@ -178,13 +182,21 @@ CalculateSynergy <- function(data,
       scores <- rbind.data.frame(scores, tmp)
     }
   }
-
+  
   ## 4. Save data into the list
   data$synergy_scores <- dplyr::select(scores, block_id, dplyr::everything())
   if (length(scores_statistics) != 0){
     data$synergy_scores_statistics <- dplyr::select(scores_statistics, block_id,
                                             dplyr::everything())
   }
+  summarized_score <- data$synergy_scores %>% 
+    dplyr::select(block_id, dplyr::ends_with("_synergy")) %>% 
+    dplyr::group_by(block_id) %>%
+    dplyr::summarise_all(mean) %>% 
+    dplyr::ungroup()
+  data$drug_pairs <- data$drug_pairs %>% 
+    dplyr::select(-dplyr::ends_with("_synergy")) %>% 
+    dplyr::left_join(summarized_score, by = "block_id")
   return(data)
 }
 
@@ -249,7 +261,6 @@ CalculateSynergy <- function(data,
 #' ZIP(response)
 #' # future::plan(future::sequential) # Turn off the multicore setting
 #' 
-
 ZIP <- function(response,
                 Emin = NA,
                 Emax = NA,
@@ -383,6 +394,8 @@ Bliss <- function(response, single_drug_data) {
   ref <- expand.grid(lapply(single_drug_data, function(x) x$response))
   bliss$Bliss_ref <- apply(ref, 1, function(x) (1 - prod(1 - x / 100)) * 100)
   concs <- grep("conc\\d", colnames(response), value = TRUE)
+  bliss <- response %>%
+    dplyr::left_join(bliss, by = concs)
   # Assign response value to reference additive effects in non-combination wells
   # (single drug or DMSO)
   no_comb_rows <- apply(
@@ -394,11 +407,9 @@ Bliss <- function(response, single_drug_data) {
   bliss$Bliss_ref[which(no_comb_rows)] <- bliss$response[which(no_comb_rows)]
   
   # Calculate Bliss synergy score
-  bliss <- response %>%
-    dplyr::left_join(bliss, by = concs) %>%
-    dplyr::mutate(Bliss_synergy = response - Bliss_ref)
-
-  bliss <- dplyr::select(bliss, -response)
+  bliss <- bliss %>%
+    dplyr::mutate(Bliss_synergy = response - Bliss_ref) %>% 
+    dplyr::select(-response)
   return(bliss)
 }
 
@@ -453,6 +464,10 @@ HSA <- function(response) {
   ref <- expand.grid(lapply(single_drug_data, function(x) x$response))
   hsa$HSA_ref <- apply(ref, 1, max)
   concs <- grep("conc\\d", colnames(response), value = TRUE)
+
+  hsa <- response %>%
+    dplyr::left_join(hsa, by = concs)
+  
   # Assign response value to reference additive effects in non-combination wells
   # (single drug or DMSO)
   no_comb_rows <- apply(
@@ -461,14 +476,13 @@ HSA <- function(response) {
       (length(x) - sum(x == 0)) <= 1
     }
   )
-  hsa$HSA_ref[which(no_comb_rows)] <- hsa$HSA_response[which(no_comb_rows)]
+  
+  hsa$HSA_ref[which(no_comb_rows)] <- hsa$response[which(no_comb_rows)]
   
   # Calculate HSA synergy score
-  hsa <- response %>%
-    dplyr::left_join(hsa, by = concs) %>%
-    dplyr::mutate(HSA_synergy = response - HSA_ref)
-
-  hsa <- dplyr::select(hsa, -response)
+  hsa <- hsa %>%
+    dplyr::mutate(HSA_synergy = response - HSA_ref) %>% 
+    dplyr::select(-response)
   return(hsa)
 }
 
@@ -544,8 +558,8 @@ Loewe <- function(response,
     function(x) FitDoseResponse(x, Emin = Emin, Emax = Emax)
   )
 
-  single_par <- lapply(single_drug_model, .FindModelPar)
-  single_type <- lapply(single_drug_model, .FindModelType)
+  single_par <- lapply(single_drug_model, FindModelPar)
+  single_type <- lapply(single_drug_model, FindModelType)
 
   y_loewe <- c()
   dist_loewe <- c()
@@ -565,14 +579,14 @@ Loewe <- function(response,
       if (all(!is.finite(x_cap))) { # if none of drug achieve the combination response
         # max of the single drug response
         y_loewe[i] <- max(mapply(function(model) {
-          .PredictModelSpecify(model, sum(x))
+          PredictModelSpecify(model, sum(x))
         },
         model = single_drug_model
         ))
         dist_loewe[i] <- NA
       } else {
         # determine the minimal distance
-        tmp <- .fsolver(x, single_par, single_type, nsteps = 100)
+        tmp <- .SolveLoewe(x, single_par, single_type, nsteps = 100)
         y_loewe[i] <- tmp$y_loewe
         dist_loewe[i] <- tmp$distance
       }
@@ -619,8 +633,7 @@ Loewe <- function(response,
 #' data <- ReshapeData(mathews_screening_data)
 #' response <- data$response[data$response$block_id == 1]
 #' adjusted <- CorrectBaseLine(response, method = "part")
-CorrectBaseLine <- function(response, 
-                            method = c("non", "part", "all")) {
+CorrectBaseLine <- function(response, method = c("non", "part", "all")) {
   method <- match.arg(method)
   if (method != "non") {
     single_drug_data <- ExtractSingleDrug(response)
@@ -660,22 +673,38 @@ CorrectBaseLine <- function(response,
 #'   defines the "plan".
 #' @param point A numeric vector. It contains the coordinates in
 #'   the spaces to define the "point".
+#'  
+#' @return A numeric value. It is the distance from point defined by \code{x0}
+#'   to the "plane" defined by \code{w} and \code{b}
+#'
+#' @author
+#'   \itemize{
+#'     \item Jing Tang \email{jing.tang@helsinki.fi}
+#'     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   }
+#' 
+.Distance <- function(w, b, point){
+  d <- abs(point %*% w + b) / sqrt(sum(w^2))
+  return(d)
+}
+
+#' Solve the Expected Dose of Drug to Achieve Given Effect from LL.4 model
+#'
+#' This function will solve the fitted four-parameter log-logistic dose-response 
+#' model and output the dose of drug at which it could achieve the % inhibition
+#' to cell growth.
+#' 
+#' @param y The expected effect (% inhibition) of the drug to cell line
+#' @param drug_par The parameters for fitted dose-response model.
+#' 
+#' @return A numeric value. It indicates the expected dose of drug.
 #' 
 #' @author
 #'   \itemize{
 #'     \item Jing Tang \email{jing.tang@helsinki.fi}
 #'     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
-#'  }
-#'  
-#' @return A numeric value. It is the distance from point defined by \code{x0}
-#'   to the "plane" defined by \code{w} and \code{b}
-#'
-.Distance <- function(w, b, point){
-  d <- abs(x0 %*% w + b) / sqrt(sum(w^2))
-  return(d)
-}
-
-# Functions to calculate the expected dose for a given response in % inhibition
+#'   }
+#' 
 .SolveExpDoesLL4 <- function(y, drug_par){
   res <- drug_par[4] * (((y - drug_par[3]) / (drug_par[2] - y)) ^ (1/drug_par[1]))
   # if NAN it means the response cannot be achieved by the drug, the response 
@@ -686,6 +715,23 @@ CorrectBaseLine <- function(response,
   return(res)
 }
 
+#' Solve the Expected Dose of Drug to Achieve Given Effect from L.4 model
+#'
+#' This function will solve the fitted four-parameter logistic dose-response 
+#' model and output the dose of drug at which it could achieve the % inhibition
+#' to cell growth.
+#' 
+#' @param y The expected effect (% inhibition) of the drug to cell line
+#' @param drug_par The parameters for fitted dose-response model.
+#'
+#' @return A numeric value. It indicates the expected dose of drug.
+#' 
+#' @author
+#'   \itemize{
+#'     \item Jing Tang \email{jing.tang@helsinki.fi}
+#'     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   }
+#' 
 .SolveExpDoesL4 <- function(y, drug_par) {
   res <- exp((drug_par[4] + log((drug_par[3] - y) /
                                  (y - drug_par[2])) / drug_par[1]))
@@ -695,6 +741,25 @@ CorrectBaseLine <- function(response,
   return(res)
 }
 
+#' Solve the Expected Dose of Drug to Achieve Given Effect (% inhibition)
+#'
+#' This function will solve the fitted dose-response model and output the dose
+#' of drug at which it could achieve the % inhibition to cell growth.
+#' 
+#' @param y The expected effect (% inhibition) of the drug to cell line.
+#' @param drug_par The parameters for fitted dose-response model.
+#' @param drug_type The type of model was used to fit the dose-response curve.
+#'   Available values are "L.4" - four-parameter logistic model; "LL.4" - 
+#'   four-parameter log-logistic model.
+#' 
+#' @return A numeric value. It indicates the expected dose of drug.
+#' 
+#' @author
+#'   \itemize{
+#'     \item Jing Tang \email{jing.tang@helsinki.fi}
+#'     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   }
+#' 
 .SolveExpDose <- function(y, drug_par, drug_type){
   switch(as.character(drug_type), 
          "LL.4" = .SolveExpDoesLL4(y, drug_par),
@@ -704,24 +769,25 @@ CorrectBaseLine <- function(response,
 #' Solve the Loewe additive effect for concentartion combinations isobologram
 #'
 #' @param concs A numeric vector. It contains the concentrations of tested drugs
-#' @param drug.par A numeric vector. The parameters in fitted dose response curve
-#' @param drug.type The type of model used to fit dose response curve
+#' @param drug_par A numeric vector. The parameters in fitted dose response curve
+#' @param drug_type The type of model used to fit dose response curve
 #' @param nsteps The total steps to calculate concentration combinations 
 #'   approaching to the true loewe effect.
-#'
+#'   
 #' @return A list contains 3 items:
 #'   \itemize{
-#'     \item y.loewe the predicted Loewe additive effect which closes to .
-#'     \item x.select the expected concentrations for each drug to achieve y.loewe.
+#'     \item y_loewe the predicted Loewe additive effect which closes to .
+#'     \item x_select the expected concentrations for each drug to achieve
+#'       y_loewe.
 #'     \item distance the smallest distance 
 #'   }
-#' 
+#'
 #' @author
 #'   \itemize{
 #'     \item Jing Tang \email{jing.tang@helsinki.fi}
 #'     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
-#'  }
-#'  
+#'   }
+#' 
 .SolveLoewe <- function(concs, drug_par, drug_type, nsteps = 100){
   # x is the concentration vector
   x <- as.matrix(concs)
@@ -750,11 +816,27 @@ CorrectBaseLine <- function(response,
     dist[j] = .Distance(w = c(1 / x_test[, j]), b = -1, point = x)
   }
   # output the y.loewe corresponding to the minimal distance
-  res <- list(y.loewe = y_test[which(dist == min(dist, na.rm = T))], 
-             x.select = x_test[,which(dist == min(dist, na.rm = T))], 
+  res <- list(y_loewe = y_test[which(dist == min(dist, na.rm = T))], 
+             x_select = x_test[,which(dist == min(dist, na.rm = T))], 
              distance = min(dist, na.rm = T)) 
 }
 
+#' Bootstraping Resample from Replicates in Response Data
+#'
+#' @param response A data frame. It contains the dose response information
+#'   about one drug combination block with replicates. It must contain the
+#'   columns "conc1", "conc2", ... for concentrations of drugs tested and the
+#'   "response" column for observed % inhibition if cell growth.
+#'
+#' @return A data frame. It contains a full drug combination matrix whose data
+#'   points are randomly selected from replicates.
+#' 
+#' @author
+#'   \itemize{
+#'     \item Jing Tang \email{jing.tang@helsinki.fi}
+#'     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'  }
+#'  
 .Bootstrapping <- function(response){
   # unique dose conditions
   concs <- grep("conc\\d+", colnames(response), value = TRUE)

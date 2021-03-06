@@ -196,3 +196,4 @@ kriging <- function(data, data.coord, krig.coord, cov.mod = "whitmat",
     weights = weights
   ))
 }
+

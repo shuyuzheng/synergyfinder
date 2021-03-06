@@ -65,6 +65,8 @@ This function will add 1 or 2 elements into inputted \code{data}
     and fitted response values (only for "ZIP" model) across results from
     iterations.
  }
+ This function also add mean of synergy scores across whole combination
+ matrix to the \code{data$drug_pair} table.
 }
 \description{
 \code{CalculateSynergy} is the main function for calculating synergy scores

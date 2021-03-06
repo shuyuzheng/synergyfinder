@@ -31,5 +31,5 @@ Solve the Loewe additive effect for concentartion combinations isobologram
 \itemize{
     \item Jing Tang \email{jing.tang@helsinki.fi}
     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
- }
+  }
 }
