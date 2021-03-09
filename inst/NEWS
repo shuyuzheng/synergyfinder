@@ -1,20 +1,32 @@
-# synergyfinder 2.5.3 (2021-01-15)
+# synergyfinder 2.99.0/2.4.8 (2021-03-10)
+## Author: shuyu.zheng@helsinki.fi
+## Major Update
+
+* Upgrade all existing functions to be compitible with multiple (more than 2) drugs combination data
+* Add functions for drug sensitivity score (CSS, RI) calucluation.
+* Add ploting functions for barometer, S-S plot, bar plot for multiple drug combinations.
+
+# synergyfinder 2.5.2/2.4.2 (2021-01-07)
+## Author: shuyu.zheng@helsinki.fi
 ## Changes
 
 * "CorrectBaseLine": Use the minimu value (instead of mean) of the fitted single drug response as the baseline.
 
-# synergyfinder 2.3.5 (2020-12-01)
+# synergyfinder 2.3.5/2.2.5 (2020-12-01)
+## Author: shuyu.zheng@helsinki.fi
 ## Changes
 
 * Enable the "ZIP" function to handle the N x 2 or 2 x N drug combination matrices.
 * Add "seed" parameter into function "ReshapeData" for generating the noise, if "noise = TRUE".
 
-# synergyfinder 2.1.2 (2019-11-08)
+# synergyfinder 2.1.2/2.0.2 (2019-11-08)
+## Author: shuyu.zheng@helsinki.fi
 ## Changes
 
 * Fix the bug caused by changes in 2.1.1
 
-# synergyfinder 2.1.1 (2019-10-30)
+# synergyfinder 2.1.1/2.0.1 (2019-10-30)
+## Author: shuyu.zheng@helsinki.fi
 ## New features
 
 * Add "file.type" option in the "PlotSynergy" and "PlotDoseResponse" functions to specify the format of files when saving plots.
@@ -24,8 +36,8 @@
 
 * Delete the "warning" exceptions in "FitDoseResponse" function.
 
-# synergyfinder 1.99.1 (2019-06-14)
-
+# synergyfinder 1.99.1/2.0.1 (2019-06-14)
+## Author: shuyu.zheng@helsinki.fi
 ## New features
 
 * Add data pre-process functions: AddNoise, ImputeNA to handle more data.
