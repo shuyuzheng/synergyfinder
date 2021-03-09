@@ -2,7 +2,7 @@
 % Please edit documentation in R/combine_multiple_plots.R
 \name{PlotDoseResponse}
 \alias{PlotDoseResponse}
-\title{Visualize the drug combination dose-response data}
+\title{Visualize the Drug Combination Dose-response Data}
 \usage{
 PlotDoseResponse(
   data,
@@ -10,10 +10,13 @@ PlotDoseResponse(
   drugs = c(1, 2),
   adjusted = TRUE,
   statistic = NULL,
+  summary_statistic = "mean",
   high_value_color = "#A90217",
   low_value_color = "#2166AC",
   point_color = "#C24B40",
   curve_color = "black",
+  Emin = NA,
+  Emax = NA,
   save_file = FALSE,
   file_type = "pdf",
   file_name = NULL,
@@ -39,9 +42,21 @@ be plotted.}
 \item{statistic}{A character or NULL. It indicates the statistics printed
 in the plot while there are replicates in input data. Available values are:
 \itemize{
-  \item \strong{sd} Standard deviation;
   \item \strong{sem} Standard error of mean;
-  \item \strong{CI95} 95% confidence interval.
+  \item \strong{ci} 95% confidence interval.
+}
+If it is \code{NULL}, no statistics will be printed.}
+
+\item{summary_statistic}{A vector of characters or NULL. It indicates the
+summary statistics printed in heatmap for all the \code{plot_value} in
+whole combination matrix. Available values are:
+\itemize{
+  \item \strong{mean} Median value for all the responses or synergy
+  scores in the matrix;
+  \item \strong{median} Median value for all the responses or synergy
+  scores in the matrix;
+  \item \strong{quantile_90} 90% quantile. User could change the number to
+  print different sample quantile. For example quantile_50 equal to median. 
 }
 If it is \code{NULL}, no statistics will be printed.}
 
@@ -56,6 +71,16 @@ dose response curve plots.}
 
 \item{curve_color}{An R color value. It indicates the color for curves in 
 dose response curve plots.}
+
+\item{Emin}{A numeric or \code{NA}. the minimal effect of the drug used in
+the 4-parameter log-logistic function to fit the dose-response curve. If
+it is not NA, it is fixed the value assigned by the user. Default setting
+is \code{NA}.}
+
+\item{Emax}{A numeric or \code{NA}. the maximal effect of the drug used in
+the 4-parameter log-logistic function to fit the dose-response curve. If
+it is not NA, it is fixed the value assigned by the user. Default setting
+is \code{NA}.}
 
 \item{save_file}{A parameter to specify if the visualization results are
 saved as pdf files in current working directory or not. If it is FALSE,
@@ -74,17 +99,20 @@ user, a default name will be assigned.}
 \item{height}{a numeric value. It indicates the height of saved file.}
 }
 \value{
-NULL. The plot will be saved into a local file if
-  \code{save.file = TRUE}. If \code{save.file = FALSE}, the plot will be
-  printed in default graphic device.
+A list of plot objects recorded by \link[grDevices]{recordPlot}. The 
+  plot will be saved into a local file if \code{save.file = TRUE}. If 
+  \code{save.file = FALSE}, the plot will be printed in default graphic
+  device.
 }
 \description{
 A function to visualize the drug combination dose-response data
 }
 \examples{
+\dontrun{
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
-PlotDoseResponse(data)
+plots <- PlotDoseResponse(data)
+}
 }
 \author{
 \itemize{

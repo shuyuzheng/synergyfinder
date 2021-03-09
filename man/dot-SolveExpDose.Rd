@@ -2,12 +2,12 @@
 % Please edit documentation in R/calculate_synergy_score.R
 \name{.SolveExpDose}
 \alias{.SolveExpDose}
-\title{Solve the Expected Dose of Drug to Achieve Given Effect (% inhibition)}
+\title{Solve the Expected Dose of Drug to Achieve Given Effect (\% inhibition)}
 \usage{
 .SolveExpDose(y, drug_par, drug_type)
 }
 \arguments{
-\item{y}{The expected effect (% inhibition) of the drug to cell line.}
+\item{y}{The expected effect (\% inhibition) of the drug to cell line.}
 
 \item{drug_par}{The parameters for fitted dose-response model.}
 
@@ -20,11 +20,11 @@ A numeric value. It indicates the expected dose of drug.
 }
 \description{
 This function will solve the fitted dose-response model and output the dose
-of drug at which it could achieve the % inhibition to cell growth.
+of drug at which it could achieve the \% inhibition to cell growth.
 }
 \author{
 \itemize{
-    \item Jing Tang \email{jing.tang@helsinki.fi}
     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
-  }
+    \item Jing Tang \email{jing.tang@helsinki.fi}
+ }
 }

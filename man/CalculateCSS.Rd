@@ -2,14 +2,14 @@
 % Please edit documentation in R/calculate_sensitivity_score.R
 \name{CalculateCSS}
 \alias{CalculateCSS}
-\title{Calculate combination sensitivity score}
+\title{Calculate Combination Sensitivity Score}
 \usage{
 CalculateCSS(response, ic50)
 }
 \arguments{
 \item{response}{A data frame. It must contain the columns: "conc1", "conc2",
 ..., for the concentration of the combined drugs and "response" for the
-observed %inhibition at certain combination.}
+observed \%inhibition at certain combination.}
 
 \item{ic50}{A list. It contains the relative IC50 for all the drugs in the
 combination.}
@@ -21,4 +21,10 @@ A data frame. It contains the CSS for each drug will one of the other
 \description{
 This function will calculate the Combination Sensitivity Score (CSS) for a
 drug combination block.
+}
+\author{
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

@@ -6,8 +6,8 @@
 \usage{
 PlotMultiDrugSurface(
   data,
-  plot_block = 1,
-  plot_value = "response",
+  plot_block,
+  plot_value,
   statistic = NULL,
   distance_method = "euclidean",
   high_value_color = "#A90217",
@@ -24,15 +24,15 @@ block to visualize.}
 \item{plot_value}{A vector of characters. It contains the name of one or more
 metrics to be visualized. If the \code{data} is the direct output from 
 \link{ReshapeData}, the values for this parameter are:
-\itemze{
+\itemize{
   \item \strong{response_origin} The original response value in input data.
-  It might be % inhibition or % viability.
-  \item \strong{response} The % inhibition after preprocess by function 
+  It might be \% inhibition or \% viability.
+  \item \strong{response} The \% inhibition after preprocess by function 
   \link{ReshapeData}
 }
 If the \code{data} is the output from \link{CalculateSynergy}, following
 values are also available:
-\itemze{
+\itemize{
   \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
   additive effects predicted by ZIP, Bliss, HSA or Loewe model,
   respectively.
@@ -45,16 +45,15 @@ values are also available:
 \item{statistic}{A character or NULL. It indicates the statistics printed
 in the plot while there are replicates in input data. Available values are:
 \itemize{
-  \item \strong{sd} Standard deviation;
   \item \strong{sem} Standard error of mean;
-  \item \strong{CI95} 95% confidence interval.
+  \item \strong{ci} 95\% confidence interval.
 }
 If it is \code{NULL}, no statistics will be printed.}
 
 \item{distance_method}{The methods to calculate the distance between
 different data points from the concentration of drugs. The distance matrix
 is used for dimension reduction. This parameter is used to set the 
-parameter \code{method} for \link[vegdist]{vegan}. The default values is
+parameter \code{method} for \link[vegan]{vegdist}. The default values is
 "euclidean".}
 
 \item{high_value_color}{An R color value. It indicates the color for the
@@ -76,6 +75,20 @@ x an y axis. A surface for the selected \code{plot_value} and points for
 all the concentration combinations will be plotted.
 }
 \examples{
-data <- ReshapeData(NCAST_10023)
-PlotMultiDrugSurface(data)
+data("NCATS_10023_data")
+data <- ReshapeData(NCATS_10023_data)
+p <- PlotMultiDrugSurface(
+  data,
+  plot_block = 1,
+  plot_value = "response",
+  statistic = NULL,
+  distance_method = "euclidean"
+)
+p
+}
+\author{
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

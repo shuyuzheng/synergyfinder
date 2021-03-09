@@ -2,17 +2,19 @@
 % Please edit documentation in R/calculate_sensitivity_score.R
 \name{.own_log}
 \alias{.own_log}
-\title{CSS facilitate function - log calculation (nature based) LL.4 version}
+\title{CSS Facilitate Function - Log Calculation (nature based) LL.4 Model}
 \usage{
 .own_log(b, c, x)
 }
 \arguments{
-\item{b}{fitted parameter b from \code{\link[drc]{L.4()}} model}
+\item{b}{A numeric value. It is the fitted parameter b from 
+\code{\link[drc]{L.4}} model.}
 
-\item{c}{fitted parameter c from \code{\link[drc]{L.4()}} model}
+\item{c}{A numeric value. It is the fitted parameter c from 
+\code{\link[drc]{L.4}} model.}
 
-\item{x}{relative IC50 for the curve. log10(e), where e is the
-fitted parameter e from \code{\link[drc]{L.4()}} model}
+\item{x}{A numeric value. It is the relative IC50 for the curve. log10(e), 
+where e is the fitted parameter e from \code{\link[drc]{L.4}} model.}
 }
 \value{
 ln(1+10^(b*(c-x)))
@@ -22,6 +24,8 @@ ln(1+10^(b*(c-x)))
 function
 }
 \author{
-Jing Tang \email{jing.tang@helsinki.fi}
-Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

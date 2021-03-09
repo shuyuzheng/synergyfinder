@@ -1,3 +1,12 @@
+# Copyright Shuyu Zheng and Jing Tang - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+# Written by Shuyu Zheng <shuyu.zheng@helsinki.fi>, March 2021
+#
+# Functions on this page:
+#
+# PlotDoseResponseCurve: Plot Dose Response Curve for Single Drug
+
 #' Plot Dose Response Curve for Single Drug
 #' 
 #' This function will pot the dose response curve fitted by 4 parameters 
@@ -20,21 +29,29 @@
 #'   the 4-parameter log-logistic function to fit the dose-response curve. If
 #'   it is not NA, it is fixed the value assigned by the user. Default setting
 #'   is \code{NA}.
-#' @param grid A expression for \link[grid]{graphics} function of \code{NULL}.
+#' @param grid A expression for \link[graphics]{grid} function of \code{NULL}.
 #'   If it is \code{NULL}, no grids will be shown in the plot.
 #' @param point_color An R color value. It indicates the color for points in
 #'   dose response curve plots.
 #' @param curve_color An R color value. It indicates the color for curves in 
 #'   dose response curve plots.
 #' @param plot_setting A list of graphical arguments. The arguments are passed 
-#'   to \link[par]{graphics} function to modify the appearance of plots.
-#' @return A plot object recorded by \link[recordPlot]{grDevice}.
+#'   to \link[graphics]{par} function to modify the appearance of plots.
+#'   
+#' @return A plot object recorded by \link[grDevice]{recordPlot}.
+#' 
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#' 
 #' @export
 #'
 #' @examples
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
-#' PlotDoseResponseCurve(data)
+#' PlotDoseResponseCurve(data, grid = NULL)
 PlotDoseResponseCurve <- function(data,
                                   plot_block = 1,
                                   drug_index = 1,
@@ -42,7 +59,7 @@ PlotDoseResponseCurve <- function(data,
                                   Emin = NA,
                                   Emax = NA,
                                   grid = expression(
-                                    grid(col = "#DFDFDF", lty = 1)
+                                    graphics::grid(col = "#DFDFDF", lty = 1)
                                   ),
                                   point_color = "#C24B40",
                                   curve_color = "black",
@@ -135,7 +152,7 @@ PlotDoseResponseCurve <- function(data,
       "in Block",
       plot_block
     ),
-    cex = 7/9 * par()$cex.main
+    cex = 7/9 * graphics::par()$cex.main
   )
   p <- grDevices::recordPlot()
   grDevices::dev.off()

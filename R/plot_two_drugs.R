@@ -1,5 +1,9 @@
+# Copyright Shuyu Zheng and Jing Tang - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+# Written by Shuyu Zheng <shuyu.zheng@helsinki.fi>, March 2021
+#
 # SynergyFinder
-# Functions for plotting response or synergy scores for 2 drug combination.
 #
 # Functions in this page:
 # Plot2DrugHeatmap: Heatmap Plot for 2-drug Combination Dose-Response/Synergy
@@ -27,15 +31,15 @@
 #' @param plot_value A character value. It indicates the value to be visualized.
 #'   If the \code{data} is the direct output from \link{ReshapeData}, the values
 #'   for this parameter are:
-#'   \itemze{
+#'   \itemize{
 #'     \item \strong{response_origin} The original response value in input data.
-#'     It might be % inhibition or % viability.
-#'     \item \strong{response} The % inhibition after preprocess by function 
+#'     It might be \% inhibition or \% viability.
+#'     \item \strong{response} The \% inhibition after preprocess by function 
 #'     \link{ReshapeData}
 #'   }
 #'   If the \code{data} is the output from \link{CalculateSynergy}, following
 #'   values are also available:
-#'   \itemze{
+#'   \itemize{
 #'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
 #'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
@@ -48,7 +52,7 @@
 #'   in the plot while there are replicates in input data. Available values are:
 #'   \itemize{
 #'     \item \strong{sem} Standard error of mean;
-#'     \item \strong{ci} 95% confidence interval.
+#'     \item \strong{ci} 95\% confidence interval.
 #'   }
 #'   If it is \code{NULL}, no statistics will be printed.
 #' @param summary_statistic A vector of characters or NULL. It indicates the
@@ -59,7 +63,7 @@
 #'     scores in the matrix;
 #'     \item \strong{median} Median value for all the responses or synergy
 #'     scores in the matrix;
-#'     \item \strong{quantile_90} 90% quantile. User could change the number to
+#'     \item \strong{quantile_90} 90\% quantile. User could change the number to
 #'     print different sample quantile. For example quantile_50 equal to median. 
 #'   }
 #'   If it is \code{NULL}, no statistics will be printed.
@@ -70,14 +74,19 @@
 #'
 #' @return A ggplot plot object.
 #'
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#' 
 #' @export
 #'
 #' @examples
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
-#' Plot2DHeatmap(data)
+#' Plot2DrugHeatmap(data)
 Plot2DrugHeatmap <- function(data,
-                             plot_type = "heatmap",
                              plot_block = 1,
                              drugs = c(1, 2),
                              plot_value = "response",
@@ -132,14 +141,15 @@ Plot2DrugHeatmap <- function(data,
       plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
     }
     if ("median" %in% summary_statistic) {
-      value <- .RoundValues(median(plot_table$value))
+      value <- .RoundValues(stats::median(plot_table$value))
       plot_subtitle <-  c(plot_subtitle, paste0("Median: ", value))
     }
     qua <- grep("quantile_\\d+", summary_statistic, value = TRUE)
     if (length(qua) > 0) {
       for (q in qua) {
         pro <- as.numeric(sub("quantile_", "", q))
-        value <- .RoundValues(quantile(plot_table$value, probs = pro / 100))
+        value <- .RoundValues(stats::quantile(plot_table$value, 
+                                              probs = pro / 100))
         plot_subtitle <-  c(plot_subtitle, paste0(pro, "% Quantile: ", value))
       }
     }
@@ -212,15 +222,15 @@ Plot2DrugHeatmap <- function(data,
 #' @param plot_value A character value. It indicates the score or response value
 #'   to be visualized. If the \code{data} is the direct output from
 #'   \link{ReshapeData}, the available values for this parameter are:
-#'   \itemze{
+#'   \itemize{
 #'     \item \strong{response_origin} The original response value in input data.
-#'     It might be % inhibition or % viability.
-#'     \item \strong{response} The % inhibition after preprocess by function 
+#'     It might be \% inhibition or \% viability.
+#'     \item \strong{response} The \% inhibition after preprocess by function 
 #'     \link{ReshapeData}
 #'   }
 #'   If the \code{data} is the output from \link{CalculateSynergy}, following
 #'   values are also available:
-#'   \itemze{
+#'   \itemize{
 #'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
 #'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
@@ -237,23 +247,36 @@ Plot2DrugHeatmap <- function(data,
 #'     scores in the matrix;
 #'     \item \strong{median} Median value for all the responses or synergy
 #'     scores in the matrix;
-#'     \item \strong{quantile_90} 90% quantile. User could change the number to
+#'     \item \strong{quantile_90} 90\% quantile. User could change the number to
 #'     print different sample quantile. For example quantile_50 equal to median. 
 #'   }
 #'   If it is \code{NULL}, no statistics will be printed.
+#' @param dynamic A logical value. If it is \code{TRUE}, this function will
+#'   use \link[plotly]{plot_ly} to generate an interactive plot. If it is
+#'   \code{FALSE}, this function will use \link[lattice]{wireframe} to generate
+#'   a static plot.
 #' @param high_value_color An R color value. It indicates the color for the
 #'   high values.
 #' @param low_value_color An R color value. It indicates the color for low
 #'   values.
 #'
-#' @return A project recorded by \link[recordPlot]{grDevice}.
+#' @return If \code{dynamic = FALSE}, this function will return a plot project 
+#'   recorded by \link[grDevices]{recordPlot}. If \code{dynamic = FALSE}, this
+#'   function will return a plotly plot object.
 #'
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#' 
 #' @export
 #'
 #' @examples
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
 #' Plot2DrugSurface(data)
+#' Plot2DrugSurface(data, dynamic = TRUE)
 Plot2DrugSurface <- function(data,
                              plot_block = 1,
                              drugs = c(1, 2),
@@ -317,14 +340,15 @@ Plot2DrugSurface <- function(data,
       plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
     }
     if ("median" %in% summary_statistic) {
-      value <- .RoundValues(median(plot_table$value))
+      value <- .RoundValues(stats::median(plot_table$value))
       plot_subtitle <-  c(plot_subtitle, paste0("Median: ", value))
     }
     qua <- grep("quantile_\\d+", summary_statistic, value = TRUE)
     if (length(qua) > 0) {
       for (q in qua) {
         pro <- as.numeric(sub("quantile_", "", q))
-        value <- .RoundValues(quantile(plot_table$value, probs = pro / 100))
+        value <- .RoundValues(stats::quantile(plot_table$value, 
+                                              probs = pro / 100))
         plot_subtitle <-  c(plot_subtitle, paste0(pro, "% Quantile: ", value))
       }
     }
@@ -334,7 +358,7 @@ Plot2DrugSurface <- function(data,
   conc1 <- unique(plot_table$conc1)
   conc2 <- unique(plot_table$conc2)
   
-  # kriging with kriging from SpatialExtremes package!
+  # kriging with kriging from  (which )
   mat <- reshape2::acast(plot_table, conc1~conc2, value.var = "value")
   # len: how many values need to be predicted between two concentrations
   len <- 3
@@ -386,8 +410,7 @@ Plot2DrugSurface <- function(data,
         hover_text_mat[x_ticks[i], y_ticks[j]] <- hover_text[i, j]
       }
     }
-
-
+    
     p <- plotly::plot_ly() %>% 
       plotly::add_surface(
         name = "surface",
@@ -564,7 +587,7 @@ Plot2DrugSurface <- function(data,
           label = legend_title,
           x = unit(1.05, "npc"),
           y = unit(0.75, "npc"),
-          gp = gpar(col = "black", fontsize = 8.5) # pt
+          gp = grid::gpar(col = "black", fontsize = 8.5) # pt
         )
         },
       pretty = TRUE
@@ -588,15 +611,15 @@ Plot2DrugSurface <- function(data,
 #' @param plot_value A character value. It indicates the value to be visualized.
 #'   If the \code{data} is the direct output from \link{ReshapeData}, the values
 #'   for this parameter are:
-#'   \itemze{
+#'   \itemize{
 #'     \item \strong{response_origin} The original response value in input data.
-#'     It might be % inhibition or % viability.
-#'     \item \strong{response} The % inhibition after preprocess by function 
+#'     It might be \% inhibition or \% viability.
+#'     \item \strong{response} The \% inhibition after preprocess by function 
 #'     \link{ReshapeData}
 #'   }
 #'   If the \code{data} is the output from \link{CalculateSynergy}, following
 #'   values are also available:
-#'   \itemze{
+#'   \itemize{
 #'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
 #'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
@@ -609,10 +632,16 @@ Plot2DrugSurface <- function(data,
 #'   in the plot while there are replicates in input data. Available values are:
 #'   \itemize{
 #'     \item \strong{sem} Standard error of mean;
-#'     \item \strong{ci} 95% confidence interval.
+#'     \item \strong{ci} 95\% confidence interval.
 #'   }
 #'   If it is \code{NULL}, no statistics will be printed.
 #'
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#' 
 #' @return A data frame. It contains the concentrations for selected drugs, the
 #'   selected values for plotting, and the text for printing on the heatmap.
 .Extract2DrugPlotData <- function(data,
@@ -792,6 +821,13 @@ Plot2DrugSurface <- function(data,
 #' be rounded.
 #'
 #' @return A vector of rounded numbers.
+#'
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#' 
 .RoundValues <- function(numbers) {
   numbers[abs(numbers) >= 1] <- round(numbers[abs(numbers) >= 1], 2)
   numbers[abs(numbers) < 1] <- signif(numbers[abs(numbers) < 1], 2)
@@ -805,28 +841,38 @@ Plot2DrugSurface <- function(data,
 #' @param x A numerical value. It is the font size in "pt" unite.
 #'
 #' @return A numerical value in "mm" unite
+#' 
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#' 
 .Pt2mm <- function(x) {
   5 * x / 14
 }
 
-#' Make a smooth surface for scores
+#' Make a Smooth Surface for Scores
 #'
-#' @param scores.mat a matrix contains scores which will be visualized
+#' @param scores_mat a matrix contains scores which will be visualized
 #' @param len length of the interval between plotted data points.
 #'
-#' @return a matrix which 
-#' @useDynLib synergyfinder, .registration=TRUE
-.ExtendedScores <-  function (scores.mat, len) {
+#' @return a matrix which which contains interpolated points for input
+#'   \code{scores_mat}.
+#' 
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#' 
+.ExtendedScores <-  function (scores_mat, len) {
   # len: how many values need to be predicted between two adjacent elements
   #      of scores.dose
   options(scipen = 999)
-  nr <- nrow(scores.mat)
-  nc <- ncol(scores.mat)
+  nr <- nrow(scores_mat)
+  nc <- ncol(scores_mat)
   
-  # missing value imputation
-  while (sum(is.na(scores.mat))) {
-    scores.mat <- ImputeNA(scores.mat)
-  }
   ext.row.len <- (nr - 1) * (len + 2) - (nr - 2)
   ext.col.len <- (nc - 1) * (len + 2) - (nc - 2)
   
@@ -835,7 +881,7 @@ Plot2DrugSurface <- function(data,
   
   krig.coord <- cbind(rep(extended.row.idx, each = ext.col.len),
                       rep(extended.col.idx, times = ext.row.len))
-  extended.scores <- kriging(data = c(scores.mat),
+  extended.scores <- SpatialExtremes::kriging(data = c(scores_mat),
                              data.coord = cbind(rep(seq_len(nr), nc),
                                                 rep(seq_len(nc), each=nr)),
                              krig.coord = krig.coord,
@@ -848,8 +894,8 @@ Plot2DrugSurface <- function(data,
   # extended.scores = data.frame(extended.scores)
   extended.scores <- round(extended.scores, 3)
   
-  row.dose <- as.numeric(rownames(scores.mat))
-  col.dose <- as.numeric(colnames(scores.mat))
+  row.dose <- as.numeric(rownames(scores_mat))
+  col.dose <- as.numeric(colnames(scores_mat))
   
   extend.row.dose <- mapply(function(x, y){seq(from = x, to = y,
                                                length.out = len + 2)},

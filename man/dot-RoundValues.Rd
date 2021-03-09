@@ -18,3 +18,9 @@ This function will round the input numbers by 2 digits, if the absolute of
 number is larger than or equal to 1. It will take 2 significant digits, if
 the absolute of number is smaller than 1.
 }
+\author{
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
+}

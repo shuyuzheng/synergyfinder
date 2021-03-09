@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_synergy_score.R
 \name{.Distance}
 \alias{.Distance}
-\title{Calculate distance from a point to a plane}
+\title{Calculate Distance from a Point to a Plane}
 \usage{
 .Distance(w, b, point)
 }
@@ -24,12 +24,12 @@ A numeric value. It is the distance from point defined by \code{x0}
 This function is used to calculate the distance from a point to a plane. It
 could also be used in high dimension spaces. The formula comes from
 https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_plane
-For two dimension point, the distance to the line w1*x+w2*y+b = 0
-For three dimension point, the distance to the plan w1*x+w2*y+w3*z+b = 0
+For two dimension point, the distance to the line w1\*x+w2\*y+b = 0
+For three dimension point, the distance to the plan w1\*x+w2\*y+w3\*z+b = 0
 }
 \author{
 \itemize{
-    \item Jing Tang \email{jing.tang@helsinki.fi}
     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+    \item Jing Tang \email{jing.tang@helsinki.fi}
  }
 }

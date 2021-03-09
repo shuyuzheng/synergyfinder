@@ -2,14 +2,14 @@
 % Please edit documentation in R/reshape_data.R
 \name{ExtractSingleDrug}
 \alias{ExtractSingleDrug}
-\title{Extract single drug response from matrix}
+\title{Extract Single Drug Dose Response}
 \usage{
 ExtractSingleDrug(response)
 }
 \arguments{
 \item{response}{A data frame. It must contain the columns: "conc1", "conc2",
 ..., for the concentration of the combined drugs and "response" for the
-observed %inhibition at certain combination.}
+observed \%inhibition at certain combination.}
 }
 \value{
 A list contains several data frames each of which contains 2 columns:
@@ -28,8 +28,11 @@ data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
 response <- data$response[data$response$block_id == 1,
                           c("conc1", "conc2", "response")]
-single <- ExtractSingleDrug(response.df)
+single <- ExtractSingleDrug(response)
 }
 \author{
-Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

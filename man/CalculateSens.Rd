@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_sensitivity_score.R
 \name{CalculateSens}
 \alias{CalculateSens}
-\title{Calculate relative inhibition (RI) for dose-response curve}
+\title{Calculate Relative Inhibition (RI) for Dose-Response Curve}
 \usage{
 CalculateSens(df)
 }
@@ -10,19 +10,12 @@ CalculateSens(df)
 \item{df}{A data frame. It contains two variables:
 \itemize{
   \item \strong{dose} the concentrations of drugs.
-  \item \strong{response} the response of cell lines at crresponding doses.
+  \item \strong{response} the response of cell lines at corresponding doses.
   We use inhibition rate of cell line growth to measure the response.
-}
-
-\strong{Note}: The input data frame must be sorted by "dose" with ascending
-order.}
+}}
 }
 \value{
-If \code{pred} is \code{FALSE}, only the RI value will be return. If
-\code{pred} is set to be \code{TRUE}, one more data frame which contains
-predicted resposne values and corresponding standard deviations will be
-return. It could be used to \code{\link{RIConfidenceInterval}} for confidence
-interval calculation.
+A numeric value. It is the RI score for input dose-response curve.
 }
 \description{
 Function \code{CalculateSens} calculates cell line sensitivity to a drug or a
@@ -30,7 +23,7 @@ combination of drugs from dose response curve.
 }
 \details{
 This function measures the sensitivity by calculating the Area Under Curve
-(AUC) according to the dose response curve. The lower bouder is chosen as
+(AUC) according to the dose response curve. The lower border is chosen as
 lowest non-zero concentration in the dose response data.
 }
 \examples{
@@ -40,6 +33,8 @@ df <- data.frame(dose = c(0, 0.1954, 0.7812, 3.125, 12.5, 50),
 RI <- CalculateSens(df)
 }
 \author{
-Jing Tang \email{jing.tang@helsinki.fi}
-Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

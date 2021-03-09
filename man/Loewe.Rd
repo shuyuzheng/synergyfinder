@@ -2,14 +2,14 @@
 % Please edit documentation in R/calculate_synergy_score.R
 \name{Loewe}
 \alias{Loewe}
-\title{Calculate Loewe synergy score}
+\title{Calculate Loewe Synergy Score}
 \usage{
 Loewe(response, Emin = NA, Emax = NA, quiet = TRUE)
 }
 \arguments{
 \item{response}{A data frame. It must contain the columns: "conc1", "conc2",
 ..., for the concentration of the combined drugs and "response" for the
-observed %inhibition at certain combination.}
+observed \%inhibition at certain combination.}
 
 \item{Emin}{The expected minimum response value in the 4 parameter 
 log-logistic model.}
@@ -46,7 +46,6 @@ response <- data$response[data$response$block_id == 1,
                           c("conc1", "conc2", "response")]
 Loewe.score <- Loewe(response)
 
-)
 }
 \references{
 \itemize{
@@ -63,7 +62,7 @@ Loewe.score <- Loewe(response)
 }
 \author{
 \itemize{
-    \item Jing Tang \email{jing.tang@helsinki.fi}
     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+    \item Jing Tang \email{jing.tang@helsinki.fi}
  }
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_sensitivity_score.R
 \name{PredictResponse}
 \alias{PredictResponse}
-\title{Predict response value at certain drug dose}
+\title{Predict Response Value at Certain Drug Dose}
 \usage{
 PredictResponse(df, dose)
 }
@@ -19,7 +19,7 @@ predict the response of cell line to the drug.}
 }
 \value{
 A numeric value. It is the response value of cell line to the drug at
-inputted dose.
+ inputted dose.
 }
 \description{
 \code{PredictResponse} uses \code{\link[drc]{drm}} function to fit the dose
@@ -31,6 +31,8 @@ response model and generate the predict response value at the given dose.
 plesase set the random seed before calling this function.
 }
 \author{
-Jing Tang \email{jing.tang@helsinki.fi}
-Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

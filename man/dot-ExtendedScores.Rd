@@ -2,18 +2,25 @@
 % Please edit documentation in R/plot_two_drugs.R
 \name{.ExtendedScores}
 \alias{.ExtendedScores}
-\title{Make a smooth surface for scores}
+\title{Make a Smooth Surface for Scores}
 \usage{
-.ExtendedScores(scores.mat, len)
+.ExtendedScores(scores_mat, len)
 }
 \arguments{
-\item{scores.mat}{a matrix contains scores which will be visualized}
+\item{scores_mat}{a matrix contains scores which will be visualized}
 
 \item{len}{length of the interval between plotted data points.}
 }
 \value{
-a matrix which
+a matrix which which contains interpolated points for input
+  \code{scores_mat}.
 }
 \description{
-Make a smooth surface for scores
+Make a Smooth Surface for Scores
+}
+\author{
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

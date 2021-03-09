@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_synergy_score.R
 \name{.Bootstrapping}
 \alias{.Bootstrapping}
-\title{Bootstraping Resample from Replicates in Response Data}
+\title{Bootstraping Sample from Replicates in Response Data}
 \usage{
 .Bootstrapping(response)
 }
@@ -10,18 +10,18 @@
 \item{response}{A data frame. It contains the dose response information
 about one drug combination block with replicates. It must contain the
 columns "conc1", "conc2", ... for concentrations of drugs tested and the
-"response" column for observed % inhibition if cell growth.}
+"response" column for observed \% inhibition if cell growth.}
 }
 \value{
 A data frame. It contains a full drug combination matrix whose data
   points are randomly selected from replicates.
 }
 \description{
-Bootstraping Resample from Replicates in Response Data
+Bootstraping Sample from Replicates in Response Data
 }
 \author{
 \itemize{
-    \item Jing Tang \email{jing.tang@helsinki.fi}
     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+    \item Jing Tang \email{jing.tang@helsinki.fi}
  }
 }

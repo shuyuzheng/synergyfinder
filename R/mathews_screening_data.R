@@ -1,3 +1,8 @@
+# Copyright Shuyu Zheng and Jing Tang - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+# Written by Shuyu Zheng <shuyu.zheng@helsinki.fi>, March 2021
+
 #' A high-throughput drug combination screening data
 #'
 #' A recent drug combination screening for the treatment of diffuse large B-cell

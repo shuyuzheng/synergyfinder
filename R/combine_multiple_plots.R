@@ -1,11 +1,15 @@
+# Copyright Shuyu Zheng and Jing Tang - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+# Written by Shuyu Zheng <shuyu.zheng@helsinki.fi>, March 2021
+#
 # SynergyFinder
-# Functions for plotting the dose response data for a combination.
 #
-# Functions in this page:
+# Functions on this page:
 #
-# PlotDoseResponse: Visualize the drug combination dose-response data
+# PlotDoseResponse: Visualize the Drug Combination Dose-response Data
 
-#' Visualize the drug combination dose-response data
+#' Visualize the Drug Combination Dose-response Data
 #'
 #' A function to visualize the drug combination dose-response data
 #'
@@ -66,7 +70,7 @@
 #' @param width a numeric value. It indicates the width of saved file.
 #' @param height a numeric value. It indicates the height of saved file.
 #'
-#' @return A list of plot objects recorded by \link[recordPlot]{grDevices}. The 
+#' @return A list of plot objects recorded by \link[grDevices]{recordPlot}. The 
 #'   plot will be saved into a local file if \code{save.file = TRUE}. If 
 #'   \code{save.file = FALSE}, the plot will be printed in default graphic
 #'   device.
@@ -80,9 +84,11 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
-#' PlotDoseResponse(data)
+#' plots <- PlotDoseResponse(data)
+#' }
 PlotDoseResponse <- function(data,
                              block_ids = NULL,
                              drugs = c(1, 2),
@@ -144,7 +150,6 @@ PlotDoseResponse <- function(data,
       plot_value = plot_value,
       statistic = statistic,
       summary_statistic = summary_statistic,
-      plot_type = "heatmap",
       high_value_color = high_value_color,
       low_value_color = low_value_color
     )

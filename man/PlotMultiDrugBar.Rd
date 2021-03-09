@@ -6,12 +6,14 @@
 \usage{
 PlotMultiDrugBar(
   data,
-  plot_block = 1,
-  plot_value = "response",
+  plot_block,
+  plot_value,
   sort_by = "conc1",
   highlight_row = NULL,
-  bar_color = "grey50",
-  highlight_color = "#A90217"
+  pos_value_color = "#CC3311",
+  neg_value_color = "#448BD4",
+  highlight_pos_color = "#A90217",
+  highlight_neg_color = "#2166AC"
 )
 }
 \arguments{
@@ -23,15 +25,15 @@ block to visualize.}
 \item{plot_value}{A vector of characters. It contains the name of one or more
 metrics to be visualized. If the \code{data} is the direct output from 
 \link{ReshapeData}, the values for this parameter are:
-\itemze{
+\itemize{
   \item \strong{response_origin} The original response value in input data.
-  It might be % inhibition or % viability.
-  \item \strong{response} The % inhibition after preprocess by function 
+  It might be \% inhibition or \% viability.
+  \item \strong{response} The \% inhibition after preprocess by function 
   \link{ReshapeData}
 }
 If the \code{data} is the output from \link{CalculateSynergy}, following
 values are also available:
-\itemze{
+\itemize{
   \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
   additive effects predicted by ZIP, Bliss, HSA or Loewe model,
   respectively.
@@ -51,10 +53,17 @@ number of drugs in selected block. It contains the concentrations  for
 "drug1", "drug2", ... The data point selected by these concentrations will
 be highlighted in the plot.}
 
-\item{bar_color}{An R color value. It indicates the color of bars.}
+\item{pos_value_color}{An R color value. It indicates the color for the
+positive values.}
 
-\item{highlight_color}{An R color value. It indicates the color of
-highlighted bar.}
+\item{neg_value_color}{An R color value. It indicates the color for the
+negative values.}
+
+\item{highlight_pos_color}{An R color value. It indicates the highlight color
+for the positive values.}
+
+\item{highlight_neg_color}{An R color value. It indicates the highlight color
+for the negative values.}
 }
 \value{
 A ggplot object.
@@ -62,12 +71,25 @@ A ggplot object.
 \description{
 This function will generate a group of bar plots for one drug combination
 block. Each panel (columns) visualize the concentrations for all the drugs 
-and metrics specified by \data{plot_values}. Each row represents a data point
+and metrics specified by \code{plot_values}. Each row represents a data point
 in the combination data. The data point specified by \code{highlight_row}
 will be highlighted in different color.
 }
 \examples{
-data("mathews_screening_data")
-data <- ReshapeData(mathews_screening_data)
-PlotMultiDrugBar(data, highlight_row = c(0, 0))
+data("NCATS_10023_data")
+data <- ReshapeData(NCATS_10023_data)
+data <- CalculateSynergy(data, method = c("HSA"))
+p <- PlotMultiDrugBar(data, 
+  plot_block = 1,
+  plot_value = c("response", "HSA_ref", "HSA_synergy"),
+  highlight_row = c(0, 0, 0),
+  sort_by = "HSA_synergy"
+)
+p
+}
+\author{
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

@@ -2,22 +2,24 @@
 % Please edit documentation in R/calculate_sensitivity_score.R
 \name{.own_log2}
 \alias{.own_log2}
-\title{CSS facilitate function - log (nature based) calculation L.4 version}
+\title{CSS Facilitate Function - Log (nature based) Calculation L.4 Model}
 \usage{
 .own_log2(x)
 }
 \arguments{
-\item{x}{relative IC50 for the curve. The fitted parameter e from
-\code{\link[drc]{L.4()}} model}
+\item{x}{A numeric value. It is relative IC50 for the curve. The fitted
+parameter e from \code{\link[drc]{L.4}} model.}
 }
 \value{
-ln(1+exp(x))
+A numeric value. It is ln(1+exp(x))
 }
 \description{
 This function calculates ln(1+exp(x)) to be used in \link{.ScoreCurve_L4}
 function
 }
 \author{
-Jing Tang \email{jing.tang@helsinki.fi}
-Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

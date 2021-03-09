@@ -2,34 +2,37 @@
 % Please edit documentation in R/calculate_synergy_score.R
 \name{.SolveLoewe}
 \alias{.SolveLoewe}
-\title{Solve the Loewe additive effect for concentartion combinations isobologram}
+\title{Solve the Loewe Additive Effect for Concentration Combinations Isobologram}
 \usage{
 .SolveLoewe(concs, drug_par, drug_type, nsteps = 100)
 }
 \arguments{
-\item{concs}{A numeric vector. It contains the concentrations of tested drugs}
+\item{concs}{A numeric vector. It contains the concentrations of tested 
+drugs.}
+
+\item{drug_par}{A numeric vector. The parameters in fitted dose response 
+curve.}
+
+\item{drug_type}{The type of model used to fit dose response curve.}
 
 \item{nsteps}{The total steps to calculate concentration combinations 
-approaching to the true loewe effect.}
-
-\item{drug.par}{A numeric vector. The parameters in fitted dose response curve}
-
-\item{drug.type}{The type of model used to fit dose response curve}
+approaching to the true Loewe effect.}
 }
 \value{
 A list contains 3 items:
   \itemize{
-    \item y.loewe the predicted Loewe additive effect which closes to .
-    \item x.select the expected concentrations for each drug to achieve y.loewe.
+    \item y_loewe the predicted Loewe additive effect which closes to .
+    \item x_select the expected concentrations for each drug to achieve
+      y_loewe.
     \item distance the smallest distance 
   }
 }
 \description{
-Solve the Loewe additive effect for concentartion combinations isobologram
+Solve the Loewe Additive Effect for Concentration Combinations Isobologram
 }
 \author{
 \itemize{
-    \item Jing Tang \email{jing.tang@helsinki.fi}
     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
-  }
+    \item Jing Tang \email{jing.tang@helsinki.fi}
+ }
 }

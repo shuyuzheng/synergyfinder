@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_synergy_score.R
 \name{CorrectBaseLine}
 \alias{CorrectBaseLine}
-\title{Base line correction}
+\title{Base Line Correction for Drug Combination Matrix}
 \usage{
 CorrectBaseLine(response, method = c("non", "part", "all"))
 }
@@ -30,12 +30,12 @@ dose-response matrix to make it closer to 0.
 \examples{
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
-response <- data$response[data$response$block_id == 1]
+response <- data$response[data$response$block_id == 1, ]
 adjusted <- CorrectBaseLine(response, method = "part")
 }
 \author{
 \itemize{
-   \item{Jing Tang \email{jing.tang@helsinki.fi}}
-   \item{Shuyu Zheng \email{shuyu.zheng@helsinki.fi}}
-}
+    \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+    \item Jing Tang \email{jing.tang@helsinki.fi}
+ }
 }

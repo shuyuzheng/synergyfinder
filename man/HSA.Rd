@@ -2,14 +2,14 @@
 % Please edit documentation in R/calculate_synergy_score.R
 \name{HSA}
 \alias{HSA}
-\title{Calculate HSA synergy score}
+\title{Calculate HSA Synergy Score}
 \usage{
 HSA(response)
 }
 \arguments{
 \item{response}{A data frame. It must contain the columns: "conc1", "conc2",
 ..., for the concentration of the combined drugs and "response" for the
-observed %inhibition at certain combination.}
+observed \%inhibition at certain combination.}
 }
 \value{
 A data frame containing the concentrations for drugs, reference
@@ -45,7 +45,7 @@ HSA.score <- HSA(response)
 }
 \author{
 \itemize{
-    \item Jing Tang \email{jing.tang@helsinki.fi}
     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+    \item Jing Tang \email{jing.tang@helsinki.fi}
  }
 }

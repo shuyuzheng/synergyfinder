@@ -2,14 +2,14 @@
 % Please edit documentation in R/calculate_synergy_score.R
 \name{ZIP}
 \alias{ZIP}
-\title{Calculate Delta synergy score based on ZIP model}
+\title{Calculate Delta Synergy Score Based on ZIP Model}
 \usage{
 ZIP(response, Emin = NA, Emax = NA, quiet = TRUE)
 }
 \arguments{
 \item{response}{A data frame. It must contain the columns: "conc1", "conc2",
 ..., for the concentration of the combined drugs and "response" for the
-observed %inhibition at certain combination.}
+observed \%inhibition at certain combination.}
 
 \item{Emin}{The expected minimum response value in the 4 parameter 
 log-logistic model.}
@@ -25,7 +25,7 @@ A data frame containing the concentrations for drugs, reference
   effect, fitted response and synergy score estimated by ZIP model.
 }
 \description{
-\code{ZIP} calculates the \eqn{\Delta} score matrix from a dose-response
+\code{ZIP} calculates the Delta score matrix from a dose-response
 matrix by using Zero Interaction Potency (ZIP) method.
 }
 \details{
@@ -45,8 +45,9 @@ data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
 response <- data$response[data$response$block_id == 1, 
                           c("conc1", "conc2", "response")]
-ZIP.score <- ZIP(response)
+ZIP_score <- ZIP(response)
 
+\dontrun{
 # Parallel processing:
 if (future::supportsMulticore()) {
   future::plan(future::multicore)
@@ -55,7 +56,7 @@ if (future::supportsMulticore()) {
 }
 ZIP(response)
 # future::plan(future::sequential) # Turn off the multicore setting
-
+}
 }
 \references{
 \itemize{
@@ -67,7 +68,7 @@ ZIP(response)
 }
 \author{
 \itemize{
-    \item Jing Tang \email{jing.tang@helsinki.fi}
     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
-  }
+    \item Jing Tang \email{jing.tang@helsinki.fi}
+ }
 }

@@ -21,15 +21,15 @@ block to visualize.}
 \item{plot_value}{A vector of characters. It contains the name of one or more
 metrics to be visualized. If the \code{data} is the direct output from 
 \link{ReshapeData}, the values for this parameter are:
-\itemze{
+\itemize{
   \item \strong{response_origin} The original response value in input data.
-  It might be % inhibition or % viability.
-  \item \strong{response} The % inhibition after preprocess by function 
+  It might be \% inhibition or \% viability.
+  \item \strong{response} The \% inhibition after preprocess by function 
   \link{ReshapeData}
 }
 If the \code{data} is the output from \link{CalculateSynergy}, following
 values are also available:
-\itemze{
+\itemize{
   \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
   additive effects predicted by ZIP, Bliss, HSA or Loewe model,
   respectively.
@@ -42,9 +42,8 @@ values are also available:
 \item{statistic}{A character or NULL. It indicates the statistics printed
 in the plot while there are replicates in input data. Available values are:
 \itemize{
-  \item \strong{sd} Standard deviation;
   \item \strong{sem} Standard error of mean;
-  \item \strong{CI95} 95% confidence interval.
+  \item \strong{ci} 95% confidence interval.
 }
 If it is \code{NULL}, no statistics will be printed.}
 
@@ -59,11 +58,17 @@ A list. It contains the elements:
     \item \strong{drug_pair} A data frame contains the drug names and
       concentration unites, whither the block is replicate or not.
     \item \strong{plot_title} A string for plot title.
-    \item \strong{plot_subtitle} A string for plot sub title.
     \item \strong{z_axis_subtitle} A string for plot z-axis title.
   }
 }
 \description{
 This function extracts the information for Multi-drug plotting from input
-list \code{data}.
+list \code{data}. It is an auxiliary function for \link{PlotMultiDrugSurface}
+and \link{PlotMultiDrugBar}.
+}
+\author{
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

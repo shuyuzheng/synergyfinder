@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_synergy_score.R
 \name{CalculateSynergy}
 \alias{CalculateSynergy}
-\title{Calculate the synergy scores for drug combinations}
+\title{Calculate the Synergy Scores for Drug Combinations}
 \usage{
 CalculateSynergy(
   data,
@@ -80,7 +80,7 @@ scores <- CalculateSynergy(data)
 }
 \author{
 \itemize{
-    \item Jing Tang \email{jing.tang@helsinki.fi}
     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+    \item Jing Tang \email{jing.tang@helsinki.fi}
  }
 }

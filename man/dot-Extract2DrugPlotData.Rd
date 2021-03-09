@@ -6,7 +6,7 @@
 \usage{
 .Extract2DrugPlotData(
   data,
-  plot_block = NULL,
+  plot_block = 1,
   drugs = c(1, 2),
   plot_value = "response",
   statistic = NULL
@@ -25,15 +25,15 @@ plot "drug1" and "drug2" in the input \code{data}.}
 \item{plot_value}{A character value. It indicates the value to be visualized.
 If the \code{data} is the direct output from \link{ReshapeData}, the values
 for this parameter are:
-\itemze{
+\itemize{
   \item \strong{response_origin} The original response value in input data.
-  It might be % inhibition or % viability.
-  \item \strong{response} The % inhibition after preprocess by function 
+  It might be \% inhibition or \% viability.
+  \item \strong{response} The \% inhibition after preprocess by function 
   \link{ReshapeData}
 }
 If the \code{data} is the output from \link{CalculateSynergy}, following
 values are also available:
-\itemze{
+\itemize{
   \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
   additive effects predicted by ZIP, Bliss, HSA or Loewe model,
   respectively.
@@ -46,9 +46,8 @@ values are also available:
 \item{statistic}{A character or NULL. It indicates the statistics printed
 in the plot while there are replicates in input data. Available values are:
 \itemize{
-  \item \strong{sd} Standard deviation;
   \item \strong{sem} Standard error of mean;
-  \item \strong{CI95} 95% confidence interval.
+  \item \strong{ci} 95\% confidence interval.
 }
 If it is \code{NULL}, no statistics will be printed.}
 }
@@ -58,4 +57,10 @@ A data frame. It contains the concentrations for selected drugs, the
 }
 \description{
 Extract Data for 2 Drug Combination Plots
+}
+\author{
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

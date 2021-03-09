@@ -2,7 +2,7 @@
 % Please edit documentation in R/reshape_data.R
 \name{ReshapeData}
 \alias{ReshapeData}
-\title{Pre-process the response data for further calculation and plot}
+\title{Pre-process the Response Data for Further Calculation and Plot}
 \usage{
 ReshapeData(
   data,
@@ -32,11 +32,6 @@ random seed for calculating the noise. Default setting is \code{NULL}}
 
 \item{data_type}{a parameter to specify the response data type which can be
 either "viability" or "inhibition".}
-
-\item{correction}{a character. This argument is extended from the argument
-\code{method} of \code{\link{CorrectBaseLine}} function. There are three
-available valuse: \code{non}, \code{part}, \code{all}.
-The default setting is \code{non}.}
 }
 \value{
 a list of the following components:
@@ -47,13 +42,13 @@ a list of the following components:
     block.
     \item \strong{response} A data frame contains the columns: "concX" 
     concentrations for drugs from input data; "response_origin" response
-    values from input data; "response" % inhibition value for downstream
+    values from input data; "response" \% inhibition value for downstream
     analysis.
   \item \strong{response_statistics} A data frame. It will be output if
     there is block have replicated response values. It contains the
     block ID, the concentrations for all the tested drugs, and statistics for
-    % inhibition values across replicates (including mean, standard
-    deviation, standard error of mean and 95% confidence interval).
+    \% inhibition values across replicates (including mean, standard
+    deviation, standard error of mean and 95\% confidence interval).
   }
 }
 \description{
@@ -64,9 +59,9 @@ missing values or correct base line to the dose-response matrix.
 \details{
 The input data must contain the following columns:
 (block_id/BlockId/PairIndex), (drug_row/DrugRow/Drug1),
-(drug_col/DrugCol/Drug2), (response/Response), (conc_r/ConcRow/Conc1),
-(conc_c/ConcCol/Conc2), and (ConcUnit/conc_r_unit, conc_c_unit/ConcUnit1,
-ConcUnit2, ConcUnit3)
+(drug_col/DrugCol/Drug2), (response/Response/inhibition/Inhibition),
+(conc_r/ConcRow/Conc1), (conc_c/ConcCol/Conc2), and
+(ConcUnit/conc_r_unit, conc_c_unit/ConcUnit1, ConcUnit2, ConcUnit3)
 }
 \examples{
 data("mathews_screening_data")
@@ -76,7 +71,7 @@ data <- ReshapeData(mathews_screening_data)
 }
 \author{
 \itemize{
-    \item Liye He \email{liye.he@helsinki.fi}
-    \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
- }
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

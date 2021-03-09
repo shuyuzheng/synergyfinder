@@ -6,13 +6,13 @@ meta$Conc3 <- c(
 )
 meta$Drug3 <- rep("Piperaquine", 12)
 
-NCAST_10023 <- NULL
+NCATS_10023_data <- NULL
 
 for (i in 1:12) {
   Conc1 <- as.numeric(unlist(strsplit(meta$RowConcs[i], ",")))
   Conc2 <- as.numeric(unlist(strsplit(meta$ColConcs[i], ",")))
   tmp <- response[which(response$BlockId == i), ]
-  df <- data.frame(BlockId = rep(1, nrow(df)), stringsAsFactors = FALSE)
+  df <- data.frame(BlockId = rep(1, nrow(tmp)), stringsAsFactors = FALSE)
   df$Drug1 <- rep(meta$RowName[i], nrow(df))
   df$Drug2 <- rep(meta$ColName[i], nrow(df))
   df$Drug3 <- rep(meta$Drug3[i], nrow(df))
@@ -23,7 +23,7 @@ for (i in 1:12) {
   df$ConcUnit1 <- rep(meta$RowConcUnit[i], nrow(df))
   df$ConcUnit2 <- rep(meta$ColConcUnit[i], nrow(df))
   df$ConcUnit3 <- rep("uM", nrow(df))
-  NCAST_10023 <- rbind.data.frame(NCAST_10023, df)
+  NCATS_10023_data <- rbind.data.frame(NCATS_10023, df)
 }
 
-usethis::use_data(NCAST_10023, overwrite = TRUE, internal = TRUE)
+usethis::use_data(NCATS_10023_data, overwrite = TRUE)

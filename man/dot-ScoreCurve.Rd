@@ -2,37 +2,44 @@
 % Please edit documentation in R/calculate_sensitivity_score.R
 \name{.ScoreCurve}
 \alias{.ScoreCurve}
-\title{CSS facilitate function - .ScoreCurve for curves fitted by LL.4}
+\title{CSS Facilitate Function - .ScoreCurve for Curves Fitted by LL.4 Model}
 \usage{
 .ScoreCurve(b, c, d, m, c1, c2, t)
 }
 \arguments{
-\item{b}{numeric, fitted parameter b from \code{\link[drc]{LL.4()}} model}
+\item{b}{A numeric value, fitted parameter b from \code{\link[drc]{LL.4}}
+model.}
 
-\item{c}{numeric, fitted parameter c from \code{\link[drc]{LL.4()}} model}
+\item{c}{A numeric value, fitted parameter c from \code{\link[drc]{LL.4}}
+model.}
 
-\item{d}{numeric, fitted parameter d from \code{\link[drc]{LL.4()}} model}
+\item{d}{A numeric value, fitted parameter d from \code{\link[drc]{LL.4}}
+model.}
 
-\item{m}{numeric, relative IC50 for the curve. log10(e), where e is the
-fitted parameter e from \code{\link[drc]{LL.4()}} model}
+\item{m}{A numeric value, relative IC50 for the curve. log10(e), where e is
+the fitted parameter e from \code{\link[drc]{LL.4}} model.}
 
-\item{c1}{numeric, log10(min conc) (this is the minimal nonzero concentration)}
+\item{c1}{A numeric value, log10(min conc) (this is the minimal nonzero
+concentration).}
 
-\item{c2}{numeric, log10(max conc) (this is the maximal concentration)}
+\item{c2}{A numeric value, log10(max conc) (this is the maximal
+concentration).}
 
-\item{t}{numeric, threshold (usually set to zero)}
+\item{t}{A numeric value, threshold (usually set to zero).}
 }
 \value{
-numeric, RI or CSS scores
+A numeric value, RI or CSS scores.
 }
 \description{
 New function used to score sensitivities given either a single-agent or a
 fixed conc (combination) columns. The function calculates the AUC of the
 log10-scaled dose-response curve. \strong{IMPORTANT:} note that with
-\code{\link[drc]{LL.4()}} calls, this value is already logged since the
+\code{\link[drc]{LL.4}} calls, this value is already logged since the
 input concentrations are logged.
 }
 \author{
-Jing Tang \email{jing.tang@helsinki.fi}
-Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

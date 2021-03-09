@@ -15,3 +15,9 @@ A numerical value in "mm" unite
 \description{
 This function converts font sizes from "pt" unite to "mm" unite.
 }
+\author{
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
+}

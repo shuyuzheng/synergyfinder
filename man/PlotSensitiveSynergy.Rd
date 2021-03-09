@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_sensitive_synergy.R
 \name{PlotSensitiveSynergy}
 \alias{PlotSensitiveSynergy}
-\title{Plot Sensitive-Synergy plot for all the combinations in the input data}
+\title{Plot Sensitive-Synergy Plot for All the Combinations in the Input Data}
 \usage{
 PlotSensitiveSynergy(
   data,
@@ -30,8 +30,15 @@ This function will generate a scatter plot for all the combinations in the
 input data. The x-axis is the Combination Sensitive score (CSS).
 }
 \examples{
-data <- ReshapeData(NCAST_10023)
-data <- CalculateSynergy(data, method = c("ZIP", "HSA", "Bliss", "Loewe"))
+data("mathews_screening_data")
+data <- ReshapeData(mathews_screening_data)
+data <- CalculateSynergy(data, method = c("ZIP"))
 data <- CalculateSensitivity(data)
 PlotSensitiveSynergy(data, plot_synergy = "ZIP")
+}
+\author{
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

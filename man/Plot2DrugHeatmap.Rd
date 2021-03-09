@@ -6,7 +6,6 @@
 \usage{
 Plot2DrugHeatmap(
   data,
-  plot_type = "heatmap",
   plot_block = 1,
   drugs = c(1, 2),
   plot_value = "response",
@@ -29,15 +28,15 @@ plot "drug1" and "drug2" in the input \code{data}.}
 \item{plot_value}{A character value. It indicates the value to be visualized.
 If the \code{data} is the direct output from \link{ReshapeData}, the values
 for this parameter are:
-\itemze{
+\itemize{
   \item \strong{response_origin} The original response value in input data.
-  It might be % inhibition or % viability.
-  \item \strong{response} The % inhibition after preprocess by function 
+  It might be \% inhibition or \% viability.
+  \item \strong{response} The \% inhibition after preprocess by function 
   \link{ReshapeData}
 }
 If the \code{data} is the output from \link{CalculateSynergy}, following
 values are also available:
-\itemze{
+\itemize{
   \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
   additive effects predicted by ZIP, Bliss, HSA or Loewe model,
   respectively.
@@ -50,9 +49,8 @@ values are also available:
 \item{statistic}{A character or NULL. It indicates the statistics printed
 in the plot while there are replicates in input data. Available values are:
 \itemize{
-  \item \strong{sd} Standard deviation;
   \item \strong{sem} Standard error of mean;
-  \item \strong{CI95} 95% confidence interval.
+  \item \strong{ci} 95\% confidence interval.
 }
 If it is \code{NULL}, no statistics will be printed.}
 
@@ -64,7 +62,7 @@ matrix. Available values are:
   scores in the matrix;
   \item \strong{median} Median value for all the responses or synergy
   scores in the matrix;
-  \item \strong{quantile_90} 90% quantile. User could change the number to
+  \item \strong{quantile_90} 90\% quantile. User could change the number to
   print different sample quantile. For example quantile_50 equal to median. 
 }
 If it is \code{NULL}, no statistics will be printed.}
@@ -86,5 +84,11 @@ synergy scores or the reference effects calculated from different models.
 \examples{
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
-Plot2DHeatmap(data)
+Plot2DrugHeatmap(data)
+}
+\author{
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

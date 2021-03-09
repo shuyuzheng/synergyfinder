@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_sensitivity_score.R
 \name{ImputeIC50}
 \alias{ImputeIC50}
-\title{Impute missing value at IC50 concentration of drug}
+\title{Impute Missing Value at IC50 Concentration of Drug}
 \usage{
 ImputeIC50(response.mat, col.ic50, row.ic50)
 }
@@ -10,14 +10,14 @@ ImputeIC50(response.mat, col.ic50, row.ic50)
 \item{response.mat}{A matrix. It contains response value of a block of drug
 combination.}
 
-\item{col.ic50}{A numeric. The IC50 value of drug added to columns.}
+\item{col.ic50}{A numeric value. The IC50 value of drug added to columns.}
 
-\item{row.ic50}{A numeric. The IC50 value of drug added to rows.}
+\item{row.ic50}{A numeric value. The IC50 value of drug added to rows.}
 }
 \value{
-a data frame contains all response value at the IC50 concentration
-of certein drug. It could be directly passed to function
-\code{CalculateSens} for scoring.
+A data frame contains all response value at the IC50 concentration
+  of certein drug. It could be directly passed to function
+  \code{CalculateSens} for scoring.
 }
 \description{
 \code{ImputeIC50} uses the particular experiment's values to predict the
@@ -32,6 +32,8 @@ function) by fixing the concentrations of the
 value at the combination (missing IC50, fixed conc).
 }
 \author{
-Jing Tang \email{jing.tang@helsinki.fi}
-Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

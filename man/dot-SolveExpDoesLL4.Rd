@@ -2,12 +2,12 @@
 % Please edit documentation in R/calculate_synergy_score.R
 \name{.SolveExpDoesLL4}
 \alias{.SolveExpDoesLL4}
-\title{Solve the Expected Dose of Drug to Achieve Given Effect (% inhibition)}
+\title{Solve the Expected Dose of Drug to Achieve Given Effect from LL.4 Model}
 \usage{
 .SolveExpDoesLL4(y, drug_par)
 }
 \arguments{
-\item{y}{The expected effect (% inhibition) of the drug to cell line}
+\item{y}{The expected effect (\% inhibition) of the drug to cell line}
 
 \item{drug_par}{The parameters for fitted dose-response model.}
 }
@@ -15,8 +15,8 @@
 A numeric value. It indicates the expected dose of drug.
 }
 \description{
-This function will solve the fitted four-parameter logistic dose-response 
-model and output the dose of drug at which it could achieve the % inhibition
+This function will solve the fitted four-parameter log-logistic dose-response 
+model and output the dose of drug at which it could achieve the \% inhibition
 to cell growth.
 }
 \author{

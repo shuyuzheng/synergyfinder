@@ -2,14 +2,14 @@
 % Please edit documentation in R/calculate_synergy_score.R
 \name{Bliss}
 \alias{Bliss}
-\title{Calculate Bliss synergy score}
+\title{Calculate Bliss Synergy Score}
 \usage{
 Bliss(response, single_drug_data)
 }
 \arguments{
 \item{response}{A data frame. It must contain the columns: "conc1", "conc2",
 ..., for the concentration of the combined drugs and "response" for the
-observed %inhibition at certain combination.}
+observed \%inhibition at certain combination.}
 
 \item{single_drug_data}{A list or NULL. It contains the monotherapy dose
 response data for all the tested drugs in the inputted block. If it is
@@ -22,14 +22,14 @@ A data frame containing the concentrations for drugs, reference
 }
 \description{
 \code{Bliss} calculates the synergy score matrix for a block of
-drug combination by using a druginteraction reference model introduced by
+drug combination by using a drug interaction reference model introduced by
 C. I. Bliss in 1939.
 }
 \details{
 This model is a reference model for evaluating the combination effect of two
 drugs. The basic assumption of this model is "The expected effect of two
 drugs acting independently". The Bliss reference effect 
-y = 1 - product_all_drug(1-%Inhibition) * 100.
+y = 1 - product_all_drug(1-\%Inhibition) * 100.
 }
 \examples{
 data("mathews_screening_data")
@@ -51,7 +51,7 @@ Bliss.score <- Bliss(response)
 }
 \author{
 \itemize{
-    \item Jing Tang \email{jing.tang@helsinki.fi}
     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+    \item Jing Tang \email{jing.tang@helsinki.fi}
  }
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_dose_response_model.R
 \name{FindModelType}
 \alias{FindModelType}
-\title{Find the type of model used for fitting dose response data}
+\title{Find the Type of Model Used for Fitting Dose Response Data}
 \usage{
 FindModelType(model)
 }
@@ -27,5 +27,8 @@ model <- FitDoseResponse(df)
 model.type <- FindModelType(model)
 }
 \author{
-Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

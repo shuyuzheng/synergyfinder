@@ -1,5 +1,9 @@
+# Copyright Shuyu Zheng and Jing Tang - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+# Written by Shuyu Zheng <shuyu.zheng@helsinki.fi>, March 2021
+#
 # SynergyFinder
-# Functions for plotting response or synergy scores multiple drug combination.
 #
 # Functions in this page:
 # PlotMultiDrugBar: Bar Plot for Multi-drug Combination Dose-Response/Synergy
@@ -12,16 +16,15 @@
 #     Multi-drug Plotting
 # DimensionReduction: Dimension Reduction for Multi-drug Combination
 #     Visualization
-#
-#
-
-
+# GenerateSurface: 3D Surface Plot for Nulti-drug Combination 
+#     Dose-Response/Synergy Scores
+# HighlightBarPlot: Highlight Bars
 
 #' Bar Plot for Multi-drug Combination Dose-Response/Synergy Scores 
 #'
 #' This function will generate a group of bar plots for one drug combination
 #' block. Each panel (columns) visualize the concentrations for all the drugs 
-#' and metrics specified by \data{plot_values}. Each row represents a data point
+#' and metrics specified by \code{plot_values}. Each row represents a data point
 #' in the combination data. The data point specified by \code{highlight_row}
 #' will be highlighted in different color.
 #' 
@@ -31,15 +34,15 @@
 #' @param plot_value A vector of characters. It contains the name of one or more
 #'   metrics to be visualized. If the \code{data} is the direct output from 
 #'   \link{ReshapeData}, the values for this parameter are:
-#'   \itemze{
+#'   \itemize{
 #'     \item \strong{response_origin} The original response value in input data.
-#'     It might be % inhibition or % viability.
-#'     \item \strong{response} The % inhibition after preprocess by function 
+#'     It might be \% inhibition or \% viability.
+#'     \item \strong{response} The \% inhibition after preprocess by function 
 #'     \link{ReshapeData}
 #'   }
 #'   If the \code{data} is the output from \link{CalculateSynergy}, following
 #'   values are also available:
-#'   \itemze{
+#'   \itemize{
 #'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
 #'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
@@ -56,28 +59,50 @@
 #'   number of drugs in selected block. It contains the concentrations  for
 #'   "drug1", "drug2", ... The data point selected by these concentrations will
 #'   be highlighted in the plot.
-#' @param bar_color An R color value. It indicates the color of bars.
-#' @param highlight_color An R color value. It indicates the color of
-#' highlighted bar.
+#' @param pos_value_color An R color value. It indicates the color for the
+#'   positive values.
+#' @param neg_value_color An R color value. It indicates the color for the
+#'   negative values.
+#' @param highlight_pos_color An R color value. It indicates the highlight color
+#'   for the positive values.
+#' @param highlight_neg_color An R color value. It indicates the highlight color
+#'   for the negative values.
 #'
 #' @return A ggplot object.
+#' 
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#' 
 #' @export
 #'
 #' @examples
-#' data("mathews_screening_data")
-#' data <- ReshapeData(mathews_screening_data)
-#' PlotMultiDrugBar(data, highlight_row = c(0, 0))
+#' data("NCATS_10023_data")
+#' data <- ReshapeData(NCATS_10023_data)
+#' data <- CalculateSynergy(data, method = c("HSA"))
+#' p <- PlotMultiDrugBar(data, 
+#'   plot_block = 1,
+#'   plot_value = c("response", "HSA_ref", "HSA_synergy"),
+#'   highlight_row = c(0, 0, 0),
+#'   sort_by = "HSA_synergy"
+#' )
+#' p
 PlotMultiDrugBar <- function(data,
-                             plot_block = 1,
-                             plot_value = "response",
+                             plot_block,
+                             plot_value,
                              sort_by = "conc1",
-                             highlight_row = NULL,
-                             bar_color = "grey50",
-                             highlight_color = "#A90217") {
+                             highlight_row = NULL, 
+                             pos_value_color = "#CC3311",
+                             neg_value_color = "#448BD4",
+                             highlight_pos_color = "#A90217",
+                             highlight_neg_color = "#2166AC") {
   plot_data <- .ExtractMultiDrugPlotData(
     data,
     plot_block = plot_block,
-    plot_value = plot_value
+    plot_value = plot_value,
+    titles = FALSE
   )
   
   drug_pair <- plot_data$drug_pair
@@ -98,7 +123,11 @@ PlotMultiDrugBar <- function(data,
     } else {
       cname[i] <- switch (
         sub(".*_", "", test_name),
-        "ref" = sub("_ref", " Reference Additive Effect\n(% inhibition)", test_name),
+        "ref" = sub(
+          "_ref", 
+          " Reference Additive Effect\n(% inhibition)",
+          test_name
+        ),
         "fit" = sub("_fit", " Fitted Effect\n(% inhibition)", test_name),
         "synergy" = sub("_synergy", " Synergy Score", test_name),
         "origin" = paste0("Input Response\n(% ", drug_pair$input_type, ")"),
@@ -116,12 +145,20 @@ PlotMultiDrugBar <- function(data,
     plot_table_reshape$metric,
     levels = cname
   )
+  plot_table_reshape$color <- ifelse(
+    plot_table_reshape$value >= 0,
+    "pos",
+    "neg")
+  
   p <- ggplot2::ggplot() +
     ggplot2::geom_bar(
       data = plot_table_reshape,
-      aes(x = id, y = value),
-      fill = bar_color,
+      aes(x = id, y = value, fill = color),
       stat = "identity"
+    ) +
+    ggplot2::scale_fill_manual(
+      values = c("pos" = pos_value_color, "neg" = neg_value_color, 
+                 "hi_pos" = highlight_pos_color, "hi_neg" = highlight_neg_color)
     ) +
     ggplot2::scale_x_continuous(expand = c(0, 0)) +
     ggplot2::scale_y_continuous(expand = c(0.2, 0)) +
@@ -129,13 +166,19 @@ PlotMultiDrugBar <- function(data,
       axis.title = element_blank(),
       axis.text.y = element_blank(),
       axis.ticks.y = element_blank(),
-      strip.background =element_rect(fill="#E5E2E0"),
-      panel.background = element_rect(fill = "#F5F3F2"),
+      strip.background =element_rect(fill="#DFDFDF"),
+      panel.background = element_rect(fill = "#EEEEEE"),
       panel.grid.major.x = element_blank(),
       panel.grid.minor.x = element_blank(),
-      legend.position = "none") + coord_flip() +
+      legend.position = "none",
+      # Set label's style of heatmap
+      axis.text = ggplot2::element_text(
+        size = 10
+      )
+    ) + 
+    ggplot2::coord_flip() +
     ggplot2::facet_grid(cols = vars(metric), rows = NULL, scales = "free")
-  
+  p
   # Highlight data row
   concs <- sort(concs)
   if (!is.null(highlight_row)) {
@@ -167,8 +210,8 @@ PlotMultiDrugBar <- function(data,
       ]
     )
     selected_data <- plot_table_reshape[plot_table_reshape$id %in% selected_id, ]
-    p <- p +
-      .HighlightBarPlot(selected_data, highlight_color = highlight_color)
+    selected_data$color <- paste0("hi_", selected_data$color)
+    p <- p + HighlightBarPlot(selected_data)
   }
   return(p)
 }
@@ -187,15 +230,15 @@ PlotMultiDrugBar <- function(data,
 #' @param plot_value A vector of characters. It contains the name of one or more
 #'   metrics to be visualized. If the \code{data} is the direct output from 
 #'   \link{ReshapeData}, the values for this parameter are:
-#'   \itemze{
+#'   \itemize{
 #'     \item \strong{response_origin} The original response value in input data.
-#'     It might be % inhibition or % viability.
-#'     \item \strong{response} The % inhibition after preprocess by function 
+#'     It might be \% inhibition or \% viability.
+#'     \item \strong{response} The \% inhibition after preprocess by function 
 #'     \link{ReshapeData}
 #'   }
 #'   If the \code{data} is the output from \link{CalculateSynergy}, following
 #'   values are also available:
-#'   \itemze{
+#'   \itemize{
 #'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
 #'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
@@ -208,28 +251,44 @@ PlotMultiDrugBar <- function(data,
 #'   in the plot while there are replicates in input data. Available values are:
 #'   \itemize{
 #'     \item \strong{sem} Standard error of mean;
-#'     \item \strong{ci} 95% confidence interval.
+#'     \item \strong{ci} 95\% confidence interval.
 #'   }
 #'   If it is \code{NULL}, no statistics will be printed.
 #' @param distance_method The methods to calculate the distance between
 #'   different data points from the concentration of drugs. The distance matrix
 #'   is used for dimension reduction. This parameter is used to set the 
-#'   parameter \code{method} for \link[vegdist]{vegan}. The default values is
+#'   parameter \code{method} for \link[vegan]{vegdist}. The default values is
 #'   "euclidean". 
 #' @param high_value_color An R color value. It indicates the color for the
 #'   high values.
 #' @param low_value_color An R color value. It indicates the color for low
 #'   values.
 #' @param point_color An R color value. It indicates the color for data points.
+#' 
 #' @return A plotly plot object.
+#'
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#' 
 #' @export
 #'
 #' @examples
-#' data <- ReshapeData(NCAST_10023)
-#' PlotMultiDrugSurface(data)
+#' data("NCATS_10023_data")
+#' data <- ReshapeData(NCATS_10023_data)
+#' p <- PlotMultiDrugSurface(
+#'   data,
+#'   plot_block = 1,
+#'   plot_value = "response",
+#'   statistic = NULL,
+#'   distance_method = "euclidean"
+#' )
+#' p
 PlotMultiDrugSurface <- function(data,
-                                 plot_block = 1,
-                                 plot_value = "response",
+                                 plot_block,
+                                 plot_value,
                                  statistic = NULL,
                                  distance_method = "euclidean", 
                                  high_value_color = "#A90217",
@@ -251,6 +310,7 @@ PlotMultiDrugSurface <- function(data,
                         high_value_color = high_value_color,
                         low_value_color = low_value_color,
                         point_color = point_color,
+                        legend_title = plot_data$legend_title,
                         plot_title = plot_data$plot_title,
                         z_axis_title = plot_data$z_axis_title)
   return(p)
@@ -270,15 +330,15 @@ PlotMultiDrugSurface <- function(data,
 #' @param plot_value A vector of characters. It contains the name of one or more
 #'   metrics to be visualized. If the \code{data} is the direct output from 
 #'   \link{ReshapeData}, the values for this parameter are:
-#'   \itemze{
+#'   \itemize{
 #'     \item \strong{response_origin} The original response value in input data.
-#'     It might be % inhibition or % viability.
-#'     \item \strong{response} The % inhibition after preprocess by function 
+#'     It might be \% inhibition or \% viability.
+#'     \item \strong{response} The \% inhibition after preprocess by function 
 #'     \link{ReshapeData}
 #'   }
 #'   If the \code{data} is the output from \link{CalculateSynergy}, following
 #'   values are also available:
-#'   \itemze{
+#'   \itemize{
 #'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
 #'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
@@ -306,12 +366,24 @@ PlotMultiDrugSurface <- function(data,
 #'     \item \strong{plot_title} A string for plot title.
 #'     \item \strong{z_axis_subtitle} A string for plot z-axis title.
 #'   }
+#'
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
 .ExtractMultiDrugPlotData <- function(data,
                                       plot_block = 1,
                                       plot_value = "response",
                                       statistic = NULL,
                                       titles = TRUE) {
   # Check the input data
+  # Check plot_block
+  if (!plot_block %in% data$drug_pairs$block_id) {
+    stop("The input block id '", plot_block, "' could not be found in the input
+         data.")
+  }
+  
   # Data structure of 'data'
   if (!is.list(data)) {
     stop("Input data is not in list format!")
@@ -451,29 +523,56 @@ PlotMultiDrugSurface <- function(data,
   } else {
     plot_data <- list(
       plot_table = plot_table,
-      drug_pair = drug_pair,
-      legend_title = legend_title)
+      drug_pair = drug_pair)
   }
-  
   return(plot_data)
 }
+
 #' Dimension Reduction for Multi-drug Combination Visualization
 #' 
 #' This function will take the multi-drug combination data, project the
-#' concentrations of all the drugs into 2 dimension. It is an auxiliary function
-#' for \link{PlotMultiDrugSurface}
+#' concentrations of all the drugs into 2 dimensions. It is an auxiliary
+#' function for \link{PlotMultiDrugSurface}
 #'
 #' @param plot_table A data frame contains concentrations for all drugs, the
 #'   values for \code{plot_value}.
 #' @param drug_pair A data frame contains the drug names and concentration
 #'   unites, whither the block is replicate or not.
+#' @param plot_value A vector of characters. It contains the name of one or more
+#'   metrics to be visualized. If the \code{data} is the direct output from 
+#'   \link{ReshapeData}, the values for this parameter are:
+#'   \itemize{
+#'     \item \strong{response_origin} The original response value in input data.
+#'     It might be \% inhibition or \% viability.
+#'     \item \strong{response} The \% inhibition after preprocess by function 
+#'     \link{ReshapeData}
+#'   }
+#'   If the \code{data} is the output from \link{CalculateSynergy}, following
+#'   values are also available:
+#'   \itemize{
+#'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
+#'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
+#'     respectively.
+#'     \item \strong{ZIP_synergy, Bliss_synergy, HSA_synergy, Loewe_synergy}
+#'     The synergy score calculated by ZIP, Bliss, HSA or Loewe model,
+#'     respectively.
+#'     \item \strong{ZIP_fit} The response fitted by ZIP model.
+#'   }
 #' @param distance_method The methods to calculate the distance between
 #'   different data points from the concentration of drugs. The distance matrix
 #'   is used for dimension reduction. This parameter is used to set the 
-#'   parameter \code{method} for \link[vegdist]{vegan}. The default values is
-#'   "euclidean". 
+#'   parameter \code{method} for \link[vegan]{vegdist}. The default values is
+#'   "euclidean".
 #'
-#' @return
+#' @return A data frame. It contains the plot information required by function
+#'   \link{GenerateSurface}
+#' 
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#' 
 #' @export
 DimensionReduction <- function(plot_table,
                                 drug_pair,
@@ -486,7 +585,7 @@ DimensionReduction <- function(plot_table,
   concs <- grep("conc", colnames(plot_table), value = TRUE)
   plot_table <- plot_table %>% 
     dplyr::mutate(id = seq(1, dplyr::n())) %>% 
-    dplyr::rename(value = all_of(plot_value))
+    dplyr::rename(value = dplyr::all_of(plot_value))
   text <- NULL
   for (i in 1:nrow(plot_table)) {
     text <- c(
@@ -511,7 +610,7 @@ DimensionReduction <- function(plot_table,
   concs <- apply(plot_table[, concs], 2, function(x) as.integer(factor(x)))
   rownames(concs) <- plot_table$id
   distance <- vegan::vegdist(concs, distance_method)
-  mds_coor <- cmdscale(distance)
+  mds_coor <- stats::cmdscale(distance)
   mds_data <- data.frame(
     x = mds_coor[, 1],
     y = mds_coor[, 2],
@@ -532,8 +631,7 @@ DimensionReduction <- function(plot_table,
     extended_plot_table = extended_plot_table,
     plot_table = plot_table,
     mds_data = mds_data,
-    hover_text = text,
-    legend_title = plot_data$legend_title
+    hover_text = text
   )
   return(plot_data)
 }
@@ -553,21 +651,28 @@ DimensionReduction <- function(plot_table,
 #' @param low_value_color An R color value. It indicates the color for low
 #'   values.
 #' @param point_color An R color value. It indicates the color for data points.
-#' @param plot_title A string. It is the title for plot.
-#' @param z_axis_title A string. It is the title for z-axis.
+#' @param legend_title A character value. It is the title for legend.
+#' @param plot_title A character value. It is the title for plot.
+#' @param z_axis_title A character value. It is the title for z-axis.
 #'
-#' @return
+#' @return A ggplot object.
+#'
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#' 
 #' @export
 GenerateSurface <- function(dim_reduced_data,
                              high_value_color,
                              low_value_color,
                              point_color,
                              plot_title,
-                             grid = TRUE,
+                             legend_title,
                              z_axis_title) {
   plot_table <- dim_reduced_data$plot_table
   mds_data <- dim_reduced_data$mds_data
-  legend_title <- dim_reduced_data$legend_title
   extended_plot_table <- dim_reduced_data$extended_plot_table
   hover_text <- dim_reduced_data$hover_text
   extended_mat <- reshape2::acast(
@@ -605,19 +710,10 @@ GenerateSurface <- function(dim_reduced_data,
       cmin = start_point,
       cmax = end_point,
       contours = list(
-        x = list(
-          highlight = FALSE,
-          show = TRUE,start = 1.5, end = 2, 
-          size = 0.04,
-          color = 'white'
-        ),
-        y = list(
-          highlight = FALSE,
-          show = TRUE,
-          size = 0.04,
-          color = 'white'
-        ),
-        z = list(highlight = FALSE))
+        x = list(highlight = FALSE),
+        y = list(highlight = FALSE),
+        z = list(highlight = FALSE)
+      )
     ) %>% 
     plotly::add_trace(
       name = "points",
@@ -660,23 +756,27 @@ GenerateSurface <- function(dim_reduced_data,
   return(p)
 }
 
-
-#' Title
+#' Highlight Bars
 #' 
 #' It is an auxiliary function for \link{PlotMultiDrugBar}
 #' 
-#' @param selected_data 
-#' @param highlight_color 
+#' @param selected_data A data frame. It contain the information for the bars
+#'   to be highlighted.
 #'
-#' @return
+#' @return A ggplot object
+#' 
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#' 
 #' @export
-#'
-#' @examples
-.HighlightBarPlot <- function(selected_data, highlight_color = "red"){
+HighlightBarPlot <- function(selected_data){
   p <- list(
     geom_bar(
       data = selected_data,
-      aes(x = id, y = value, fill = highlight_color),
+      aes(x = id, y = value, fill = color),
       stat = "identity"
     ),
     geom_text(

@@ -10,6 +10,7 @@ Plot2DrugSurface(
   drugs = c(1, 2),
   plot_value = "response",
   summary_statistic = NULL,
+  dynamic = FALSE,
   high_value_color = "#A90217",
   low_value_color = "#2166AC"
 )
@@ -27,15 +28,15 @@ plot "drug1" and "drug2" in the input \code{data}.}
 \item{plot_value}{A character value. It indicates the score or response value
 to be visualized. If the \code{data} is the direct output from
 \link{ReshapeData}, the available values for this parameter are:
-\itemze{
+\itemize{
   \item \strong{response_origin} The original response value in input data.
-  It might be % inhibition or % viability.
-  \item \strong{response} The % inhibition after preprocess by function 
+  It might be \% inhibition or \% viability.
+  \item \strong{response} The \% inhibition after preprocess by function 
   \link{ReshapeData}
 }
 If the \code{data} is the output from \link{CalculateSynergy}, following
 values are also available:
-\itemze{
+\itemize{
   \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
   additive effects predicted by ZIP, Bliss, HSA or Loewe model,
   respectively.
@@ -53,10 +54,15 @@ matrix. Available values are:
   scores in the matrix;
   \item \strong{median} Median value for all the responses or synergy
   scores in the matrix;
-  \item \strong{quantile_90} 90% quantile. User could change the number to
+  \item \strong{quantile_90} 90\% quantile. User could change the number to
   print different sample quantile. For example quantile_50 equal to median. 
 }
 If it is \code{NULL}, no statistics will be printed.}
+
+\item{dynamic}{A logical value. If it is \code{TRUE}, this function will
+use \link[plotly]{plot_ly} to generate an interactive plot. If it is
+\code{FALSE}, this function will use \link[lattice]{wireframe} to generate
+a static plot.}
 
 \item{high_value_color}{An R color value. It indicates the color for the
 high values.}
@@ -65,7 +71,9 @@ high values.}
 values.}
 }
 \value{
-A project recorded by \link[recordPlot]{grDevice}.
+If \code{dynamic = FALSE}, this function will return a plot project 
+  recorded by \link[grDevices]{recordPlot}. If \code{dynamic = FALSE}, this
+  function will return a plotly plot object.
 }
 \description{
 This function will generate a surface plot for 2-drug combinations. The axes
@@ -76,4 +84,11 @@ synergy scores or the reference effects calculated from different models.
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
 Plot2DrugSurface(data)
+Plot2DrugSurface(data, dynamic = TRUE)
+}
+\author{
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }

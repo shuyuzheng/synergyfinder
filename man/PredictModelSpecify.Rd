@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_dose_response_model.R
 \name{PredictModelSpecify}
 \alias{PredictModelSpecify}
-\title{Predict response value at certain drug dose}
+\title{Predict Response Value at Certain Drug Dose}
 \usage{
 PredictModelSpecify(model, dose)
 }
@@ -10,12 +10,8 @@ PredictModelSpecify(model, dose)
 \item{model}{An object for fitted model from drm::drc function L.4 or LL.4
 model.}
 
-\item{df}{A data frame. It contains two variable:
-\itemize{
-  \item \strong{dose} a serial of concentration of drug;
-  \item \strong{response} the cell line response to each concentration of
-  drug. It should be the inhibition rate according to negative control.
-}}
+\item{dose}{A numeric value. It indicates the concentration of drug at which
+the response will be predicted.}
 }
 \value{
 A numeric value. It is the response value of cell line to the drug at
@@ -27,10 +23,12 @@ dose response model and generate the predict response value at the given dose.
 }
 \details{
 \strong{Note}: Random number generator used in \code{AddNoise} with
-\code{method = "random"}. If the analysis requires for reproductiblity,
-plesase set the random seed before calling this function.
+\code{method = "random"}. If the analysis requires reproducibility, please
+set the random seed before calling this function.
 }
 \author{
-Jing Tang \email{jing.tang@helsinki.fi}
-Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+\itemize{
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }
