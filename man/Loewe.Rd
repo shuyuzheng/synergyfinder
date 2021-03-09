@@ -2,28 +2,27 @@
 % Please edit documentation in R/calculate_synergy_score.R
 \name{Loewe}
 \alias{Loewe}
-\title{Calculate Loewe synergy score}
+\title{Calculate Loewe Synergy Score}
 \usage{
-Loewe(response.mat, quiet = TRUE, drug.col.model = NULL, drug.row.model = NULL)
+Loewe(response, Emin = NA, Emax = NA, quiet = TRUE)
 }
 \arguments{
-\item{response.mat}{A drug cobination dose-response matrix. It's column name
-and row name are representing the concerntrations of drug added to column
-and row, respectively. The values in matrix indicate the inhibition rate to
-cell growth.}
+\item{response}{A data frame. It must contain the columns: "conc1", "conc2",
+..., for the concentration of the combined drugs and "response" for the
+observed \%inhibition at certain combination.}
+
+\item{Emin}{The expected minimum response value in the 4 parameter 
+log-logistic model.}
+
+\item{Emax}{The expected maximum response value in the 4 parameter 
+log-logistic model.}
 
 \item{quiet}{A logical value. If it is \code{TRUE} then the warning message
 will not show during calculation.}
-
-\item{drug.col.model}{(optional) a character. It indicates the model used for
-fitting dose-response curve for drug added to columns.}
-
-\item{drug.row.model}{(optional) a character. It indicates the model type
-used for fitting dose-response curve for drug added to rows.}
 }
 \value{
-A matrix for Synergy score calculated via reference model introduced
-  by Loewe, S.
+A data frame containing the concentrations for drugs, reference
+  effect and synergy score estimated by Loewe model.
 }
 \description{
 \code{Loewe} calculates the synergy score matrix from a dose-response matrix
@@ -41,17 +40,12 @@ if it has been down before. Functions \code{\link{FitDoseResponse}} and
 \code{\link{ExtractSingleDrug}} could be used to calculate these arguments.
 }
 \examples{
-# No single drug fitted modle before
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
-response.mat <- data$dose.response.mats[[1]]
-Loewe.score <- Loewe(response.mat)
+response <- data$response[data$response$block_id == 1, 
+                          c("conc1", "conc2", "response")]
+Loewe.score <- Loewe(response)
 
-# Single drug dose response models have been fitted before.
-drug.row.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="row"))
-drug.col.model <- FitDoseResponse(ExtractSingleDrug(response.mat, dim="col"))
-Loewe.score2 <- Loewe(response.mat, drug.col.model=drug.col.model,
-                     drug.row.model=drug.row.model)
 }
 \references{
 \itemize{
@@ -68,8 +62,7 @@ Loewe.score2 <- Loewe(response.mat, drug.col.model=drug.col.model,
 }
 \author{
 \itemize{
-   \item{Liye He \email{liye.he@helsinki.fi}}
-   \item{Jing Tang \email{jing.tang@helsinki.fi}}
-   \item{Shuyu Zheng \email{shuyu.zheng@helsinki.fi}}
-}
+    \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+    \item Jing Tang \email{jing.tang@helsinki.fi}
+ }
 }

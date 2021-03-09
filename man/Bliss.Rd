@@ -2,49 +2,56 @@
 % Please edit documentation in R/calculate_synergy_score.R
 \name{Bliss}
 \alias{Bliss}
-\title{Calculate Bliss synergy score}
+\title{Calculate Bliss Synergy Score}
 \usage{
-Bliss(response.mat)
+Bliss(response, single_drug_data)
 }
 \arguments{
-\item{response.mat}{A drug cobination dose-response matrix. It's column name
-and row name are representing the concerntrations of drug added to column and
-row, respectively. The values in matrix indicate the inhibition rate to cell
-growth.}
+\item{response}{A data frame. It must contain the columns: "conc1", "conc2",
+..., for the concentration of the combined drugs and "response" for the
+observed \%inhibition at certain combination.}
+
+\item{single_drug_data}{A list or NULL. It contains the monotherapy dose
+response data for all the tested drugs in the inputted block. If it is
+\code{NULL}, the data will extract the dose response table from inputted
+\code{response} table.}
 }
 \value{
-A matrix for synergy score calculated via reference model introduced
-by C. I. Bliss.
+A data frame containing the concentrations for drugs, reference
+  effect and synergy score estimated by Bliss model.
 }
 \description{
 \code{Bliss} calculates the synergy score matrix for a block of
-drug combination by using a druginteraction reference model introduced by
+drug combination by using a drug interaction reference model introduced by
 C. I. Bliss in 1939.
 }
 \details{
 This model is a reference model for evaluating the combination effect of two
 drugs. The basic assumption of this model is "The expected effect of two
-drugs acting independently".
+drugs acting independently". The Bliss reference effect 
+y = 1 - product_all_drug(1-\%Inhibition) * 100.
 }
 \examples{
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
-Bliss.score <- Bliss(data$dose.response.mats[[1]])
+response <- data$response[data$response$block_id == 1,
+                          c("conc1", "conc2", "response")]
+Bliss.score <- Bliss(response)
 }
 \references{
 \itemize{
-   \item{Yadav B, Wennerberg K, Aittokallio T, Tang J. (2015).
-   \href{https://doi.org/10.1016/j.csbj.2015.09.001}{Searching for Drug
-   Synergy in Complex Dose-Response Landscape Using an Interaction Potency
-   Model.} Comput Struct Biotechnol J, 13:504– 513.}
-   \item{Bliss, C. I. (1939).
-   \href{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1744-7348.1939.tb06990.x}{The toxicity of poisons applied jointly.}
-   Annals of Applied Biology, 26(3):585–615.}
+     \item{Yadav B, Wennerberg K, Aittokallio T, Tang J. (2015).
+     \href{https://doi.org/10.1016/j.csbj.2015.09.001}{Searching for Drug
+     Synergy in Complex Dose-Response Landscape Using an Interaction Potency
+     Model.} Comput Struct Biotechnol J, 13:504– 513.}
+     \item{Bliss, C. I. (1939).
+     \href{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1744-7348.1939.tb06990.x}{The toxicity of poisons applied jointly.}
+     Annals of Applied Biology, 26(3):585–615.}
 }
 }
 \author{
 \itemize{
-   \item{Liye He \email{liye.he@helsinki.fi}}
-   \item{Shuyu Zheng \email{shuyu.zheng@helsinki.fi}}
-}
+    \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+    \item Jing Tang \email{jing.tang@helsinki.fi}
+ }
 }

@@ -2,30 +2,30 @@
 % Please edit documentation in R/fit_dose_response_model.R
 \name{FitDoseResponse}
 \alias{FitDoseResponse}
-\title{Fitting single drug dose-response model}
+\title{Fitting Single Drug Dose-Response Model}
 \usage{
 FitDoseResponse(data, Emin = NA, Emax = NA)
 }
 \arguments{
 \item{data}{A data frame. It contains two columns:
 \itemize{
-  \item \strong{conc} The concentration of drugs added in experiment.
-  \item \strong{response} The response of cell lines to drug with different
-  concentrations.
+  \item \strong{dose} The concentration of drugs added in experiment.
+  \item \strong{response} The response (% inhibition) of cell lines to drug
+    with different concentrations.
 }}
 
-\item{Emin}{A numeric or \code{NA}. the minimal effect of the drug used in
-the 4-parameter log-logistic function to fit the dose-response curve. If
+\item{Emin}{A numeric value or \code{NA}. the minimal effect of the drug used
+in the 4-parameter log-logistic function to fit the dose-response curve. If
 it is not NA, it is fixed the value assigned by the user. Default setting
 is \code{NA}.}
 
 \item{Emax}{A numeric or \code{NA}. the maximal effect of the drug used in
-the 4-parameter log-logistic function to fit the dose-response curve. If
-it is not NA, it is fixed the value assigned by the user. Default setting
-is \code{NA}.}
+the 4-parameter log-logistic function to fit the dose-response curve. If it
+is not NA, it is fixed the value assigned by the user. Default setting is
+\code{NA}.}
 }
 \value{
-An object of class 'drc'. It contains imformation of fitted model.
+An object of class 'drc'. It contains information of fitted model.
 }
 \description{
 Function \code{FitDoseResponse} fits dose-response model by using
@@ -43,8 +43,10 @@ First use "L.4" model to fit the raw data. If error or waring occurs, use
 "LL.4" model to fit \code{log(raw data)}.
 }
 \examples{
-df <- data.frame(response = c(0, 29, 59, 60, 75, 90),
-                 dose = c(0.00, 9.7656, 39.0626, 156.25, 625, 2500))
+df <- data.frame(
+  response = c(0, 29, 59, 60, 75, 90),
+  dose = c(0.00, 9.7656, 39.0626, 156.25, 625, 2500)
+)
 model <- FitDoseResponse(df)
 }
 \references{
@@ -54,7 +56,7 @@ Regression, New York}: Wiley \& Sons (p. 330).
 }
 \author{
 \itemize{
-   \item{Liye He \email{liye.he@helsinki.fi}}
-   \item{Shuyu Zheng \email{shuyu.zheng@helsinki.fi}}
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
 }
 }

@@ -1,12 +1,18 @@
+# Copyright Shuyu Zheng and Jing Tang - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+# Written by Shuyu Zheng <shuyu.zheng@helsinki.fi>, March 2021
+#
 # SynergyFinder
-# Functions for fitting single drug dose-response curve
 #
 # Functions on this page:
-# FitDoseResponse: Fitting single drug dose-response model
-# FindModelType: Get the model type which was used to fit dose-response curve.
+#
+# FitDoseResponse: Fitting Single Drug Dose-Response Model
+# FindModelType: Find the Type of Model Used for Fitting Dose Response Data
+# PredictModelSpecify: Predict Response Value at Certain Drug Dose
+# FindModelPar: Find the Fitted Parameters from 4-Parameter Log-Logistic Model
 
-
-#' Fitting single drug dose-response model
+#' Fitting Single Drug Dose-Response Model
 #'
 #' Function \code{FitDoseResponse} fits dose-response model by using
 #' \code{\link[drc]{drm}} function.
@@ -23,95 +29,173 @@
 #'
 #' @param data A data frame. It contains two columns:
 #' \itemize{
-#'   \item \strong{conc} The concentration of drugs added in experiment.
-#'   \item \strong{response} The response of cell lines to drug with different
-#'   concentrations.
+#'   \item \strong{dose} The concentration of drugs added in experiment.
+#'   \item \strong{response} The response (% inhibition) of cell lines to drug
+#'     with different concentrations.
 #' }
-#' @param Emin A numeric or \code{NA}. the minimal effect of the drug used in
-#'    the 4-parameter log-logistic function to fit the dose-response curve. If
-#'    it is not NA, it is fixed the value assigned by the user. Default setting
-#'    is \code{NA}.
+#' @param Emin A numeric value or \code{NA}. the minimal effect of the drug used
+#'   in the 4-parameter log-logistic function to fit the dose-response curve. If
+#'   it is not NA, it is fixed the value assigned by the user. Default setting
+#'   is \code{NA}.
 #' @param Emax A numeric or \code{NA}. the maximal effect of the drug used in
-#'    the 4-parameter log-logistic function to fit the dose-response curve. If
-#'    it is not NA, it is fixed the value assigned by the user. Default setting
-#'    is \code{NA}.
+#'   the 4-parameter log-logistic function to fit the dose-response curve. If it
+#'   is not NA, it is fixed the value assigned by the user. Default setting is
+#'   \code{NA}.
 #'
-#' @return An object of class 'drc'. It contains imformation of fitted model.
+#' @return An object of class 'drc'. It contains information of fitted model.
 #'
-#' @author \itemize{
-#'    \item{Liye He \email{liye.he@helsinki.fi}}
-#'    \item{Shuyu Zheng \email{shuyu.zheng@helsinki.fi}}
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
 #' }
 #'
 #' @references Seber, G. A. F. and Wild, C. J (1989)
 #' href{https://onlinelibrary.wiley.com/doi/book/10.1002/0471725315}{Nonlinear
 #' Regression, New York}: Wiley \& Sons (p. 330).
 #'
-#' @importFrom methods is
 #' @export
-#' 
+#'
 #' @examples
-#' df <- data.frame(response = c(0, 29, 59, 60, 75, 90),
-#'                  dose = c(0.00, 9.7656, 39.0626, 156.25, 625, 2500))
+#' df <- data.frame(
+#'   response = c(0, 29, 59, 60, 75, 90),
+#'   dose = c(0.00, 9.7656, 39.0626, 156.25, 625, 2500)
+#' )
 #' model <- FitDoseResponse(df)
 FitDoseResponse <- function(data, Emin = NA, Emax = NA) {
   if (!all(c("dose", "response") %in% colnames(data))) {
     stop("The input must contain columns: \"dose\", \"respone\".")
   }
-  
+
   if (nrow(data) != 1 & stats::var(data$response) == 0) {
-    data$response[nrow(data)] <- data$response[nrow(data)] + 
+    data$response[nrow(data)] <- data$response[nrow(data)] +
       10^-10
   }
   drug.model <- NULL
-drug.model <- tryCatch({
-  drc::drm(response ~ dose, data = data, 
-           fct = drc::LL.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)), 
-           na.action = stats::na.omit, 
-           control = drc::drmc(errorm = FALSE, noMessage = TRUE, 
-                               otrace = TRUE))
-  }, error = function(e) {
-      data$dose[which(data$dose == 0)] <- 10^-10 
-      drc::drm(response ~ log(dose), data = data, 
-               fct = drc::L.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)), 
-               na.action = stats::na.omit, 
-               control = drc::drmc(errorm = FALSE, noMessage = TRUE, 
-                                   otrace = TRUE))
-  })
+  drug.model <- tryCatch(
+    {
+      drc::drm(response ~ dose,
+        data = data,
+        fct = drc::LL.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)),
+        na.action = stats::na.omit,
+        control = drc::drmc(
+          errorm = FALSE, noMessage = TRUE,
+          otrace = TRUE
+        )
+      )
+    },
+    error = function(e) {
+      data$dose[which(data$dose == 0)] <- 10^-10
+      drc::drm(response ~ log(dose),
+        data = data,
+        fct = drc::L.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)),
+        na.action = stats::na.omit,
+        control = drc::drmc(
+          errorm = FALSE, noMessage = TRUE,
+          otrace = TRUE
+        )
+      )
+    }
+  )
 
-if (!is(drug.model, "drc")){
-  data$dose[which(data$dose == 0)] <- 10^-10 
-  drug.model <- drc::drm(response ~ log(dose), data = data, 
-                         fct=drc::L.4(fixed=c(NA, Emin=Emin, Emax=Emax, NA)), 
-                         na.action = stats::na.omit, 
-                         control = drc::drmc(errorm = FALSE, noMessage = TRUE, 
-                                             otrace = TRUE))
+  if (!methods::is(drug.model, "drc")) {
+    data$dose[which(data$dose == 0)] <- 10^-10
+    drug.model <- drc::drm(response ~ log(dose),
+      data = data,
+      fct = drc::L.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)),
+      na.action = stats::na.omit,
+      control = drc::drmc(
+        errorm = FALSE, noMessage = TRUE,
+        otrace = TRUE
+      )
+    )
+  }
+
+  return(drug.model)
 }
 
-return(drug.model)
-}
-
-
-#' Find the type of model used for fitting dose response data
+#' Find the Type of Model Used for Fitting Dose Response Data
 #'
-#' \code{FindModelType} will extract the model type ("LL.4" or "L.4) eventually 
-#' used in funciton \code{\link{FitDoseResponse}} 
-#' 
-#' @param model An object of class 'drc'. It is generated by function 
+#' \code{FindModelType} will extract the model type ("LL.4" or "L.4) eventually
+#' used in funciton \code{\link{FitDoseResponse}}
+#'
+#' @param model An object of class 'drc'. It is generated by function
 #' \code{\link{FitDoseResponse}}
 #'
-#' @return A character either "LL.4" or "L.4". It indicates the type of 
+#' @return A character either "LL.4" or "L.4". It indicates the type of
 #' model used for fitting dose response data.
+#'
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
 #' 
-#' @author Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 #' @export
 #'
 #' @examples
-#' df <- data.frame(response = c(0, 29, 59, 60, 75, 90),
-#'                  dose = c(0.00, 9.7656, 39.0626, 156.25, 625, 2500))
+#' df <- data.frame(
+#'   response = c(0, 29, 59, 60, 75, 90),
+#'   dose = c(0.00, 9.7656, 39.0626, 156.25, 625, 2500)
+#' )
 #' model <- FitDoseResponse(df)
 #' model.type <- FindModelType(model)
 FindModelType <- function(model) {
   type <- model$call$fct[[1]][[3]]
   return(type)
 }
+
+#' Predict Response Value at Certain Drug Dose
+#'
+#' \code{PredictModelSpecify} uses \code{\link[drc]{drm}} function to fit the
+#' dose response model and generate the predict response value at the given dose.
+#'
+#' \strong{Note}: Random number generator used in \code{AddNoise} with
+#' \code{method = "random"}. If the analysis requires reproducibility, please
+#' set the random seed before calling this function.
+#'
+#' @param model An object for fitted model from drm::drc function L.4 or LL.4
+#' model.
+#' @param dose A numeric value. It indicates the concentration of drug at which
+#'   the response will be predicted.
+#'   
+#' @return A numeric value. It is the response value of cell line to the drug at
+#' inputted dose.
+#'
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#'
+#' @export
+PredictModelSpecify <- function(model, dose) {
+  if (model$call$fct[[1]][[3]] == "LL.4") {
+    pred <- stats::predict(model, data.frame(dose = dose))
+  } else if(model$call$fct[[1]][[3]] == "L.4") {
+    pred <- stats::predict(model, data.frame(dose = log(dose)))# NB! use log
+  } else {
+    stop("Fitted model should be LL.4 or L.4.")
+  }
+  return(pred)
+}
+
+#' Find the Fitted Parameters from 4-Parameter Log-Logistic Model
+#'
+#' @param model A object of class "drc".
+#'
+#' @return A numeric vector. It contains 4 fitted parameters.
+#' @export
+FindModelPar <- function (model){
+  # b, c, d, e, 1
+  # fitted parameters
+  par <- model$fct$fixed
+  par[is.na(par)] <- model$coefficients
+  if (FindModelType(model) == "L.4"){
+    names(par) <- c("b_Hill", "c_Emin", "d_Emax", "e_log(EC50)", "f_Symmetry")
+  } else {
+    names(par) <- c("b_Hill", "c_Emin", "d_Emax", "e_EC50", "f_Symmetry")
+  }
+  return(par)
+}
+

@@ -4,3 +4,4 @@
 ^Meta$
 ^\.travis.yml
 ^LICENSE\.md$
+data-raw.*
