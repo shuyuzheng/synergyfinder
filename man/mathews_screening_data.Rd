@@ -4,7 +4,7 @@
 \alias{mathews_screening_data}
 \title{A high-throughput drug combination screening data}
 \format{
-A data frame with the following columns: block_id, drug_row, 
+A data frame with the following columns: block_id, drug_row,
   drug_col, conc_r, conc_c, response, conc_r_unit, conc_c_unit.
 }
 \description{
@@ -12,7 +12,7 @@ A recent drug combination screening for the treatment of diffuse large B-cell
 lymphoma (DLBCL).
 }
 \references{
-Mathews Griner LA, Guha R, Shinn P, Young RM, Keller JM, et al. 
+Mathews Griner LA, Guha R, Shinn P, Young RM, Keller JM, et al.
 High-throughput combinatorial screening identifies drugs that cooperate with
 ibrutinib to kill activated B-cell-like diffuse large B-cell
 lymphoma cells. Proc Natl Acad Sci USA 2014; 111:2349-54.
