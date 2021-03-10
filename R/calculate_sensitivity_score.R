@@ -62,7 +62,7 @@
 #' data <- ReshapeData(mathews_screening_data)
 #' data <- CalculateSensitivity(data)
 CalculateSensitivity <- function(data, adjusted = TRUE,
-                             iteration = 100, seed = 123) {
+                             iteration = 10, seed = 123) {
   options(scipen = 999)
   # 1. Check the input data
   if (!is.list(data)) {
@@ -88,6 +88,7 @@ CalculateSensitivity <- function(data, adjusted = TRUE,
   scores <- NULL
   scores_statistics <- NULL
   for (b in blocks) {
+    message("Calculating sensitive scores for block ", b, " ...")
     response_one_block <- response %>% 
       dplyr::filter(block_id == b) %>% 
       dplyr::select(-block_id) %>% 
@@ -97,6 +98,7 @@ CalculateSensitivity <- function(data, adjusted = TRUE,
     if (data$drug_pairs$replicate[data$drug_pairs$block_id == b]){
       tmp_iter <- NULL
       set.seed(seed)
+      pb <- utils::txtProgressBar(min = 1, max = iteration, style = 3)
       for(i in 1:iteration){
         response_boot <- .Bootstrapping(response_one_block)
         # Calculate RI
@@ -122,7 +124,9 @@ CalculateSensitivity <- function(data, adjusted = TRUE,
         # Assemble data frame
         tmp <- cbind.data.frame(ic50, ri, css)
         tmp_iter <- rbind.data.frame(tmp_iter, tmp)
+        utils::setTxtProgressBar(pb, i)
       }
+      message("\n")
       SensMean <- colMeans(tmp_iter)
       tmp <- as.data.frame(as.list(SensMean)) %>%
         dplyr::mutate(block_id = b)
