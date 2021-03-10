@@ -55,7 +55,7 @@ dose response curve plots.}
 to \link[graphics]{par} function to modify the appearance of plots.}
 }
 \value{
-A plot object recorded by \link[grDevice]{recordPlot}.
+A plot object recorded by \link[grDevices]{recordPlot}.
 }
 \description{
 This function will pot the dose response curve fitted by 4 parameters 
