@@ -80,7 +80,7 @@
 #' data <- ReshapeData(mathews_screening_data)
 #' scores <- CalculateSynergy(data)
 CalculateSynergy <- function(data,
-                             method = "ZIP",
+                             method = c("ZIP", "HSA", "Bliss", "Loewe"),
                              Emin = NA,
                              Emax = NA,
                              adjusted = TRUE,
