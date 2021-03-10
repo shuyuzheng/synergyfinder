@@ -128,15 +128,18 @@ CalculateSensitivity <- function(data, adjusted = TRUE,
         dplyr::mutate(block_id = b)
       SensSd <- apply(tmp_iter, 2, stats::sd)
       SensSem <- SensSd / iteration
-      SensCI95 <- stats::qt(0.975, df = iteration - 1) * SensSem
+      SensCI95_left <- apply(tmp_iter, 2, 
+                             function(x) stats::quantile(x, probs = 0.025))
+      SensCI95_right <- apply(tmp_iter, 2, 
+                             function(x) stats::quantile(x, probs = 0.975))
       names(SensMean) <- paste0(names(SensMean), "_mean")
-      names(SensSd) <- paste0(names(SensSd), "_sd")
       names(SensSem) <- paste0(names(SensSem), "_sem")
-      names(SensCI95) <- paste0(names(SensCI95), "_CI95")
+      names(SensCI95_left) <- paste0(names(SensCI95_left), "_ci_left")
+      names(SensCI95_right) <- paste0(names(SensCI95_right), "_ci_right")
       tmp_sensitivity_statistic <- as.data.frame(as.list(c(SensMean,
-                                                           SensSd,
                                                            SensSem,
-                                                           SensCI95
+                                                           SensCI95_left,
+                                                           SensCI95_right
                                                            ))) %>% 
         dplyr::mutate(block_id = b)
       scores <- rbind.data.frame(scores, tmp)
