@@ -62,7 +62,7 @@
 #' data <- ReshapeData(mathews_screening_data)
 #' data <- CalculateSensitivity(data)
 CalculateSensitivity <- function(data, adjusted = TRUE,
-                             iteration = 100, seed = 123) {
+                             iteration = 10, seed = 123) {
   options(scipen = 999)
   # 1. Check the input data
   if (!is.list(data)) {
@@ -88,6 +88,7 @@ CalculateSensitivity <- function(data, adjusted = TRUE,
   scores <- NULL
   scores_statistics <- NULL
   for (b in blocks) {
+    message("Calculating sensitive scores for block ", b, " ...")
     response_one_block <- response %>% 
       dplyr::filter(block_id == b) %>% 
       dplyr::select(-block_id) %>% 
@@ -97,6 +98,7 @@ CalculateSensitivity <- function(data, adjusted = TRUE,
     if (data$drug_pairs$replicate[data$drug_pairs$block_id == b]){
       tmp_iter <- NULL
       set.seed(seed)
+      pb <- utils::txtProgressBar(min = 1, max = iteration, style = 3)
       for(i in 1:iteration){
         response_boot <- .Bootstrapping(response_one_block)
         # Calculate RI
@@ -122,21 +124,26 @@ CalculateSensitivity <- function(data, adjusted = TRUE,
         # Assemble data frame
         tmp <- cbind.data.frame(ic50, ri, css)
         tmp_iter <- rbind.data.frame(tmp_iter, tmp)
+        utils::setTxtProgressBar(pb, i)
       }
+      message("\n")
       SensMean <- colMeans(tmp_iter)
       tmp <- as.data.frame(as.list(SensMean)) %>%
         dplyr::mutate(block_id = b)
       SensSd <- apply(tmp_iter, 2, stats::sd)
       SensSem <- SensSd / iteration
-      SensCI95 <- stats::qt(0.975, df = iteration - 1) * SensSem
+      SensCI95_left <- apply(tmp_iter, 2, 
+                             function(x) stats::quantile(x, probs = 0.025))
+      SensCI95_right <- apply(tmp_iter, 2, 
+                             function(x) stats::quantile(x, probs = 0.975))
       names(SensMean) <- paste0(names(SensMean), "_mean")
-      names(SensSd) <- paste0(names(SensSd), "_sd")
       names(SensSem) <- paste0(names(SensSem), "_sem")
-      names(SensCI95) <- paste0(names(SensCI95), "_CI95")
+      names(SensCI95_left) <- paste0(names(SensCI95_left), "_ci_left")
+      names(SensCI95_right) <- paste0(names(SensCI95_right), "_ci_right")
       tmp_sensitivity_statistic <- as.data.frame(as.list(c(SensMean,
-                                                           SensSd,
                                                            SensSem,
-                                                           SensCI95
+                                                           SensCI95_left,
+                                                           SensCI95_right
                                                            ))) %>% 
         dplyr::mutate(block_id = b)
       scores <- rbind.data.frame(scores, tmp)

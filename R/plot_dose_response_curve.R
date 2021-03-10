@@ -38,7 +38,7 @@
 #' @param plot_setting A list of graphical arguments. The arguments are passed 
 #'   to \link[graphics]{par} function to modify the appearance of plots.
 #'   
-#' @return A plot object recorded by \link[grDevice]{recordPlot}.
+#' @return A plot object recorded by \link[grDevices]{recordPlot}.
 #' 
 #' @author
 #' \itemize{

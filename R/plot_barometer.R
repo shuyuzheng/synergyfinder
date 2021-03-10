@@ -149,8 +149,8 @@ PlotBarometer <- function(data,
       plot_table[paste0("conc", i)][[1]]
   }
   if (!all(conc_exist)) {
-    stop("The concentration for drug", paste(which(!conc_exist)), 
-         "specified by 'highlight_row' is not in data.")
+    stop("The concentrations for drug ", paste(which(!conc_exist), sep = ", "), 
+         " specified by 'highlight_row' are not in data.")
   }
   selected_data <- plot_table[
     apply(
@@ -161,7 +161,15 @@ PlotBarometer <- function(data,
       }
     ),
   ]
-  
+  # Generate text for concentrations
+  conc_text <- sapply(1:length(plot_concs), function(i){
+    paste0(
+      drug_pair[, paste0("drug", i)], ": ",
+      .RoundValues(plot_concs[i]),
+      " (", drug_pair[, paste0("conc_unit", i)], ")"
+    )
+  })
+  conc_text <- paste(conc_text, collapse = "\n")
   # Data table for color bar
   start_angle <- - pi * 1 / 4
   end_angle <- pi * 5 / 4
@@ -306,7 +314,11 @@ PlotBarometer <- function(data,
       aes(x = 0, y = -2),
       size = needle_text_size,
       family = font_family,
-      label = paste0("[ ", .RoundValues(needle_value), "% ]"),
+      label = paste0(
+        "[ ", 
+        .RoundValues(needle_value), 
+        "% ]\n",
+        conc_text),
       color = needle_color
     )
   # Mark reference

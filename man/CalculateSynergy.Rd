@@ -6,12 +6,12 @@
 \usage{
 CalculateSynergy(
   data,
-  method = "ZIP",
+  method = c("ZIP", "HSA", "Bliss", "Loewe"),
   Emin = NA,
   Emax = NA,
   adjusted = TRUE,
   correct_baseline = "non",
-  iteration = 100,
+  iteration = 10,
   seed = 123
 )
 }

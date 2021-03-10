@@ -80,12 +80,12 @@
 #' data <- ReshapeData(mathews_screening_data)
 #' scores <- CalculateSynergy(data)
 CalculateSynergy <- function(data,
-                             method = "ZIP",
+                             method = c("ZIP", "HSA", "Bliss", "Loewe"),
                              Emin = NA,
                              Emax = NA,
                              adjusted = TRUE,
                              correct_baseline = "non",
-                             iteration = 100,
+                             iteration = 10,
                              seed = 123) {
   options(scipen = 999)
   # 1. Check the input data
@@ -132,7 +132,8 @@ CalculateSynergy <- function(data,
     if (replicate) { # Block with replicate
       for (m in method) {
         set.seed(seed)
-        iter <- lapply(seq(1, iteration), function(x){
+        message("Calculating ", m, " score for block ", b, "...")
+        iter <- pbapply::pblapply(seq(1, iteration), function(x){
           response_boot <- .Bootstrapping(response_one_block)
           s <- eval(call(m, response_boot))
           }) %>% 
@@ -147,10 +148,10 @@ CalculateSynergy <- function(data,
           tmp_score_statistic_m[[paste0(i, "_mean")]] <- tmp_m[[i]]
           tmp_score_statistic_m[[paste0(i, "_sem")]] <- 
             apply(dplyr::select(iter, dplyr::starts_with(i)), 1, stats::sd)
-          tmp_score_statistic_m[[paste0(i, "_CI95_left")]] <- 
+          tmp_score_statistic_m[[paste0(i, "_ci_left")]] <- 
             apply(dplyr::select(iter, dplyr::starts_with(i)), 1, 
                   function(x) stats::quantile(x, probs = 0.025))
-          tmp_score_statistic_m[[paste0(i, "_CI95_right")]] <- 
+          tmp_score_statistic_m[[paste0(i, "_ci_right")]] <- 
             apply(dplyr::select(iter, dplyr::starts_with(i)), 1, 
                   function(x) stats::quantile(x, probs = 0.975))
         }
@@ -170,6 +171,7 @@ CalculateSynergy <- function(data,
       tmp <- dplyr::select(response_one_block, dplyr::all_of(concs)) %>% 
         unique()
       for (m in method) {
+        message("Calculating ", m, " score for block ", b, "...")
         if (m %in% c("Bliss", "HSA")) {
           fun <- call(
             m,
