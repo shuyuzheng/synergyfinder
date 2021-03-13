@@ -23,7 +23,7 @@ for (i in 1:12) {
   df$ConcUnit1 <- rep(meta$RowConcUnit[i], nrow(df))
   df$ConcUnit2 <- rep(meta$ColConcUnit[i], nrow(df))
   df$ConcUnit3 <- rep("uM", nrow(df))
-  NCATS_10023_data <- rbind.data.frame(NCATS_10023, df)
+  NCATS_10023_data <- rbind.data.frame(NCATS_10023_data, df)
 }
 
 usethis::use_data(NCATS_10023_data, overwrite = TRUE)
