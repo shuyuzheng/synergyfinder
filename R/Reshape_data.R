@@ -147,7 +147,7 @@ ReshapeData <- function(data,
     response$response <- response$response
   } else {
     stop(
-      "Please tell me the data type of response valuse: 'viability' or ",
+      "Please specify the data type of response valuse: 'viability' or ",
       "'inhibition'."
     )
   }
