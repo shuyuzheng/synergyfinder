@@ -67,8 +67,11 @@
 #'   for the positive values.
 #' @param highlight_neg_color An R color value. It indicates the highlight color
 #'   for the negative values.
+#' @param data_table A logic value. If it is \code{TRUE}, the data frame used
+#'   for plotting will be output.
 #'
-#' @return A ggplot object.
+#' @return A ggplot object. If \code{data_table = TRUE}, the output will be a
+#'   list containing a ggplot object and a data frame used for plotting.
 #' 
 #' @author
 #' \itemize{
@@ -97,7 +100,8 @@ PlotMultiDrugBar <- function(data,
                              pos_value_color = "#CC3311",
                              neg_value_color = "#448BD4",
                              highlight_pos_color = "#A90217",
-                             highlight_neg_color = "#2166AC") {
+                             highlight_neg_color = "#2166AC",
+                             data_table = FALSE) {
   plot_data <- .ExtractMultiDrugPlotData(
     data,
     plot_block = plot_block,
@@ -178,7 +182,6 @@ PlotMultiDrugBar <- function(data,
     ) + 
     ggplot2::coord_flip() +
     ggplot2::facet_grid(cols = vars(metric), rows = NULL, scales = "free")
-  p
   # Highlight data row
   concs <- sort(concs)
   if (!is.null(highlight_row)) {
@@ -213,7 +216,11 @@ PlotMultiDrugBar <- function(data,
     selected_data$color <- paste0("hi_", selected_data$color)
     p <- p + HighlightBarPlot(selected_data)
   }
-  return(p)
+  if (data_table){
+    return(list(plot = p, data_table = plot_table))
+  } else {
+    return(p)
+  }
 }
 
 #' 3D Plot for Multi-drug Combination Dose-Response/Synergy Scores 
@@ -282,15 +289,14 @@ PlotMultiDrugBar <- function(data,
 #'   data,
 #'   plot_block = 1,
 #'   plot_value = "response",
-#'   statistic = NULL,
-#'   distance_method = "euclidean"
+#'   statistic = NULL
 #' )
 #' p
 PlotMultiDrugSurface <- function(data,
                                  plot_block,
                                  plot_value,
                                  statistic = NULL,
-                                 distance_method = "euclidean", 
+                                 distance_method = "mahalanobis", 
                                  high_value_color = "#A90217",
                                  low_value_color = "#2166AC",
                                  point_color = "#DDA137") {
@@ -609,6 +615,7 @@ DimensionReduction <- function(plot_table,
   )
   concs <- apply(plot_table[, concs], 2, function(x) as.integer(factor(x)))
   rownames(concs) <- plot_table$id
+  concs <- cbind(concs, floor(plot_table$value))
   distance <- vegan::vegdist(concs, distance_method)
   mds_coor <- stats::cmdscale(distance)
   mds_data <- data.frame(
@@ -624,7 +631,7 @@ DimensionReduction <- function(plot_table,
     y = mds_data$y, 
     response = mds_data$value,
     lags = 2,
-    pixels = 50,
+    pixels = 20,
     model = "spherical")
   extended_plot_table <- extended_mat$map
   plot_data <- list(
@@ -732,13 +739,13 @@ GenerateSurface <- function(dim_reduced_data,
       ),
       scene = list(
         xaxis = list(
-          title = "<i>PC 1</i>",
+          title = "<i>Coordinate 1</i>",
           tickfont = list(size = 12, family = "arial"),
           ticks = "none",
           showspikes = FALSE
         ),
         yaxis = list(
-          title = "<i>PC 2</i>",
+          title = "<i>Coordinate 2</i>",
           tickfont = list(size = 12, family = "arial"),
           ticks = "none",
           showspikes = FALSE

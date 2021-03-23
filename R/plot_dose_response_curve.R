@@ -35,10 +35,18 @@
 #'   dose response curve plots.
 #' @param curve_color An R color value. It indicates the color for curves in 
 #'   dose response curve plots.
+#' @param plot_subtitle A character or NULL. It indicates the subtitle for the
+#'   plot.
 #' @param plot_setting A list of graphical arguments. The arguments are passed 
 #'   to \link[graphics]{par} function to modify the appearance of plots.
-#'   
-#' @return A plot object recorded by \link[grDevices]{recordPlot}.
+#' @param plot_new A logic value. If it is \code{TRUE}, a new device will be
+#'   initiate with \link[graphics]{plot.new}. You might want to set it as
+#'   \code{FALSE} while combining with other plots by using
+#'    \link[graphiccs]{layout} function.
+#' @param record_plot A logic value. If it is \code{TRUE}, a plot object 
+#'   recorded by \link[grDevices]{recordPlot} will be returned. If it is
+#'   \code{FALSE}, this function will return \code{NULL}.
+#' @return A plot object recorded by \link[grDevices]{recordPlot} or NULL.
 #' 
 #' @author
 #' \itemize{
@@ -51,7 +59,8 @@
 #' @examples
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
-#' PlotDoseResponseCurve(data, grid = NULL)
+#' p <- PlotDoseResponseCurve(data, grid = NULL)
+#' replayPlot(p)
 PlotDoseResponseCurve <- function(data,
                                   plot_block = 1,
                                   drug_index = 1,
@@ -63,6 +72,7 @@ PlotDoseResponseCurve <- function(data,
                                   ),
                                   point_color = "#C24B40",
                                   curve_color = "black",
+                                  plot_subtitle = NULL,
                                   plot_setting = list(
                                     cex.lab = 1,
                                     cex.axis = 1,
@@ -72,7 +82,9 @@ PlotDoseResponseCurve <- function(data,
                                     cex.main = 14 / 12,
                                     bty = "l",
                                     lwd = 1.5
-                                  )) {
+                                  ),
+                                  plot_new = TRUE,
+                                  record_plot = TRUE) {
   
   # 1. Check the input data
   # Data structure of 'data'
@@ -118,11 +130,22 @@ PlotDoseResponseCurve <- function(data,
   # Fit model for the row drug
   drug_model <- FitDoseResponse(single_drug_data, Emin = Emin, Emax = Emax)
   
+  if (is.null(plot_subtitle)) {
+    plot_subtitle <- paste(
+      drug_anno$drug,
+      "in Block",
+      plot_block
+    )
+  }
   # plot the curve for the drug
   # For all of R's graphical devices, the default text size is 12 points but it
   # can be reset by including a pointsize argument to the function that opens
   #the graphical device. From ?pdf:
-  
+  if (plot_new) {
+    graphics::plot.new()
+    dev.control("enable")
+  }
+
   suppressWarnings(graphics::par(plot_setting))
   # Plot dots
   
@@ -147,15 +170,16 @@ PlotDoseResponseCurve <- function(data,
   # Plot title
   graphics::title("Dose-Response Curve")
   graphics::mtext(
-    paste(
-      drug_anno$drug,
-      "in Block",
-      plot_block
-    ),
+    plot_subtitle,
     cex = 7/9 * graphics::par()$cex.main
   )
-  p <- grDevices::recordPlot()
-  grDevices::dev.off()
-  print(p)
-  return(p)
+  if (record_plot) {
+    p <- grDevices::recordPlot()
+    grDevices::dev.off()
+    print(p)
+    return(p)
+  } else {
+    return(NULL)
+  }
+
 }

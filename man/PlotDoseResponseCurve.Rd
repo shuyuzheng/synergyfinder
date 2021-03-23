@@ -14,8 +14,11 @@ PlotDoseResponseCurve(
   grid = expression(graphics::grid(col = "#DFDFDF", lty = 1)),
   point_color = "#C24B40",
   curve_color = "black",
+  plot_subtitle = NULL,
   plot_setting = list(cex.lab = 1, cex.axis = 1, mgp = c(2, 0.5, 0), font.main = 2,
-    font.lab = 3, cex.main = 14/12, bty = "l", lwd = 1.5)
+    font.lab = 3, cex.main = 14/12, bty = "l", lwd = 1.5),
+  plot_new = TRUE,
+  record_plot = TRUE
 )
 }
 \arguments{
@@ -51,11 +54,23 @@ dose response curve plots.}
 \item{curve_color}{An R color value. It indicates the color for curves in 
 dose response curve plots.}
 
+\item{plot_subtitle}{A character or NULL. It indicates the subtitle for the
+plot.}
+
 \item{plot_setting}{A list of graphical arguments. The arguments are passed 
 to \link[graphics]{par} function to modify the appearance of plots.}
+
+\item{plot_new}{A logic value. If it is \code{TRUE}, a new device will be
+initiate with \link[graphics]{plot.new}. You might want to set it as
+\code{FALSE} while combining with other plots by using
+ \link[graphiccs]{layout} function.}
+
+\item{record_plot}{A logic value. If it is \code{TRUE}, a plot object 
+recorded by \link[grDevices]{recordPlot} will be returned. If it is
+\code{FALSE}, this function will return \code{NULL}.}
 }
 \value{
-A plot object recorded by \link[grDevices]{recordPlot}.
+A plot object recorded by \link[grDevices]{recordPlot} or NULL.
 }
 \description{
 This function will pot the dose response curve fitted by 4 parameters 
@@ -64,7 +79,8 @@ log-logistic curve.
 \examples{
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
-PlotDoseResponseCurve(data, grid = NULL)
+p <- PlotDoseResponseCurve(data, grid = NULL)
+replayPlot(p)
 }
 \author{
 \itemize{

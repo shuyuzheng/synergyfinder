@@ -153,12 +153,11 @@ PlotDoseResponse <- function(data,
       high_value_color = high_value_color,
       low_value_color = low_value_color
     )
-    
     # plot dose response curve
-
+    
     graphics::plot.new()
     graphics::layout(matrix(c(1, 3, 2, 3), 2, 2, byrow = TRUE))
-
+    
     for (i in drugs){
       PlotDoseResponseCurve(
         data,
@@ -170,15 +169,18 @@ PlotDoseResponse <- function(data,
           cex.main = 1 / 12 * 13.5,
           cex.sub = 1
         ),
+        plot_subtitle = "",
         grid = grid,
         point_color = point_color,
         curve_color = curve_color,
         Emin = Emin,
-        Emax = Emax
+        Emax = Emax,
+        plot_new = FALSE
       )
     }
     # vps <- baseViewports()
     # pushViewport()
+
     print(dose_response_plot, vp = grid::viewport(
       height = grid::unit(1, "npc"),
       width = grid::unit(0.5, "npc"),

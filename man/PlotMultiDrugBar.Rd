@@ -13,7 +13,8 @@ PlotMultiDrugBar(
   pos_value_color = "#CC3311",
   neg_value_color = "#448BD4",
   highlight_pos_color = "#A90217",
-  highlight_neg_color = "#2166AC"
+  highlight_neg_color = "#2166AC",
+  data_table = FALSE
 )
 }
 \arguments{
@@ -64,9 +65,13 @@ for the positive values.}
 
 \item{highlight_neg_color}{An R color value. It indicates the highlight color
 for the negative values.}
+
+\item{data_table}{A logic value. If it is \code{TRUE}, the data frame used
+for plotting will be output.}
 }
 \value{
-A ggplot object.
+A ggplot object. If \code{data_table = TRUE}, the output will be a
+  list containing a ggplot object and a data frame used for plotting.
 }
 \description{
 This function will generate a group of bar plots for one drug combination
