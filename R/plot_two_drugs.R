@@ -67,6 +67,8 @@
 #'     print different sample quantile. For example quantile_50 equal to median. 
 #'   }
 #'   If it is \code{NULL}, no statistics will be printed.
+#' @param plot_title A character value. It specifies the plot title. If it is
+#'   \code{NULL}, the function will automatically generate a title.
 #' @param col_range A vector of two integers. They specify the starting and 
 #'   ending concentration of the drug on x-axis. Use e.g., c(1, 3) to specify
 #'   that only from 1st to 3rd concentrations of the drug on x-axis are used. By
@@ -79,7 +81,9 @@
 #'   high values.
 #' @param low_value_color An R color value. It indicates the color for low
 #'   values.
-#'
+#' @param text_size_scale A numeric value. It is used to control the size
+#'   of text in the plot. All the text size will multiply by this scale factor.
+#'   
 #' @return A ggplot plot object.
 #'
 #' @author
@@ -100,10 +104,12 @@ Plot2DrugHeatmap <- function(data,
                              plot_value = "response",
                              statistic = NULL,
                              summary_statistic = NULL,
+                             plot_title = NULL,
                              col_range = NULL,
                              row_range = NULL,
                              high_value_color = "#A90217",
-                             low_value_color = "#2166AC") {
+                             low_value_color = "#2166AC",
+                             text_size_scale = 1) {
   # Extract plot data
   plot_data <- .Extract2DrugPlotData(
     data = data,
@@ -130,24 +136,30 @@ Plot2DrugHeatmap <- function(data,
   
   # Generate plot title and legend title
   if (plot_value == "response") {
-    plot_title <- paste(
-      "Dose Response Matrix",
-      sep = " "
-    )
+    if (!is.null(plot_title)){
+      plot_title <- paste(
+        "Dose Response Matrix",
+        sep = " "
+      )
+    }
     legend_title <- "Inhibition (%)"
   } else if (plot_value == "response_origin") {
-    plot_title <- paste(
-      "Dose Response Matrix",
-      sep = " "
-    )
+    if (!is.null(plot_title)){
+      plot_title <- paste(
+        "Dose Response Matrix",
+        sep = " "
+      )
+    }
     legend_title <- paste(stringr::str_to_title(drug_pair$input_type), "%")
   } else {
-    plot_title <- switch(
-      sub(".*_", "", plot_value),
-      "ref" = sub("_ref", " Reference Additive Effect", plot_value),
-      "fit" = sub("_fit", " Fitted Effect", plot_value),
-      "synergy" = sub("_synergy", " Synergy Score", plot_value)
-    )
+    if (!is.null(plot_title)){
+      plot_title <- switch(
+        sub(".*_", "", plot_value),
+        "ref" = sub("_ref", " Reference Additive Effect", plot_value),
+        "fit" = sub("_fit", " Fitted Effect", plot_value),
+        "synergy" = sub("_synergy", " Synergy Score", plot_value)
+      )
+    }
     legend_title <- switch(
       sub(".*_", "", plot_value),
       "ref" = "Inhibition (%)",
@@ -193,7 +205,10 @@ Plot2DrugHeatmap <- function(data,
     aes(x = conc2, y = conc1, fill = value)
   ) +
     ggplot2::geom_tile() +
-    ggplot2::geom_text(ggplot2::aes(label = text), size = .Pt2mm(7)) +
+    ggplot2::geom_text(
+      ggplot2::aes(label = text),
+      size = .Pt2mm(7) * text_size_scale
+    ) +
     ggplot2::scale_fill_gradient2(
       high= high_value_color,
       mid = "#FFFFFF",
@@ -215,22 +230,22 @@ Plot2DrugHeatmap <- function(data,
     ) +
     ggplot2::theme(
       plot.title = ggplot2::element_text(
-        size = 13.5,
+        size = 13.5 * text_size_scale,
         face = "bold",
         hjust = 0.5
       ),
       plot.subtitle = ggplot2::element_text(
-        size = 12,
+        size = 12 * text_size_scale,
         hjust = 0.5
       ),
       panel.background = ggplot2::element_blank(),
       # Set label's style of heatmap
       axis.text = ggplot2::element_text(
-        size = 10
+        size = 10 * text_size_scale
       ),
       axis.title = ggplot2::element_text(
         face = "italic",
-        size = 10
+        size = 10 * text_size_scale
       )
     )
   
@@ -281,6 +296,8 @@ Plot2DrugHeatmap <- function(data,
 #'     print different sample quantile. For example quantile_50 equal to median. 
 #'   }
 #'   If it is \code{NULL}, no statistics will be printed.
+#' @param plot_title A character value. It specifies the plot title. If it is
+#'   \code{NULL}, the function will automatically generate a title.
 #' @param interpolate_len An integer. It specifies how many values need to be
 #'    interpolated between two concentrations. It is used to control the 
 #'    smoothness of the synergy surface.
@@ -300,7 +317,9 @@ Plot2DrugHeatmap <- function(data,
 #'   high values.
 #' @param low_value_color An R color value. It indicates the color for low
 #'   values.
-#'
+#' @param text_size_scale A numeric value. It is used to control the size
+#'   of text in the plot. All the text size will multiply by this scale factor.
+#'   
 #' @return If \code{dynamic = FALSE}, this function will return a plot project 
 #'   recorded by \link[grDevices]{recordPlot}. If \code{dynamic = FALSE}, this
 #'   function will return a plotly plot object.
@@ -323,10 +342,12 @@ Plot2DrugContour <- function(data,
                              plot_value = "response",
                              interpolate_len = 2,
                              summary_statistic = NULL,
+                             plot_title = NULL,
                              col_range = NULL,
                              row_range = NULL,
                              high_value_color = "#A90217",
-                             low_value_color = "#2166AC") {
+                             low_value_color = "#2166AC",
+                             text_size_scale = 1) {
   # Extract plot data
   plot_data <- .Extract2DrugPlotData(
     data = data,
@@ -352,26 +373,32 @@ Plot2DrugContour <- function(data,
   }
   # Generate plot title and legend title
   if (plot_value == "response") {
-    plot_title <- paste(
-      "Dose Response Matrix",
-      sep = " "
-    )
+    if (!is.null(plot_title)){
+      plot_title <- paste(
+        "Dose Response Matrix",
+        sep = " "
+      )
+    }
     legend_title <- "Inhibition (%)"
     z_axis_title <- "Response (% inhibition)"
   } else if (plot_value == "response_origin") {
-    plot_title <- paste(
-      "Dose Response Matrix",
-      sep = " "
-    )
+    if (!is.null(plot_title)){
+      plot_title <- paste(
+        "Dose Response Matrix",
+        sep = " "
+      )
+    }
     legend_title <- paste0(stringr::str_to_title(drug_pair$input_type), " (%)")
     z_axis_title <- paste0("Response (% ",drug_pair$input_type,")")
   } else {
-    plot_title <- switch(
-      sub(".*_", "", plot_value),
-      "ref" = sub("_ref", " Reference Additive Effect", plot_value),
-      "fit" = sub("_fit", " Fitted Effect", plot_value),
-      "synergy" = sub("_synergy", " Synergy Score", plot_value)
-    )
+    if (!is.null(plot_title)){
+      plot_title <- switch(
+        sub(".*_", "", plot_value),
+        "ref" = sub("_ref", " Reference Additive Effect", plot_value),
+        "fit" = sub("_fit", " Fitted Effect", plot_value),
+        "synergy" = sub("_synergy", " Synergy Score", plot_value)
+      )
+    }
     legend_title <- switch(
       sub(".*_", "", plot_value),
       "ref" = "Inhibition (%)",
@@ -465,22 +492,22 @@ Plot2DrugContour <- function(data,
     ) +
     ggplot2::theme(
       plot.title = ggplot2::element_text(
-        size = 13.5,
+        size = 13.5 * text_size_scale,
         face = "bold",
         hjust = 0.5
       ),
       plot.subtitle = ggplot2::element_text(
-        size = 12,
+        size = 12 * text_size_scale,
         hjust = 0.5
       ),
       panel.background = ggplot2::element_blank(),
       # Set label's style of heatmap
       axis.text = ggplot2::element_text(
-        size = 10
+        size = 10 * text_size_scale
       ),
       axis.title = ggplot2::element_text(
         face = "italic",
-        size = 10
+        size = 10 * text_size_scale
       )
     )
   p
@@ -531,6 +558,8 @@ Plot2DrugContour <- function(data,
 #'     print different sample quantile. For example quantile_50 equal to median. 
 #'   }
 #'   If it is \code{NULL}, no statistics will be printed.
+#' @param plot_title A character value. It specifies the plot title. If it is
+#'   \code{NULL}, the function will automatically generate a title.
 #' @param interpolate_len An integer. It specifies how many values need to be
 #'   interpolated between two concentrations. It is used to control the 
 #'   smoothness of the synergy surface.
@@ -550,6 +579,8 @@ Plot2DrugContour <- function(data,
 #'   high values.
 #' @param low_value_color An R color value. It indicates the color for low
 #'   values.
+#' @param text_size_scale A numeric value. It is used to control the size
+#'   of text in the plot. All the text size will multiply by this scale factor.
 #'
 #' @return If \code{dynamic = FALSE}, this function will return a plot project 
 #'   recorded by \link[grDevices]{recordPlot}. If \code{dynamic = FALSE}, this
@@ -573,12 +604,14 @@ Plot2DrugSurface <- function(data,
                              drugs = c(1, 2),
                              plot_value = "response",
                              summary_statistic = NULL,
+                             plot_title = NULL,
                              interpolate_len = 2,
                              col_range = NULL,
                              row_range = NULL,
                              dynamic = FALSE,
                              high_value_color = "#A90217",
-                             low_value_color = "#2166AC") {
+                             low_value_color = "#2166AC",
+                             text_size_scale = 1) {
   # Extract plot data
   plot_data <- .Extract2DrugPlotData(
     data = data,
@@ -604,26 +637,32 @@ Plot2DrugSurface <- function(data,
   }
   # Generate plot title and legend title
   if (plot_value == "response") {
-    plot_title <- paste(
-      "Dose Response Matrix",
-      sep = " "
-    )
+    if (!is.null(plot_title)){
+      plot_title <- paste(
+        "Dose Response Matrix",
+        sep = " "
+      )
+    }
     legend_title <- "Inhibition (%)"
     z_axis_title <- "Response (% inhibition)"
   } else if (plot_value == "response_origin") {
-    plot_title <- paste(
-      "Dose Response Matrix",
-      sep = " "
-    )
+    if (!is.null(plot_title)){
+      plot_title <- paste(
+        "Dose Response Matrix",
+        sep = " "
+      )
+    }
     legend_title <- paste0(stringr::str_to_title(drug_pair$input_type), " (%)")
     z_axis_title <- paste0("Response (% ",drug_pair$input_type,")")
   } else {
-    plot_title <- switch(
-      sub(".*_", "", plot_value),
-      "ref" = sub("_ref", " Reference Additive Effect", plot_value),
-      "fit" = sub("_fit", " Fitted Effect", plot_value),
-      "synergy" = sub("_synergy", " Synergy Score", plot_value)
-    )
+    if (!is.null(plot_title)){
+      plot_title <- switch(
+        sub(".*_", "", plot_value),
+        "ref" = sub("_ref", " Reference Additive Effect", plot_value),
+        "fit" = sub("_fit", " Fitted Effect", plot_value),
+        "synergy" = sub("_synergy", " Synergy Score", plot_value)
+      )
+    }
     legend_title <- switch(
       sub(".*_", "", plot_value),
       "ref" = "Inhibition (%)",
@@ -637,6 +676,8 @@ Plot2DrugSurface <- function(data,
       "synergy" = "Synergy Score"
     )
   }
+  
+
   # plot subtitle (summary statistics)
   plot_subtitle <- c()
   if (!is.null(summary_statistic)) {
@@ -653,8 +694,9 @@ Plot2DrugSurface <- function(data,
     if (length(qua) > 0) {
       for (q in qua) {
         pro <- as.numeric(sub("quantile_", "", q))
-        value <- .RoundValues(stats::quantile(plot_table$value, 
-                                              probs = pro / 100))
+        value <- .RoundValues(
+          stats::quantile(plot_table$value,probs = pro / 100)
+        )
         plot_subtitle <-  c(plot_subtitle, paste0(pro, "% Quantile: ", value))
       }
     }
@@ -747,7 +789,7 @@ Plot2DrugSurface <- function(data,
             width = 1,
             start = 1,
             end = max(x),
-            size = 1
+            size = 1 * text_size_scale
           ),
           y = list(
             # highlight = FALSE,
@@ -756,7 +798,7 @@ Plot2DrugSurface <- function(data,
             width = 1,
             start = 1,
             end = max(y),
-            size = 1
+            size = 1 * text_size_scale
           )#,
           # z = list(highlight = FALSE)
         )
@@ -764,14 +806,14 @@ Plot2DrugSurface <- function(data,
       plotly::layout(
         title = list(
           text = paste0("<b>", plot_title, "</b>"),
-          tickfont = list(size = 18, family = "arial"),
+          tickfont = list(size = 18 * text_size_scale, family = "arial"),
           y = 0.99
         ),
         scene = list(
           aspectratio = list(x=1, y=1, z=1),
           xaxis = list(
             title = paste0("<i>", x_axis_title, "</i>"),
-            tickfont = list(size = 12, family = "arial"),
+            tickfont = list(size = 12 * text_size_scale, family = "arial"),
             ticks = "none",
             showspikes = FALSE,
             tickmode = "array", 
@@ -780,7 +822,7 @@ Plot2DrugSurface <- function(data,
           ),
           yaxis = list(
             title = paste0("<i>", y_axis_title, "</i>"),
-            tickfont = list(size = 12, family = "arial"),
+            tickfont = list(size = 12 * text_size_scale, family = "arial"),
             ticks = "none",
             showspikes = FALSE,
             tickmode = "array", 
@@ -789,7 +831,7 @@ Plot2DrugSurface <- function(data,
           ),
           zaxis = list(
             title = paste0("<i>", z_axis_title, "</i>"),
-            tickfont = list(size = 12, family = "arial"),
+            tickfont = list(size = 12 * text_size_scale, family = "arial"),
             ticks = "none",
             tickmode = "array",
             showspikes = FALSE
@@ -818,16 +860,16 @@ Plot2DrugSurface <- function(data,
       col = 1,
       z = list(
         tick.number = 6,
-        cex = 0.75),
+        cex = 0.75 * text_size_scale),
       x =  list(
         at = x_ticks,
         labels = x_ticks_text,
-        cex = 0.75
+        cex = 0.75 * text_size_scale
       ),
       y = list(
         at = y_ticks,
         labels = y_ticks_text,
-        cex = 0.75
+        cex = 0.75 * text_size_scale
       )
     )
   
@@ -849,17 +891,17 @@ Plot2DrugSurface <- function(data,
       zlab = list(
         z_axis_title,
         axis.key.padding = 0,
-        cex = 0.75,
+        cex = 0.75 * text_size_scale,
         rot = 93
       ),
       xlab = list(
         x_axis_title,
-        cex = 0.75,
+        cex = 0.75 * text_size_scale,
         rot = 23
       ),
       ylab = list(
         y_axis_title,
-        cex = 0.75,
+        cex = 0.75 * text_size_scale,
         rot = -53
       ),
       zlim = c(min(plot_table$value) - 5, max(plot_table$value) + 5),
@@ -884,14 +926,20 @@ Plot2DrugSurface <- function(data,
           label = plot_subtitle,
           x=unit(0.55, "npc"),
           y=unit(1, "npc"),
-          gp = grid::gpar(col = "black", fontsize = 10.5) # pt
+          gp = grid::gpar(
+            col = "black",
+            fontsize = 10.5 * text_size_scale
+          ) # pt
         )
         # legend title
         grid::grid.text(
           label = legend_title,
           x = unit(1.05, "npc"),
           y = unit(0.75, "npc"),
-          gp = grid::gpar(col = "black", fontsize = 8.5) # pt
+          gp = grid::gpar(
+            col = "black",
+            fontsize = 8.5 * text_size_scale
+          ) # pt
         )
         },
       pretty = TRUE

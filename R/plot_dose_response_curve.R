@@ -35,8 +35,11 @@
 #'   dose response curve plots.
 #' @param curve_color An R color value. It indicates the color for curves in 
 #'   dose response curve plots.
+#' @param plot_title A character value or NULL. It specifies the plot title.
+#'   If it is \code{NULL}, the function will automatically generate a title.
 #' @param plot_subtitle A character or NULL. It indicates the subtitle for the
-#'   plot.
+#'   plot. If it is \code{NULL}, the function will automatically generate a 
+#'   subtitle.
 #' @param plot_setting A list of graphical arguments. The arguments are passed 
 #'   to \link[graphics]{par} function to modify the appearance of plots.
 #' @param plot_new A logic value. If it is \code{TRUE}, a new device will be
@@ -72,14 +75,15 @@ PlotDoseResponseCurve <- function(data,
                                   ),
                                   point_color = "#C24B40",
                                   curve_color = "black",
+                                  text_size_scale = 1,
+                                  plot_title = NULL,
                                   plot_subtitle = NULL,
                                   plot_setting = list(
-                                    cex.lab = 1,
-                                    cex.axis = 1,
+                                    cex.lab = 1 * text_size_scale,
                                     mgp = c(2, 0.5, 0),
                                     font.main = 2,
                                     font.lab = 3,
-                                    cex.main = 14 / 12,
+                                    cex.main = 14 / 12 * text_size_scale,
                                     bty = "l",
                                     lwd = 1.5
                                   ),
@@ -137,6 +141,9 @@ PlotDoseResponseCurve <- function(data,
       plot_block
     )
   }
+  if (is.null(plot_title)) {
+    plot_title <- "Dose-Response Curve"
+  }
   # plot the curve for the drug
   # For all of R's graphical devices, the default text size is 12 points but it
   # can be reset by including a pointsize argument to the function that opens
@@ -156,6 +163,7 @@ PlotDoseResponseCurve <- function(data,
     type = "obs",
     col = point_color,
     pch = 16,
+    cex.axis = 1 * text_size_scale,
     panel.first = eval(grid)
   )
   
@@ -164,14 +172,15 @@ PlotDoseResponseCurve <- function(data,
     x = drug_model,
     type = "none",
     col = curve_color,
+    cex.axis = 1 * text_size_scale,
     add = TRUE,
     lwd = 3
   )
   # Plot title
-  graphics::title("Dose-Response Curve")
+  graphics::title(plot_title)
   graphics::mtext(
     plot_subtitle,
-    cex = 7/9 * graphics::par()$cex.main
+    cex = 7/9 * graphics::par()$cex.main * text_size_scale
   )
   if (record_plot) {
     p <- grDevices::recordPlot()

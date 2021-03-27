@@ -271,6 +271,8 @@ PlotMultiDrugBar <- function(data,
 #'     \item \strong{ci} 95\% confidence interval.
 #'   }
 #'   If it is \code{NULL}, no statistics will be printed.
+#' @param plot_title A charactor value. It specifies the plot title. If it is
+#'   \code{NULL}, the function will automatically generate a title.
 #' @param distance_method The methods to calculate the distance between
 #'   different data points from the concentration of drugs. The distance matrix
 #'   is used for dimension reduction. This parameter is used to set the 
@@ -316,6 +318,7 @@ PlotMultiDrugSurface <- function(data,
                                  plot_block,
                                  plot_value,
                                  statistic = NULL,
+                                 plot_title = NULL,
                                  distance_method = "mahalanobis", 
                                  high_value_color = "#A90217",
                                  low_value_color = "#2166AC",
@@ -336,6 +339,9 @@ PlotMultiDrugSurface <- function(data,
     drug_pair = plot_data$drug_pair,
     plot_value = plot_value,
     distance_method = distance_method)
+  if (is.null(plot_title)) {
+    plot_title <- plot_data$plot_title
+  }
   p <- GenerateSurface(
     dim_reduced_data = dim_reduced_data,
     high_value_color = high_value_color,
@@ -345,7 +351,7 @@ PlotMultiDrugSurface <- function(data,
     width = width,
     height = height,
     legend_title = plot_data$legend_title,
-    plot_title = plot_data$plot_title,
+    plot_title = plot_title,
     z_axis_title = plot_data$z_axis_title,
     scale = scale
     )
