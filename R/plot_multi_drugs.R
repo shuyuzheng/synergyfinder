@@ -69,6 +69,12 @@
 #'   for the negative values.
 #' @param data_table A logic value. If it is \code{TRUE}, the data frame used
 #'   for plotting will be output.
+#' @param panel_title_size A numeric value. It indicates the size of panel 
+#'   titles in unit "mm".
+#' @param axis_text_size A numeric value. It indicates the size of axis texts
+#'   in unit "mm".
+#' @param highlight_label_size A numeric value. It indicates the size of the
+#'   labels for highlighted rows in unit "mm".
 #'
 #' @return A ggplot object. If \code{data_table = TRUE}, the output will be a
 #'   list containing a ggplot object and a data frame used for plotting.
@@ -101,6 +107,9 @@ PlotMultiDrugBar <- function(data,
                              neg_value_color = "#448BD4",
                              highlight_pos_color = "#A90217",
                              highlight_neg_color = "#2166AC",
+                             panel_title_size = 10,
+                             axis_text_size = 10,
+                             highlight_label_size = 2,
                              data_table = FALSE) {
   plot_data <- .ExtractMultiDrugPlotData(
     data,
@@ -171,13 +180,14 @@ PlotMultiDrugBar <- function(data,
       axis.text.y = element_blank(),
       axis.ticks.y = element_blank(),
       strip.background =element_rect(fill="#DFDFDF"),
+      strip.text = element_text(size = panel_title_size),
       panel.background = element_rect(fill = "#EEEEEE"),
       panel.grid.major.x = element_blank(),
       panel.grid.minor.x = element_blank(),
       legend.position = "none",
       # Set label's style of heatmap
       axis.text = ggplot2::element_text(
-        size = 10
+        size = axis_text_size
       )
     ) + 
     ggplot2::coord_flip() +
@@ -212,9 +222,9 @@ PlotMultiDrugBar <- function(data,
         )
       ]
     )
-    selected_data <- plot_table_reshape[plot_table_reshape$id %in% selected_id, ]
+    selected_data <- plot_table_reshape[plot_table_reshape$id == selected_id, ]
     selected_data$color <- paste0("hi_", selected_data$color)
-    p <- p + HighlightBarPlot(selected_data)
+    p <- p + HighlightBarPlot(selected_data, text_size = highlight_label_size)
   }
   if (data_table){
     return(list(plot = p, data_table = plot_table))
@@ -271,6 +281,15 @@ PlotMultiDrugBar <- function(data,
 #' @param low_value_color An R color value. It indicates the color for low
 #'   values.
 #' @param point_color An R color value. It indicates the color for data points.
+#' @param show_data_poinst A logical value. If it is \code{TRUE}, the raw data
+#'   points will be shown on the plot. If it is \code{FALSE}, no points will be
+#'   plotted.
+#' @param width A numeric value. It indicates the output figure's width on 
+#'   pixel.
+#' @param height A numeric value. It indicates the output figure's height on 
+#'   pixel.
+#' @param scale A numeric value. The output plot will multiply 
+#'   title/legend/axis/canvas sizes by this factor.
 #' 
 #' @return A plotly plot object.
 #'
@@ -289,7 +308,8 @@ PlotMultiDrugBar <- function(data,
 #'   data,
 #'   plot_block = 1,
 #'   plot_value = "response",
-#'   statistic = NULL
+#'   statistic = NULL,
+#'   show_data_points = TRUE
 #' )
 #' p
 PlotMultiDrugSurface <- function(data,
@@ -299,7 +319,11 @@ PlotMultiDrugSurface <- function(data,
                                  distance_method = "mahalanobis", 
                                  high_value_color = "#A90217",
                                  low_value_color = "#2166AC",
-                                 point_color = "#DDA137") {
+                                 show_data_points = TRUE,
+                                 point_color = "#DDA137",
+                                 width = 1000,
+                                 height = 1000,
+                                 scale = 1) {
   plot_data <- .ExtractMultiDrugPlotData(
     data,
     plot_block = plot_block,
@@ -312,13 +336,19 @@ PlotMultiDrugSurface <- function(data,
     drug_pair = plot_data$drug_pair,
     plot_value = plot_value,
     distance_method = distance_method)
-  p <- GenerateSurface(dim_reduced_data = dim_reduced_data,
-                        high_value_color = high_value_color,
-                        low_value_color = low_value_color,
-                        point_color = point_color,
-                        legend_title = plot_data$legend_title,
-                        plot_title = plot_data$plot_title,
-                        z_axis_title = plot_data$z_axis_title)
+  p <- GenerateSurface(
+    dim_reduced_data = dim_reduced_data,
+    high_value_color = high_value_color,
+    low_value_color = low_value_color,
+    show_data_points = show_data_points,
+    point_color = point_color,
+    width = width,
+    height = height,
+    legend_title = plot_data$legend_title,
+    plot_title = plot_data$plot_title,
+    z_axis_title = plot_data$z_axis_title,
+    scale = scale
+    )
   return(p)
 }
 
@@ -378,6 +408,7 @@ PlotMultiDrugSurface <- function(data,
 #'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
 #'   \item Jing Tang \email{jing.tang@helsinki.fi}
 #' }
+#' @export
 .ExtractMultiDrugPlotData <- function(data,
                                       plot_block = 1,
                                       plot_value = "response",
@@ -435,7 +466,7 @@ PlotMultiDrugSurface <- function(data,
   concs <- grep("conc\\d", colnames(data$response), value = TRUE)
   
   if (statistic_table){
-    if (startsWith(plot_value, "response")){
+    if (all(startsWith(plot_value, "response"))){
       plot_table <- data$response_statistics
     } else {
       if (!"synergy_scores" %in% names(data)){
@@ -661,7 +692,16 @@ DimensionReduction <- function(plot_table,
 #' @param legend_title A character value. It is the title for legend.
 #' @param plot_title A character value. It is the title for plot.
 #' @param z_axis_title A character value. It is the title for z-axis.
-#'
+#' @param show_data_poinst A logical value. If it is \code{TRUE}, the raw data
+#'   points will be shown on the plot. If it is \code{FALSE}, no points will be
+#'   plotted.
+#' @param width A numeric value. It indicates the output figure's width on 
+#'   pixel.
+#' @param height A numeric value. It indicates the output figure's height on 
+#'   pixel.
+#' @param scale A numeric value. The output plot will multiply 
+#'   title/legend/axis/canvas sizes by this factor.
+#' 
 #' @return A ggplot object.
 #'
 #' @author
@@ -672,12 +712,16 @@ DimensionReduction <- function(plot_table,
 #' 
 #' @export
 GenerateSurface <- function(dim_reduced_data,
-                             high_value_color,
-                             low_value_color,
-                             point_color,
-                             plot_title,
-                             legend_title,
-                             z_axis_title) {
+                           high_value_color,
+                           low_value_color,
+                           show_data_points = TRUE,
+                           point_color,
+                           plot_title,
+                           legend_title,
+                           z_axis_title,
+                           width = 500,
+                           height = 500,
+                           scale = 1) {
   plot_table <- dim_reduced_data$plot_table
   mds_data <- dim_reduced_data$mds_data
   extended_plot_table <- dim_reduced_data$extended_plot_table
@@ -695,6 +739,15 @@ GenerateSurface <- function(dim_reduced_data,
   end_point <- color_range
   
   p <- plotly::plot_ly() %>% 
+    plotly::config(
+      toImageButtonOptions = list(
+        format = "svg",
+        filename = "MultiDrugSurface",
+        width = width,
+        height = height,
+        scale = scale
+      )
+    ) %>% 
     plotly::add_surface(
       name = "surface",
       x = ~x,
@@ -721,16 +774,22 @@ GenerateSurface <- function(dim_reduced_data,
         y = list(highlight = FALSE),
         z = list(highlight = FALSE)
       )
-    ) %>% 
-    plotly::add_trace(
-      name = "points",
-      x = mds_data$x,
-      y = mds_data$y,
-      z = mds_data$value,
-      hovertemplate = hover_text,
-      mode = "markers",
-      type = "scatter3d",
-      marker = list(size = 3, color = point_color, symbol = 104)) %>% 
+    )
+  
+  if (show_data_points) {
+    p <- p %>%
+      plotly::add_trace(
+        name = "points",
+        x = mds_data$x,
+        y = mds_data$y,
+        z = mds_data$value,
+        hovertemplate = hover_text,
+        mode = "markers",
+        type = "scatter3d",
+        marker = list(size = 3, color = point_color, symbol = 104))
+  }
+
+  p <- p %>% 
     plotly::layout(
       title = list(
         text = paste0("<b>", plot_title, "</b>"),
@@ -779,7 +838,7 @@ GenerateSurface <- function(dim_reduced_data,
 #' }
 #' 
 #' @export
-HighlightBarPlot <- function(selected_data){
+HighlightBarPlot <- function(selected_data, text_size = 10){
   p <- list(
     geom_bar(
       data = selected_data,
@@ -792,7 +851,7 @@ HighlightBarPlot <- function(selected_data){
           y = -Inf,
           label = .RoundValues(value)
       ),
-      size = 2,
+      size = .Pt2mm(text_size),
       hjust = -0.05
     )
   )
