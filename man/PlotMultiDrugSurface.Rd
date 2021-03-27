@@ -9,6 +9,7 @@ PlotMultiDrugSurface(
   plot_block,
   plot_value,
   statistic = NULL,
+  plot_title = NULL,
   distance_method = "mahalanobis",
   high_value_color = "#A90217",
   low_value_color = "#2166AC",
@@ -53,6 +54,9 @@ in the plot while there are replicates in input data. Available values are:
   \item \strong{ci} 95\% confidence interval.
 }
 If it is \code{NULL}, no statistics will be printed.}
+
+\item{plot_title}{A charactor value. It specifies the plot title. If it is
+\code{NULL}, the function will automatically generate a title.}
 
 \item{distance_method}{The methods to calculate the distance between
 different data points from the concentration of drugs. The distance matrix

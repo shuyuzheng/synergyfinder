@@ -8,7 +8,7 @@ ReshapeData(
   data,
   impute = TRUE,
   impute_method = NULL,
-  noise = TRUE,
+  noise = FALSE,
   seed = NULL,
   data_type = "viability"
 )

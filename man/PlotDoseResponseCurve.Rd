@@ -14,9 +14,11 @@ PlotDoseResponseCurve(
   grid = expression(graphics::grid(col = "#DFDFDF", lty = 1)),
   point_color = "#C24B40",
   curve_color = "black",
+  text_size_scale = 1,
+  plot_title = NULL,
   plot_subtitle = NULL,
-  plot_setting = list(cex.lab = 1, cex.axis = 1, mgp = c(2, 0.5, 0), font.main = 2,
-    font.lab = 3, cex.main = 14/12, bty = "l", lwd = 1.5),
+  plot_setting = list(cex.lab = 1 * text_size_scale, mgp = c(2, 0.5, 0), font.main = 2,
+    font.lab = 3, cex.main = 14/12 * text_size_scale, bty = "l", lwd = 1.5),
   plot_new = TRUE,
   record_plot = TRUE
 )
@@ -54,8 +56,12 @@ dose response curve plots.}
 \item{curve_color}{An R color value. It indicates the color for curves in 
 dose response curve plots.}
 
+\item{plot_title}{A character value or NULL. It specifies the plot title.
+If it is \code{NULL}, the function will automatically generate a title.}
+
 \item{plot_subtitle}{A character or NULL. It indicates the subtitle for the
-plot.}
+plot. If it is \code{NULL}, the function will automatically generate a 
+subtitle.}
 
 \item{plot_setting}{A list of graphical arguments. The arguments are passed 
 to \link[graphics]{par} function to modify the appearance of plots.}
