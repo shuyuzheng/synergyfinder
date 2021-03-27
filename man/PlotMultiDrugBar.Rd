@@ -14,6 +14,9 @@ PlotMultiDrugBar(
   neg_value_color = "#448BD4",
   highlight_pos_color = "#A90217",
   highlight_neg_color = "#2166AC",
+  panel_title_size = 10,
+  axis_text_size = 10,
+  highlight_label_size = 2,
   data_table = FALSE
 )
 }
@@ -65,6 +68,15 @@ for the positive values.}
 
 \item{highlight_neg_color}{An R color value. It indicates the highlight color
 for the negative values.}
+
+\item{panel_title_size}{A numeric value. It indicates the size of panel 
+titles in unit "mm".}
+
+\item{axis_text_size}{A numeric value. It indicates the size of axis texts
+in unit "mm".}
+
+\item{highlight_label_size}{A numeric value. It indicates the size of the
+labels for highlighted rows in unit "mm".}
 
 \item{data_table}{A logic value. If it is \code{TRUE}, the data frame used
 for plotting will be output.}
