@@ -69,6 +69,10 @@
 #'   If it is \code{NULL}, no statistics will be printed.
 #' @param plot_title A character value. It specifies the plot title. If it is
 #'   \code{NULL}, the function will automatically generate a title.
+#' @param dynamic A logical value. If it is \code{TRUE}, this function will
+#'   use \link[plotly]{plot_ly} to generate an interactive plot. If it is
+#'   \code{FALSE}, this function will use \link[lattice]{wireframe} to generate
+#'   a static plot.
 #' @param col_range A vector of two integers. They specify the starting and 
 #'   ending concentration of the drug on x-axis. Use e.g., c(1, 3) to specify
 #'   that only from 1st to 3rd concentrations of the drug on x-axis are used. By
@@ -104,6 +108,7 @@ Plot2DrugHeatmap <- function(data,
                              plot_value = "response",
                              statistic = NULL,
                              summary_statistic = NULL,
+                             dynamic = FALSE,
                              plot_title = NULL,
                              col_range = NULL,
                              row_range = NULL,
@@ -136,7 +141,7 @@ Plot2DrugHeatmap <- function(data,
   
   # Generate plot title and legend title
   if (plot_value == "response") {
-    if (!is.null(plot_title)){
+    if (is.null(plot_title)){
       plot_title <- paste(
         "Dose Response Matrix",
         sep = " "
@@ -144,7 +149,7 @@ Plot2DrugHeatmap <- function(data,
     }
     legend_title <- "Inhibition (%)"
   } else if (plot_value == "response_origin") {
-    if (!is.null(plot_title)){
+    if (is.null(plot_title)){
       plot_title <- paste(
         "Dose Response Matrix",
         sep = " "
@@ -152,7 +157,7 @@ Plot2DrugHeatmap <- function(data,
     }
     legend_title <- paste(stringr::str_to_title(drug_pair$input_type), "%")
   } else {
-    if (!is.null(plot_title)){
+    if (is.null(plot_title)){
       plot_title <- switch(
         sub(".*_", "", plot_value),
         "ref" = sub("_ref", " Reference Additive Effect", plot_value),
@@ -199,56 +204,182 @@ Plot2DrugHeatmap <- function(data,
   }
   plot_subtitle <- paste(plot_subtitle, collapse = " | ")
   
-  # plot heatmap for dose-response matrix
-  p <- ggplot2::ggplot(
-    data = plot_table,
-    aes(x = conc2, y = conc1, fill = value)
-  ) +
-    ggplot2::geom_tile() +
-    ggplot2::geom_text(
-      ggplot2::aes(label = text),
-      size = .Pt2mm(7) * text_size_scale
-    ) +
-    ggplot2::scale_fill_gradient2(
-      high= high_value_color,
-      mid = "#FFFFFF",
-      low = low_value_color,
-      midpoint = 0,
-      name = legend_title
-    ) +
-    ggplot2::xlab(paste0(drug_pair$drug2, " (", drug_pair$conc_unit2, ")")) +
-    ggplot2::ylab(paste0(drug_pair$drug1, " (", drug_pair$conc_unit1, ")")) +
-    # Add the title for heatmap
-    ggplot2::ggtitle(
-      label = paste0(
-        "Block ",
-        plot_block,
-        ": ",
-        plot_title
-      ),
-      subtitle = plot_subtitle
-    ) +
-    ggplot2::theme(
-      plot.title = ggplot2::element_text(
-        size = 13.5 * text_size_scale,
-        face = "bold",
-        hjust = 0.5
-      ),
-      plot.subtitle = ggplot2::element_text(
-        size = 12 * text_size_scale,
-        hjust = 0.5
-      ),
-      panel.background = ggplot2::element_blank(),
-      # Set label's style of heatmap
-      axis.text = ggplot2::element_text(
-        size = 10 * text_size_scale
-      ),
-      axis.title = ggplot2::element_text(
-        face = "italic",
-        size = 10 * text_size_scale
-      )
-    )
+  # Color palette
+  color_range <- round(max(abs(plot_table$value)), -1) + 10
+  start_point <- -color_range
+  end_point <- color_range
   
+  # plot heatmap for dose-response matrix
+  if (dynamic){
+    conc1 <- unique(plot_table$conc1)
+    conc2 <- unique(plot_table$conc2)
+    mat <- reshape2::acast(plot_table, conc1~conc2, value.var = "value")
+    colnames(mat) <- seq(1, ncol(mat))
+    rownames(mat) <- seq(1, nrow(mat))
+    x_ticks_text <- as.character(sort(conc1))
+    y_ticks_text <- as.character(sort(conc2))
+    x <- data.frame(x = seq(1, length(conc1)),
+                    ticks = as.character(sort(conc1)))
+    y <- data.frame(y = seq(1, length(conc2)),
+                    ticks = as.character(sort(conc2)))
+    plot_table <- plot_table %>% 
+      dplyr::left_join(x, by = c("conc1" = "ticks")) %>% 
+      dplyr::left_join(y, by = c("conc2" = "ticks")) 
+    x_axis_title <- paste0(drug_pair$drug1, " (", drug_pair$conc_unit1, ")")
+    y_axis_title <- paste0(drug_pair$drug2, " (", drug_pair$conc_unit2, ")")
+    
+    # Hover text
+    concs <- expand.grid(conc1, conc2)
+    hover_text <- NULL
+    for (i in 1:nrow(concs)) {
+      hover_text <- c(
+        hover_text,
+        paste0(
+          drug_pair[, c("drug1", "drug2")],
+          ": ",
+          sapply(concs[i, ], as.character),
+          " ",
+          drug_pair[, c("conc_unit1", "conc_unit1")],
+          "<br>",
+          collapse = ""
+        )
+      )
+    }
+    hover_text <- paste0(
+      hover_text,
+      "Value: ",
+      .RoundValues(plot_table$value),
+      sep = ""
+    )
+    hover_text <- matrix(hover_text, nrow = length(conc1))
+    
+    p <- plotly::plot_ly(
+      x = ~plot_table$x,
+      y = ~plot_table$y,
+      z = ~plot_table$value,
+      zmin = start_point,
+      zmax = end_point,
+      type = "heatmap",
+      # text = hover_text,
+      hoverinfo = "",
+      autocolorscale = FALSE,
+      colorscale = list(
+        c(0, low_value_color),
+        c(0.5, "white"),
+        c(1, high_value_color)
+      ),
+      colorbar = list(
+        x = 1,
+        y = 0.75,
+        align = "center",
+        outlinecolor = "#FFFFFF",
+        tickcolor = "#FFFFFF",
+        title = legend_title
+      )) %>% 
+      plotly::layout(
+        title = list(
+          text = paste0("<b>", plot_title, "</b>"),
+          tickfont = list(size = 18 * text_size_scale, family = "arial"),
+          y = 0.99
+        ),
+        xaxis = list(
+          title = paste0("<i>", x_axis_title, "</i>"),
+          tickfont = list(size = 12 * text_size_scale, family = "arial"),
+          ticks = "none",
+          showspikes = FALSE,
+          tickmode = "array", 
+          tickvals = x$x,
+          ticktext = x$ticks
+        ),
+        yaxis = list(
+          title = paste0("<i>", y_axis_title, "</i>"),
+          tickfont = list(size = 12 * text_size_scale, family = "arial"),
+          ticks = "none",
+          showspikes = FALSE,
+          tickmode = "array", 
+          tickvals = y$y,
+          ticktext = y$ticks
+        ),
+        margin = 0.1
+      ) %>%
+      plotly::add_annotations(
+        text = plot_subtitle,
+        x = 0.5,
+        y = 1.1,
+        yref = "paper",
+        xref = "paper",
+        xanchor = "middle",
+        yanchor = "top",
+        showarrow = FALSE,
+        font = list(size = 15 * text_size_scale)
+      ) %>% 
+      plotly::add_annotations(
+        x = ~plot_table$x,
+        y = ~plot_table$y,
+        text = ~plot_table$text,
+        showarrow = FALSE,
+        textfont = list(
+          color = '#000000',
+          size = 12 * text_size_scale
+        ),
+        ax = 20,
+        ay = -20)
+  } else{
+    p <- ggplot2::ggplot(
+      data = plot_table,
+      aes(x = conc1, y = conc2, fill = value)
+    ) +
+      ggplot2::geom_tile() +
+      ggplot2::geom_text(
+        ggplot2::aes(label = text),
+        size = .Pt2mm(7) * text_size_scale
+      ) +
+      ggplot2::scale_fill_gradient2(
+        high= high_value_color,
+        mid = "#FFFFFF",
+        low = low_value_color,
+        midpoint = 0,
+        name = legend_title,
+        limits = c(start_point, end_point)
+      ) +
+      ggplot2::guides(
+        fill = ggplot2::guide_colorbar(
+          barheight = 10,
+          barwidth = 1.5,
+          ticks = FALSE
+        )
+      ) +
+      ggplot2::xlab(paste0(drug_pair$drug1, " (", drug_pair$conc_unit2, ")")) +
+      ggplot2::ylab(paste0(drug_pair$drug2, " (", drug_pair$conc_unit1, ")")) +
+      # Add the title for heatmap
+      ggplot2::ggtitle(
+        label = paste0(
+          plot_title
+        ),
+        subtitle = plot_subtitle
+      ) +
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(
+          size = 13.5 * text_size_scale,
+          face = "bold",
+          hjust = 0.5
+        ),
+        plot.subtitle = ggplot2::element_text(
+          size = 12 * text_size_scale,
+          hjust = 0.5
+        ),
+        panel.background = ggplot2::element_blank(),
+        # Set label's style of heatmap
+        axis.text = ggplot2::element_text(
+          size = 10 * text_size_scale
+        ),
+        axis.title = ggplot2::element_text(
+          face = "italic",
+          size = 10 * text_size_scale
+        ),
+        legend.background = element_rect(color = NA)
+      )
+    }
   return(p)
 }
 
@@ -342,6 +473,7 @@ Plot2DrugContour <- function(data,
                              plot_value = "response",
                              interpolate_len = 2,
                              summary_statistic = NULL,
+                             dynamic = FALSE,
                              plot_title = NULL,
                              col_range = NULL,
                              row_range = NULL,
@@ -373,7 +505,7 @@ Plot2DrugContour <- function(data,
   }
   # Generate plot title and legend title
   if (plot_value == "response") {
-    if (!is.null(plot_title)){
+    if (is.null(plot_title)){
       plot_title <- paste(
         "Dose Response Matrix",
         sep = " "
@@ -382,7 +514,7 @@ Plot2DrugContour <- function(data,
     legend_title <- "Inhibition (%)"
     z_axis_title <- "Response (% inhibition)"
   } else if (plot_value == "response_origin") {
-    if (!is.null(plot_title)){
+    if (is.null(plot_title)){
       plot_title <- paste(
         "Dose Response Matrix",
         sep = " "
@@ -391,7 +523,7 @@ Plot2DrugContour <- function(data,
     legend_title <- paste0(stringr::str_to_title(drug_pair$input_type), " (%)")
     z_axis_title <- paste0("Response (% ",drug_pair$input_type,")")
   } else {
-    if (!is.null(plot_title)){
+    if (is.null(plot_title)){
       plot_title <- switch(
         sub(".*_", "", plot_value),
         "ref" = sub("_ref", " Reference Additive Effect", plot_value),
@@ -439,77 +571,207 @@ Plot2DrugContour <- function(data,
   conc1 <- unique(plot_table$conc1)
   conc2 <- unique(plot_table$conc2)
   
-  # kriging with kriging from  (which )
+  # Interpolation by kriging
   mat <- reshape2::acast(plot_table, conc1~conc2, value.var = "value")
   extended_mat <- .ExtendedScores(mat, len = interpolate_len)
   colnames(extended_mat) <- seq(1, ncol(extended_mat))
   rownames(extended_mat) <- seq(1, nrow(extended_mat))
-  y_ticks <- seq(1, nrow(extended_mat), by = interpolate_len + 1)
-  x_ticks <- seq(1, ncol(extended_mat), by = interpolate_len + 1)
-  y_ticks_text <- as.character(sort(conc1))
-  x_ticks_text <- as.character(sort(conc2))
-  y_axis_title <- paste0(drug_pair$drug1, " (", drug_pair$conc_unit1, ")")
-  x_axis_title <- paste0(drug_pair$drug2, " (", drug_pair$conc_unit2, ")")
+  x_ticks <- seq(1, nrow(extended_mat), by = interpolate_len + 1)
+  y_ticks <- seq(1, ncol(extended_mat), by = interpolate_len + 1)
+  x_ticks_text <- as.character(sort(conc1))
+  y_ticks_text <- as.character(sort(conc2))
+  x_axis_title <- paste0(drug_pair$drug1, " (", drug_pair$conc_unit1, ")")
+  y_axis_title <- paste0(drug_pair$drug2, " (", drug_pair$conc_unit2, ")")
 
-  extended_df <- reshape2::melt(extended_mat)
-  colnames(extended_df) <- c("y", "x", "value")
-  
-  # Color palette
-  color_range <- round(max(abs(extended_mat)), -1) + 10
-  start_point <- -color_range
-  end_point <- color_range
-  breaks <- seq(start_point, end_point, 5)
-  colfunc <- grDevices::colorRampPalette(
-    c(low_value_color, "white", high_value_color)
-  )
-  col <- colfunc(length(breaks))
-  p <- ggplot2::ggplot(extended_df) +
-    ggplot2::geom_contour_filled(ggplot2::aes(x = x, y = y, z = value)) + 
-    ggplot2::scale_x_continuous(
-      breaks = x_ticks,
-      labels = x_ticks_text
-    ) +
-    ggplot2::scale_y_continuous(
-      breaks = y_ticks,
-      labels = y_ticks_text
-    ) +
-    metR::scale_fill_divergent_discretised(
-      low = low_value_color,
-      high = high_value_color,
-      mid = "white",
-      name = legend_title
-    ) +
-    ggplot2::xlab(x_axis_title) +
-    ggplot2::ylab(y_axis_title) +
-    ggplot2::ggtitle(
-      label = paste0(
-        "Block ",
-        plot_block,
-        ": ",
-        plot_title
-      ),
-      subtitle = plot_subtitle
-    ) +
-    ggplot2::theme(
-      plot.title = ggplot2::element_text(
-        size = 13.5 * text_size_scale,
-        face = "bold",
-        hjust = 0.5
-      ),
-      plot.subtitle = ggplot2::element_text(
-        size = 12 * text_size_scale,
-        hjust = 0.5
-      ),
-      panel.background = ggplot2::element_blank(),
-      # Set label's style of heatmap
-      axis.text = ggplot2::element_text(
-        size = 10 * text_size_scale
-      ),
-      axis.title = ggplot2::element_text(
-        face = "italic",
-        size = 10 * text_size_scale
+  if (dynamic){
+    y <- seq(1, ncol(extended_mat))
+    x <- seq(1, nrow(extended_mat))
+    # Color palette
+    color_range <- round(max(abs(extended_mat)), -1) + 10
+    start_point <- -color_range
+    end_point <- color_range
+    # Hover text
+    concs <- expand.grid(conc1, conc2)
+    hover_text <- NULL
+    for (i in 1:nrow(concs)) {
+      hover_text <- c(
+        hover_text,
+        paste0(
+          drug_pair[, c("drug1", "drug2")],
+          ": ",
+          sapply(concs[i, ], as.character),
+          " ",
+          drug_pair[, c("conc_unit1", "conc_unit1")],
+          "<br>",
+          collapse = ""
+        )
       )
+    }
+    hover_text <- paste0(
+      hover_text,
+      "Value: ",
+      .RoundValues(plot_table$value),
+      sep = ""
     )
+    hover_text <- matrix(hover_text, nrow = length(conc1))
+    hover_text_mat <- matrix(rep(NA, length(extended_mat)),
+                             nrow = nrow(extended_mat))
+    for (i in 1:length(x_ticks)) {
+      for (j in 1:length(y_ticks)) {
+        hover_text_mat[x_ticks[i], y_ticks[j]] <- hover_text[i, j]
+      }
+    }
+    p <- plotly::plot_ly(
+      x = x,
+      y = y,
+      z = t(extended_mat),
+      zmin = start_point,
+      zmax = end_point,
+      type = "contour",
+      line = list(width = 0),
+      text = t(hover_text_mat),
+      hoverinfo = "text",
+      autocolorscale = FALSE,
+      colorscale = list(
+        c(0, low_value_color),
+        c(0.5, "white"),
+        c(1, high_value_color)
+      ),
+      colorbar = list(
+        x = 1,
+        y = 0.75,
+        align = "center",
+        outlinecolor = "#FFFFFF",
+        tickcolor = "#FFFFFF",
+        title = legend_title
+      ),
+      contours = list(
+        x = list(
+          # highlight = FALSE,
+          show = TRUE,
+          color = 'black',
+          width = 1,
+          start = 1,
+          end = max(x),
+          size = 1 * text_size_scale
+        ),
+        y = list(
+          # highlight = FALSE,
+          show = TRUE,
+          color = 'black',
+          width = 1,
+          start = 1,
+          end = max(y),
+          size = 1 * text_size_scale
+        )
+      )) %>% 
+      plotly::add_annotations(
+        text = plot_subtitle,
+        x = 0.5,
+        y = 1.1,
+        yref = "paper",
+        xref = "paper",
+        xanchor = "middle",
+        yanchor = "top",
+        showarrow = FALSE,
+        font = list(size = 15 * text_size_scale)
+      ) %>% 
+      plotly::layout(
+        title = list(
+          text = paste0("<b>", plot_title, "</b>"),
+          tickfont = list(size = 18 * text_size_scale, family = "arial"),
+          y = 0.99
+        ),
+        xaxis = list(
+          title = paste0("<i>", x_axis_title, "</i>"),
+          tickfont = list(size = 12 * text_size_scale, family = "arial"),
+          ticks = "none",
+          showspikes = FALSE,
+          tickmode = "array", 
+          tickvals = x_ticks,
+          ticktext = x_ticks_text
+        ),
+        yaxis = list(
+          title = paste0("<i>", y_axis_title, "</i>"),
+          tickfont = list(size = 12 * text_size_scale, family = "arial"),
+          ticks = "none",
+          showspikes = FALSE,
+          tickmode = "array", 
+          tickvals = y_ticks,
+          ticktext = y_ticks_text
+        ),
+        margin = 0.01
+      )
+  } else{
+    extended_df <- reshape2::melt(extended_mat)
+    colnames(extended_df) <- c("x", "y", "value")
+    
+    # Color palette
+    color_range <- round(max(abs(extended_mat)), -1) + 10
+    start_point <- -color_range
+    end_point <- color_range
+    colfunc <- grDevices::colorRampPalette(
+      c(low_value_color, "white", high_value_color)
+    )
+    col <- colfunc(length(breaks))
+    p <- ggplot2::ggplot(extended_df) +
+      metR::geom_contour_fill(
+        ggplot2::aes(x = x, y = y, z = value)#,
+        # breaks = metR::MakeBreaks(binwidth = 10)
+      ) + 
+      ggplot2::scale_x_continuous(
+        breaks = x_ticks,
+        labels = x_ticks_text
+      ) +
+      ggplot2::scale_y_continuous(
+        breaks = y_ticks,
+        labels = y_ticks_text
+      ) +
+      ggplot2::scale_fill_gradient2(
+        high= high_value_color,
+        mid = "#FFFFFF",
+        low = low_value_color,
+        midpoint = 0,
+        name = legend_title,
+        limits = c(start_point, end_point),
+      ) +
+      ggplot2::guides(
+        fill = ggplot2::guide_colorbar(
+          barheight = 10,
+          barwidth = 1.5,
+          ticks = FALSE
+        )
+      ) +
+      ggplot2::xlab(x_axis_title) +
+      ggplot2::ylab(y_axis_title) +
+      ggplot2::ggtitle(
+        label = paste0(
+          plot_title
+        ),
+        subtitle = plot_subtitle
+      ) +
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(
+          size = 13.5 * text_size_scale,
+          face = "bold",
+          hjust = 0.5
+        ),
+        plot.subtitle = ggplot2::element_text(
+          size = 12 * text_size_scale,
+          hjust = 0.5
+        ),
+        panel.background = ggplot2::element_blank(),
+        # Set label's style of heatmap
+        axis.text = ggplot2::element_text(
+          size = 10 * text_size_scale
+        ),
+        axis.title = ggplot2::element_text(
+          face = "italic",
+          size = 10 * text_size_scale
+        ),
+        legend.background = element_rect(color = NA)
+      )
+  }
   p
   return(p)
 }
@@ -637,7 +899,7 @@ Plot2DrugSurface <- function(data,
   }
   # Generate plot title and legend title
   if (plot_value == "response") {
-    if (!is.null(plot_title)){
+    if (is.null(plot_title)){
       plot_title <- paste(
         "Dose Response Matrix",
         sep = " "
@@ -646,7 +908,7 @@ Plot2DrugSurface <- function(data,
     legend_title <- "Inhibition (%)"
     z_axis_title <- "Response (% inhibition)"
   } else if (plot_value == "response_origin") {
-    if (!is.null(plot_title)){
+    if (is.null(plot_title)){
       plot_title <- paste(
         "Dose Response Matrix",
         sep = " "
@@ -655,7 +917,7 @@ Plot2DrugSurface <- function(data,
     legend_title <- paste0(stringr::str_to_title(drug_pair$input_type), " (%)")
     z_axis_title <- paste0("Response (% ",drug_pair$input_type,")")
   } else {
-    if (!is.null(plot_title)){
+    if (is.null(plot_title)){
       plot_title <- switch(
         sub(".*_", "", plot_value),
         "ref" = sub("_ref", " Reference Additive Effect", plot_value),
@@ -719,8 +981,8 @@ Plot2DrugSurface <- function(data,
   y_axis_title <- paste0(drug_pair$drug2, " (", drug_pair$conc_unit2, ")")
   
   if (dynamic) {
-    x <-  seq(1, ncol(extended_mat))
-    y <- seq(1, nrow(extended_mat))
+    y <- seq(1, ncol(extended_mat))
+    x <- seq(1, nrow(extended_mat))
     # Color palette
     color_range <- max(abs(extended_mat)) + 5
     start_point <- -color_range
@@ -803,6 +1065,17 @@ Plot2DrugSurface <- function(data,
           # z = list(highlight = FALSE)
         )
       ) %>% 
+      plotly::add_annotations(
+        text = plot_subtitle,
+        x = 0.5,
+        y = 1.1,
+        yref = "paper",
+        xref = "paper",
+        xanchor = "middle",
+        yanchor = "top",
+        showarrow = FALSE,
+        font = list(size = 15 * text_size_scale)
+      ) %>% 
       plotly::layout(
         title = list(
           text = paste0("<b>", plot_title, "</b>"),
@@ -837,7 +1110,8 @@ Plot2DrugSurface <- function(data,
             showspikes = FALSE
           ),
           camera = list(eye = list(x = -1.25, y = -1.25, z = 1.25))
-        )
+        ),
+        margin = 0.1
       )
   } else { # static plot
     # Color palette

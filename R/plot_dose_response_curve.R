@@ -182,6 +182,7 @@ PlotDoseResponseCurve <- function(data,
     plot_subtitle,
     cex = 7/9 * graphics::par()$cex.main * text_size_scale
   )
+  
   if (record_plot) {
     p <- grDevices::recordPlot()
     grDevices::dev.off()

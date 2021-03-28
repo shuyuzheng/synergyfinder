@@ -252,10 +252,6 @@ PlotDoseResponse <- function(data,
       # grDevices::jpeg(file_name, width = 800, height = 600)
       grDevices::replayPlot(merge_plot)
       grDevices::dev.off()
-    } else {
-      grDevices::dev.new(noRStudioGD = TRUE)
-      grDevices::replayPlot(plots[[b]])
-      grDevices::dev.off()
     }
   }
   return(plots)
@@ -272,9 +268,10 @@ PlotDoseResponse <- function(data,
 #' @param type A character value. It specifies the type of the plot. Available
 #'   values are:
 #'   \itemize{
-#'     \item \strong{2D} Visualize 2D interactive landscape with contour plot
-#'     \item \strong{3D} Visualize 3D surface for interactive landscape
+#'     \item \strong{2D} Visualize 2D interactive landscape with contour plot.
 #'     \item \strong{heatmap} Heatmap for synergy scores.
+#'     \item \strong{3D} Visualize 3D surface for interactive landscape.
+#'   }
 #' @param method A character value. It indicates which synergy score to be 
 #'   visualized. Available values are "ZIP", "HSA", "Bliss", or "Loewe".
 #' @param block_ids A parameter to specify which drug combination if there are 
@@ -312,6 +309,8 @@ PlotDoseResponse <- function(data,
 #'     print different sample quantile. For example quantile_50 equal to median. 
 #'   }
 #'   If it is \code{NULL}, no statistics will be printed.
+#' @param plot_title A character value. It specifies the plot title. If it is
+#'   \code{NULL}, the function will automatically generate a title.
 #' @param interpolate_len An integer. It specifies how many values need to be
 #'   interpolated between two concentrations. It is used to control the 
 #'   smoothness of the synergy surface in the contour plot and surface plot.
@@ -322,17 +321,23 @@ PlotDoseResponse <- function(data,
 #'   values.
 #' @param text_size_scale A numeric value. It is used to control the size
 #'   of text in the plot. All the text size will multiply by this scale factor.
+#' @param dynamic A logic value. It indicates whether to generate interactive
+#'   plot wit package "plotly" or static plot with package "ggplot2"/"lattice".
+#' @param display A logic value. It specifies whether to automatically display
+#'   plots while calling the function.
 #' @param save_file A logic value. It specifies if the interaction landscapes
 #'   is saved by calling \link[ggplot2]{ggsave} function ("2D" or "heatmap"
 #'   plots) or plot saving function defined by \code{device} ("3D" plots). By
-#'   default, it is FALSE.
+#'   default, it is FALSE. \strong{Note}: It doesn't work while
+#'   \code{dynamic = TRUE}, because installation of "Orca" is required for
+#'   exporting plotly plots. Please check 
+#'   https://plotly.com/r/static-image-export/ for more details.
 #' @param file_name A character vector. It indicates the file names. If it is 
-#'   not defined by user, a default name will be assigned. \strong{Note}: It only works while
-#'   \code{save_file = TRUE}.
-#' @param file_path A character vector. It indicates the path to save file.
-#'   If it is 
 #'   not defined by user, a default name will be assigned. \strong{Note}: It
 #'   only works while \code{save_file = TRUE}.
+#' @param file_path A character vector. It indicates the path to save file.
+#'   If it is not defined by user, a default name will be assigned. 
+#'   \strong{Note}: It only works while \code{save_file = TRUE}.
 #' @param width A numeric value. It indicates the width of the output plot.
 #'   \strong{Note}: It only works while \code{save_file = TRUE}.
 #' @param height A numeric value. It indicates the height of the output plot.
@@ -345,7 +350,7 @@ PlotDoseResponse <- function(data,
 #'   \code{save_file = TRUE}.
 #' @param device A character value. It indicates the device to use for saving 
 #'   plots. If \code{type = "3D"}, the corresponding device function in package
-#'   \link[grDevices] will be called to save the plots. If
+#'   "grDevices" will be called to save the plots. If
 #'   \code{type = "2D"/"heatmap"}, it will be used to set the parameter
 #'   \code{device} in function \link[ggplot2]{ggsave}.
 #'   \strong{Note}: It only works while \code{save_file = TRUE}.
@@ -374,10 +379,13 @@ PlotSynergy <- function(data,
                         col_range = NULL,
                         statistic = NULL,
                         summary_statistic = "mean",
+                        plot_title = NULL,
                         interpolate_len = 3,
                         high_value_color = "#A90217",
                         low_value_color = "#2166AC",
                         text_size_scale = 1,
+                        dynamic = FALSE,
+                        display = TRUE, 
                         save_file = FALSE,
                         file_name = NULL,
                         file_path = NULL,
@@ -401,49 +409,64 @@ PlotSynergy <- function(data,
   i <- 1
   for (block in block_ids) {
     drug_pair <- data$drug_pairs[data$drug_pairs$block_id == block, ]
-    if (type == "3D") {
-      fig <- Plot2DrugSurface(
-        data = data,
-        plot_block = block,
-        drugs = drugs,
-        interpolate_len = interpolate_len,
-        dynamic = FALSE,
-        plot_value = paste0(method, "_synergy"),
-        summary_statistic = summary_statistic,
-        high_value_color = high_value_color,
-        low_value_color = low_value_color,
-        row_range = row_range,
-        col_range = col_range,
-        text_size_scale = text_size_scale)
-      print(fig)
-    } else if (type == "2D") {
+    if (type == "2D") {
       fig <- Plot2DrugContour(
         data = data,
         plot_block = block,
         drugs = drugs,
+        dynamic = dynamic,
         plot_value = paste0(method, "_synergy"),
         summary_statistic = summary_statistic,
+        plot_title = plot_title,
         interpolate_len = interpolate_len,
         high_value_color = high_value_color,
         low_value_color = low_value_color,
         row_range = row_range,
         col_range = col_range,
         text_size_scale = text_size_scale)
-      plot(fig)
+      if (display) {
+        fig
+      }
     } else if (type == "heatmap") {
       fig <- Plot2DrugHeatmap(
         data = data,
         plot_block = block,
         drugs = drugs,
         statistic = statistic,
+        dynamic = dynamic,
         plot_value = paste0(method, "_synergy"),
         summary_statistic = summary_statistic,
+        plot_title = plot_title,
         high_value_color = high_value_color,
         low_value_color = low_value_color,
         row_range = row_range,
         col_range = col_range,
         text_size_scale = text_size_scale)
-      plot(fig)
+      if (display) {
+        fig
+      }
+    } else if (type == "3D") {
+      fig <- Plot2DrugSurface(
+        data = data,
+        plot_block = block,
+        drugs = drugs,
+        interpolate_len = interpolate_len,
+        dynamic = dynamic,
+        plot_value = paste0(method, "_synergy"),
+        summary_statistic = summary_statistic,
+        plot_title = plot_title,
+        high_value_color = high_value_color,
+        low_value_color = low_value_color,
+        row_range = row_range,
+        col_range = col_range,
+        text_size_scale = text_size_scale)
+      if (display) {
+        if (dynamic) {
+          fig
+        } else {
+          print(fig)
+        }
+      }
     } else {
       stop("The type of plot '", type, "' is not available. Available values
            for parameter 'type' are: 2D, 3D, or heatmap.")
@@ -452,55 +475,63 @@ PlotSynergy <- function(data,
     
     # Save plots
     if(save_file) {
-      if(is.null(file_name)){
-        file <-paste(
-          c(drug_pair[, paste0("drug", drugs)],
-            "synergy",
-            block,
-            method,
-            type),
-          collapse = "_"
-        )
+      if (dynamic) {
+        warning("Saving dynamic surface plot from plotly requires installation",
+                " of Orca. This function can not save such plot as static ",
+                "images, but return the plotly object.",
+                "Please check https://plotly.com/r/static-image-export/ to see",
+                "how to export plotly plot objects to local directory.")
       } else {
-        file <- file_name[i]
-        i <- i + 1
-      }
-      # Set width and height according to plot types
-      if (type == "3D"){
-        if (!device %in% c("jpeg", "bmp", "png", "tiff", "pdf", "svg")){
-          warning("Can not save plot in ", device, " format. Avaliable formats
-                are 'svg', 'jpeg', 'bmp', 'png', 'tiff',and 'pdf'.")
-        } else if (device  == "pdf") {
-          grDevices::pdf(paste(file, device, sep = "."), 
-                         width = width, height = height)
-        } else if (device == "svg"){
-          grDevices::svg(
-            paste(file, device, sep = "."), 
-            width = width, 
-            height = height)
+        if (is.null(file_name)) {
+          file <-paste(
+            c(drug_pair[, paste0("drug", drugs)],
+              "synergy",
+              block,
+              method,
+              type),
+            collapse = "_"
+          )
         } else {
-          do.call(
-            device,
-            args = list(
-              filename = paste(file, device, sep="."),
-              width = width,
-              height = height, 
-              units = units,
-              res = 600)
-            )
+          file <- file_name[i]
+          i <- i + 1
         }
-        grDevices::replayPlot(fig)
-        grDevices::dev.off()
-      } else {
-        ggplot2::ggsave(
-          filename = paste(file, device, sep="."),
-          plot = plots[[block]],
-          path = file_path,
-          width = width,
-          height = height,
-          device = device,
-          units = units
-        )
+        # Set width and height according to plot types
+        if (type == "3D") {
+          if (!device %in% c("jpeg", "bmp", "png", "tiff", "pdf", "svg")){
+            warning("Can not save plot in ", device, " format. Avaliable formats
+                are 'svg', 'jpeg', 'bmp', 'png', 'tiff',and 'pdf'.")
+          } else if (device  == "pdf") {
+            grDevices::pdf(paste(file, device, sep = "."), 
+                           width = width, height = height)
+          } else if (device == "svg") {
+            grDevices::svg(
+              paste(file, device, sep = "."), 
+              width = width, 
+              height = height)
+          } else {
+            do.call(
+              device,
+              args = list(
+                filename = paste(file, device, sep="."),
+                width = width,
+                height = height, 
+                units = units,
+                res = 600)
+            )
+          }
+          grDevices::replayPlot(fig)
+          grDevices::dev.off()
+        } else {
+          ggplot2::ggsave(
+            filename = paste(file, device, sep="."),
+            plot = plots[[block]],
+            path = file_path,
+            width = width,
+            height = height,
+            device = device,
+            units = units
+          )
+        }
       }
     }
   }

@@ -11,6 +11,7 @@ Plot2DrugHeatmap(
   plot_value = "response",
   statistic = NULL,
   summary_statistic = NULL,
+  dynamic = FALSE,
   plot_title = NULL,
   col_range = NULL,
   row_range = NULL,
@@ -70,6 +71,11 @@ matrix. Available values are:
   print different sample quantile. For example quantile_50 equal to median. 
 }
 If it is \code{NULL}, no statistics will be printed.}
+
+\item{dynamic}{A logical value. If it is \code{TRUE}, this function will
+use \link[plotly]{plot_ly} to generate an interactive plot. If it is
+\code{FALSE}, this function will use \link[lattice]{wireframe} to generate
+a static plot.}
 
 \item{plot_title}{A character value. It specifies the plot title. If it is
 \code{NULL}, the function will automatically generate a title.}
