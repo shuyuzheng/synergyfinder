@@ -67,11 +67,27 @@
 #'     print different sample quantile. For example quantile_50 equal to median. 
 #'   }
 #'   If it is \code{NULL}, no statistics will be printed.
+#' @param plot_title A character value. It specifies the plot title. If it is
+#'   \code{NULL}, the function will automatically generate a title.
+#' @param dynamic A logical value. If it is \code{TRUE}, this function will
+#'   use \link[plotly]{plot_ly} to generate an interactive plot. If it is
+#'   \code{FALSE}, this function will use \link[lattice]{wireframe} to generate
+#'   a static plot.
+#' @param col_range A vector of two integers. They specify the starting and 
+#'   ending concentration of the drug on x-axis. Use e.g., c(1, 3) to specify
+#'   that only from 1st to 3rd concentrations of the drug on x-axis are used. By
+#'   default, it is NULl so all the concentrations are used.
+#' @param row_range A vector of two integers. They specify the starting and
+#'   ending concentration of the drug on y-axis. Use e.g., c(1, 3) to specify
+#'   that only from 1st to 3rd concentrations of the drug on y-axis are used. By
+#'   default, it is NULl so all the concentrations are used.
 #' @param high_value_color An R color value. It indicates the color for the
 #'   high values.
 #' @param low_value_color An R color value. It indicates the color for low
 #'   values.
-#'
+#' @param text_size_scale A numeric value. It is used to control the size
+#'   of text in the plot. All the text size will multiply by this scale factor.
+#'   
 #' @return A ggplot plot object.
 #'
 #' @author
@@ -92,8 +108,13 @@ Plot2DrugHeatmap <- function(data,
                              plot_value = "response",
                              statistic = NULL,
                              summary_statistic = NULL,
+                             dynamic = FALSE,
+                             plot_title = NULL,
+                             col_range = NULL,
+                             row_range = NULL,
                              high_value_color = "#A90217",
-                             low_value_color = "#2166AC") {
+                             low_value_color = "#2166AC",
+                             text_size_scale = 1) {
   # Extract plot data
   plot_data <- .Extract2DrugPlotData(
     data = data,
@@ -105,26 +126,45 @@ Plot2DrugHeatmap <- function(data,
   plot_table <- plot_data$plot_table
   drug_pair <- plot_data$drug_pair
   
+  # Subset plot matrix
+  if (!is.null(row_range)) {
+    selected_rows <- levels(plot_table$conc2)[row_range[1]:row_range[2]]
+    plot_table <- plot_table[plot_table$conc2 %in% selected_rows, ]
+    plot_table$conc2 <- factor(plot_table$conc2)
+  }
+  
+  if (!is.null(col_range)) {
+    selected_cols <- levels(plot_table$conc1)[col_range[1]:col_range[2]]
+    plot_table <- plot_table[plot_table$conc1 %in% selected_cols, ]
+    plot_table$conc1 <- factor(plot_table$conc1)
+  }
+  
   # Generate plot title and legend title
   if (plot_value == "response") {
-    plot_title <- paste(
-      "Dose Response Matrix",
-      sep = " "
-    )
+    if (is.null(plot_title)){
+      plot_title <- paste(
+        "Dose Response Matrix",
+        sep = " "
+      )
+    }
     legend_title <- "Inhibition (%)"
   } else if (plot_value == "response_origin") {
-    plot_title <- paste(
-      "Dose Response Matrix",
-      sep = " "
-    )
+    if (is.null(plot_title)){
+      plot_title <- paste(
+        "Dose Response Matrix",
+        sep = " "
+      )
+    }
     legend_title <- paste(stringr::str_to_title(drug_pair$input_type), "%")
   } else {
-    plot_title <- switch(
-      sub(".*_", "", plot_value),
-      "ref" = sub("_ref", " Reference Additive Effect", plot_value),
-      "fit" = sub("_fit", " Fitted Effect", plot_value),
-      "synergy" = sub("_synergy", " Synergy Score", plot_value)
-    )
+    if (is.null(plot_title)){
+      plot_title <- switch(
+        sub(".*_", "", plot_value),
+        "ref" = sub("_ref", " Reference Additive Effect", plot_value),
+        "fit" = sub("_fit", " Fitted Effect", plot_value),
+        "synergy" = sub("_synergy", " Synergy Score", plot_value)
+      )
+    }
     legend_title <- switch(
       sub(".*_", "", plot_value),
       "ref" = "Inhibition (%)",
@@ -164,56 +204,577 @@ Plot2DrugHeatmap <- function(data,
   }
   plot_subtitle <- paste(plot_subtitle, collapse = " | ")
   
-  # plot heatmap for dose-response matrix
-  p <- ggplot2::ggplot(
-    data = plot_table,
-    aes(x = conc2, y = conc1, fill = value)
-  ) +
-    ggplot2::geom_tile() +
-    ggplot2::geom_text(ggplot2::aes(label = text), size = .Pt2mm(7)) +
-    ggplot2::scale_fill_gradient2(
-      high= high_value_color,
-      mid = "#FFFFFF",
-      low = low_value_color,
-      midpoint = 0,
-      name = legend_title
-    ) +
-    ggplot2::xlab(paste0(drug_pair$drug2, " (", drug_pair$conc_unit2, ")")) +
-    ggplot2::ylab(paste0(drug_pair$drug1, " (", drug_pair$conc_unit1, ")")) +
-    # Add the title for heatmap
-    ggplot2::ggtitle(
-      label = paste0(
-        "Block ",
-        plot_block,
-        ": ",
-        plot_title
-      ),
-      subtitle = plot_subtitle
-    ) +
-    ggplot2::theme(
-      plot.title = ggplot2::element_text(
-        size = 13.5,
-        face = "bold",
-        hjust = 0.5
-      ),
-      plot.subtitle = ggplot2::element_text(
-        size = 12,
-        hjust = 0.5
-      ),
-      panel.background = ggplot2::element_blank(),
-      # Set label's style of heatmap
-      axis.text = ggplot2::element_text(
-        size = 10
-      ),
-      axis.title = ggplot2::element_text(
-        face = "italic",
-        size = 10
-      )
-    )
+  # Color palette
+  color_range <- round(max(abs(plot_table$value)), -1) + 10
+  start_point <- -color_range
+  end_point <- color_range
   
+  # plot heatmap for dose-response matrix
+  if (dynamic){
+    conc1 <- unique(plot_table$conc1)
+    conc2 <- unique(plot_table$conc2)
+    mat <- reshape2::acast(plot_table, conc1~conc2, value.var = "value")
+    colnames(mat) <- seq(1, ncol(mat))
+    rownames(mat) <- seq(1, nrow(mat))
+    x_ticks_text <- as.character(sort(conc1))
+    y_ticks_text <- as.character(sort(conc2))
+    x <- data.frame(x = seq(1, length(conc1)),
+                    ticks = as.character(sort(conc1)))
+    y <- data.frame(y = seq(1, length(conc2)),
+                    ticks = as.character(sort(conc2)))
+    plot_table <- plot_table %>% 
+      dplyr::left_join(x, by = c("conc1" = "ticks")) %>% 
+      dplyr::left_join(y, by = c("conc2" = "ticks")) 
+    x_axis_title <- paste0(drug_pair$drug1, " (", drug_pair$conc_unit1, ")")
+    y_axis_title <- paste0(drug_pair$drug2, " (", drug_pair$conc_unit2, ")")
+    
+    # Hover text
+    concs <- expand.grid(conc1, conc2)
+    hover_text <- NULL
+    for (i in 1:nrow(concs)) {
+      hover_text <- c(
+        hover_text,
+        paste0(
+          drug_pair[, c("drug1", "drug2")],
+          ": ",
+          sapply(concs[i, ], as.character),
+          " ",
+          drug_pair[, c("conc_unit1", "conc_unit1")],
+          "<br>",
+          collapse = ""
+        )
+      )
+    }
+    hover_text <- paste0(
+      hover_text,
+      "Value: ",
+      .RoundValues(plot_table$value),
+      sep = ""
+    )
+    hover_text <- matrix(hover_text, nrow = length(conc1))
+    
+    p <- plotly::plot_ly(
+      x = ~plot_table$x,
+      y = ~plot_table$y,
+      z = ~plot_table$value,
+      zmin = start_point,
+      zmax = end_point,
+      type = "heatmap",
+      # text = hover_text,
+      hoverinfo = "",
+      autocolorscale = FALSE,
+      colorscale = list(
+        c(0, low_value_color),
+        c(0.5, "white"),
+        c(1, high_value_color)
+      ),
+      colorbar = list(
+        x = 1,
+        y = 0.75,
+        align = "center",
+        outlinecolor = "#FFFFFF",
+        tickcolor = "#FFFFFF",
+        title = legend_title
+      )) %>% 
+      plotly::layout(
+        title = list(
+          text = paste0("<b>", plot_title, "</b>"),
+          tickfont = list(size = 18 * text_size_scale, family = "arial"),
+          y = 0.99
+        ),
+        xaxis = list(
+          title = paste0("<i>", x_axis_title, "</i>"),
+          tickfont = list(size = 12 * text_size_scale, family = "arial"),
+          ticks = "none",
+          showspikes = FALSE,
+          tickmode = "array", 
+          tickvals = x$x,
+          ticktext = x$ticks
+        ),
+        yaxis = list(
+          title = paste0("<i>", y_axis_title, "</i>"),
+          tickfont = list(size = 12 * text_size_scale, family = "arial"),
+          ticks = "none",
+          showspikes = FALSE,
+          tickmode = "array", 
+          tickvals = y$y,
+          ticktext = y$ticks
+        ),
+        margin = 0.1
+      ) %>%
+      plotly::add_annotations(
+        text = plot_subtitle,
+        x = 0.5,
+        y = 1.1,
+        yref = "paper",
+        xref = "paper",
+        xanchor = "middle",
+        yanchor = "top",
+        showarrow = FALSE,
+        font = list(size = 15 * text_size_scale)
+      ) %>% 
+      plotly::add_annotations(
+        x = ~plot_table$x,
+        y = ~plot_table$y,
+        text = ~plot_table$text,
+        showarrow = FALSE,
+        textfont = list(
+          color = '#000000',
+          size = 12 * text_size_scale
+        ),
+        ax = 20,
+        ay = -20)
+  } else{
+    p <- ggplot2::ggplot(
+      data = plot_table,
+      aes(x = conc1, y = conc2, fill = value)
+    ) +
+      ggplot2::geom_tile() +
+      ggplot2::geom_text(
+        ggplot2::aes(label = text),
+        size = .Pt2mm(7) * text_size_scale
+      ) +
+      ggplot2::scale_fill_gradient2(
+        high= high_value_color,
+        mid = "#FFFFFF",
+        low = low_value_color,
+        midpoint = 0,
+        name = legend_title,
+        limits = c(start_point, end_point)
+      ) +
+      ggplot2::guides(
+        fill = ggplot2::guide_colorbar(
+          barheight = 10,
+          barwidth = 1.5,
+          ticks = FALSE
+        )
+      ) +
+      ggplot2::xlab(paste0(drug_pair$drug1, " (", drug_pair$conc_unit2, ")")) +
+      ggplot2::ylab(paste0(drug_pair$drug2, " (", drug_pair$conc_unit1, ")")) +
+      # Add the title for heatmap
+      ggplot2::ggtitle(
+        label = paste0(
+          plot_title
+        ),
+        subtitle = plot_subtitle
+      ) +
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(
+          size = 13.5 * text_size_scale,
+          face = "bold",
+          hjust = 0.5
+        ),
+        plot.subtitle = ggplot2::element_text(
+          size = 12 * text_size_scale,
+          hjust = 0.5
+        ),
+        panel.background = ggplot2::element_blank(),
+        # Set label's style of heatmap
+        axis.text = ggplot2::element_text(
+          size = 10 * text_size_scale
+        ),
+        axis.title = ggplot2::element_text(
+          face = "italic",
+          size = 10 * text_size_scale
+        ),
+        legend.background = element_rect(color = NA)
+      )
+    }
   return(p)
 }
 
+#' 2D Contour Plot for 2-drug Combination Dose-Response/Synergy Scores
+#' 
+#' This function will generate a contour level plot for 2-drug combinations.
+#' The axes are the dosage for each drug. The values could be observed response,
+#' synergy scores or the reference effects calculated from different models.
+#'
+#' @param data A list object generated by function \code{\link{ReshapeData}}.
+#' @param plot_block A character/integer. It indicates the block ID for the
+#'   block to visualize.
+#' @param drugs A vector of characters or integers with length of 2. It contains
+#'   the index for two drugs to plot. For example, \code{c(1, 2)} indicates to
+#'   plot "drug1" and "drug2" in the input \code{data}.
+#' @param plot_value A character value. It indicates the score or response value
+#'   to be visualized. If the \code{data} is the direct output from
+#'   \link{ReshapeData}, the available values for this parameter are:
+#'   \itemize{
+#'     \item \strong{response_origin} The original response value in input data.
+#'     It might be \% inhibition or \% viability.
+#'     \item \strong{response} The \% inhibition after preprocess by function 
+#'     \link{ReshapeData}
+#'   }
+#'   If the \code{data} is the output from \link{CalculateSynergy}, following
+#'   values are also available:
+#'   \itemize{
+#'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
+#'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
+#'     respectively.
+#'     \item \strong{ZIP_synergy, Bliss_synergy, HSA_synergy, Loewe_synergy}
+#'     The synergy score calculated by ZIP, Bliss, HSA or Loewe model,
+#'     respectively.
+#'     \item \strong{ZIP_fit} The response fitted by ZIP model.
+#'   }
+#' @param summary_statistic A vector of characters or NULL. It indicates the
+#'   summary statistics for all the \code{plot_value} in whole combination
+#'   matrix. Available values are:
+#'   \itemize{
+#'     \item \strong{mean} Median value for all the responses or synergy
+#'     scores in the matrix;
+#'     \item \strong{median} Median value for all the responses or synergy
+#'     scores in the matrix;
+#'     \item \strong{quantile_90} 90\% quantile. User could change the number to
+#'     print different sample quantile. For example quantile_50 equal to median. 
+#'   }
+#'   If it is \code{NULL}, no statistics will be printed.
+#' @param plot_title A character value. It specifies the plot title. If it is
+#'   \code{NULL}, the function will automatically generate a title.
+#' @param interpolate_len An integer. It specifies how many values need to be
+#'    interpolated between two concentrations. It is used to control the 
+#'    smoothness of the synergy surface.
+#' @param col_range A vector of two integers. They specify the starting and 
+#'   ending concentration of the drug on x-axis. Use e.g., c(1, 3) to specify
+#'   that only from 1st to 3rd concentrations of the drug on x-axis are used. By
+#'   default, it is NULl so all the concentrations are used.
+#' @param row_range A vector of two integers. They specify the starting and
+#'   ending concentration of the drug on y-axis. Use e.g., c(1, 3) to specify
+#'   that only from 1st to 3rd concentrations of the drug on y-axis are used. By
+#'   default, it is NULl so all the concentrations are used.
+#' @param dynamic A logical value. If it is \code{TRUE}, this function will
+#'   use \link[plotly]{plot_ly} to generate an interactive plot. If it is
+#'   \code{FALSE}, this function will use \link[lattice]{wireframe} to generate
+#'   a static plot.
+#' @param high_value_color An R color value. It indicates the color for the
+#'   high values.
+#' @param low_value_color An R color value. It indicates the color for low
+#'   values.
+#' @param text_size_scale A numeric value. It is used to control the size
+#'   of text in the plot. All the text size will multiply by this scale factor.
+#'   
+#' @return If \code{dynamic = FALSE}, this function will return a plot project 
+#'   recorded by \link[grDevices]{recordPlot}. If \code{dynamic = FALSE}, this
+#'   function will return a plotly plot object.
+#'
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#' 
+#' @export
+#'
+#' @examples
+#' data("mathews_screening_data")
+#' data <- ReshapeData(mathews_screening_data)
+#' Plot2DrugContour(data)
+Plot2DrugContour <- function(data,
+                             plot_block = 1,
+                             drugs = c(1, 2),
+                             plot_value = "response",
+                             interpolate_len = 2,
+                             summary_statistic = NULL,
+                             dynamic = FALSE,
+                             plot_title = NULL,
+                             col_range = NULL,
+                             row_range = NULL,
+                             high_value_color = "#A90217",
+                             low_value_color = "#2166AC",
+                             text_size_scale = 1) {
+  # Extract plot data
+  plot_data <- .Extract2DrugPlotData(
+    data = data,
+    plot_block = plot_block,
+    drugs = drugs,
+    plot_value = plot_value,
+    statistic = NULL
+  )
+  plot_table <- plot_data$plot_table
+  drug_pair <- plot_data$drug_pair
+  
+  # Subset plot matrix
+  if (!is.null(row_range)) {
+    selected_rows <- levels(plot_table$conc2)[row_range[1]:row_range[2]]
+    plot_table <- plot_table[plot_table$conc2 %in% selected_rows, ]
+    plot_table$conc2 <- factor(plot_table$conc2)
+  }
+  
+  if (!is.null(col_range)) {
+    selected_cols <- levels(plot_table$conc1)[col_range[1]:col_range[2]]
+    plot_table <- plot_table[plot_table$conc1 %in% selected_cols, ]
+    plot_table$conc1 <- factor(plot_table$conc1)
+  }
+  # Generate plot title and legend title
+  if (plot_value == "response") {
+    if (is.null(plot_title)){
+      plot_title <- paste(
+        "Dose Response Matrix",
+        sep = " "
+      )
+    }
+    legend_title <- "Inhibition (%)"
+    z_axis_title <- "Response (% inhibition)"
+  } else if (plot_value == "response_origin") {
+    if (is.null(plot_title)){
+      plot_title <- paste(
+        "Dose Response Matrix",
+        sep = " "
+      )
+    }
+    legend_title <- paste0(stringr::str_to_title(drug_pair$input_type), " (%)")
+    z_axis_title <- paste0("Response (% ",drug_pair$input_type,")")
+  } else {
+    if (is.null(plot_title)){
+      plot_title <- switch(
+        sub(".*_", "", plot_value),
+        "ref" = sub("_ref", " Reference Additive Effect", plot_value),
+        "fit" = sub("_fit", " Fitted Effect", plot_value),
+        "synergy" = sub("_synergy", " Synergy Score", plot_value)
+      )
+    }
+    legend_title <- switch(
+      sub(".*_", "", plot_value),
+      "ref" = "Inhibition (%)",
+      "fit" = "Inhibition (%)",
+      "synergy" = "Synergy Score"
+    )
+    z_axis_title <- switch(
+      sub(".*_", "", plot_value),
+      "ref" = "Response (% inhibition)",
+      "fit" = "Response (% inhibition)",
+      "synergy" = "Synergy Score"
+    )
+  }
+  # plot subtitle (summary statistics)
+  plot_subtitle <- c()
+  if (!is.null(summary_statistic)) {
+    avail_value <- grepl("mean|median|quantile_\\d+", summary_statistic)
+    if ("mean" %in% summary_statistic) {
+      value <- .RoundValues(mean(plot_table$value))
+      plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
+    }
+    if ("median" %in% summary_statistic) {
+      value <- .RoundValues(stats::median(plot_table$value))
+      plot_subtitle <-  c(plot_subtitle, paste0("Median: ", value))
+    }
+    qua <- grep("quantile_\\d+", summary_statistic, value = TRUE)
+    if (length(qua) > 0) {
+      for (q in qua) {
+        pro <- as.numeric(sub("quantile_", "", q))
+        value <- .RoundValues(stats::quantile(plot_table$value, 
+                                              probs = pro / 100))
+        plot_subtitle <-  c(plot_subtitle, paste0(pro, "% Quantile: ", value))
+      }
+    }
+  }
+  plot_subtitle <- paste(plot_subtitle, collapse = " | ")
+  
+  conc1 <- unique(plot_table$conc1)
+  conc2 <- unique(plot_table$conc2)
+  
+  # Interpolation by kriging
+  mat <- reshape2::acast(plot_table, conc1~conc2, value.var = "value")
+  extended_mat <- .ExtendedScores(mat, len = interpolate_len)
+  colnames(extended_mat) <- seq(1, ncol(extended_mat))
+  rownames(extended_mat) <- seq(1, nrow(extended_mat))
+  x_ticks <- seq(1, nrow(extended_mat), by = interpolate_len + 1)
+  y_ticks <- seq(1, ncol(extended_mat), by = interpolate_len + 1)
+  x_ticks_text <- as.character(sort(conc1))
+  y_ticks_text <- as.character(sort(conc2))
+  x_axis_title <- paste0(drug_pair$drug1, " (", drug_pair$conc_unit1, ")")
+  y_axis_title <- paste0(drug_pair$drug2, " (", drug_pair$conc_unit2, ")")
+
+  if (dynamic){
+    y <- seq(1, ncol(extended_mat))
+    x <- seq(1, nrow(extended_mat))
+    # Color palette
+    color_range <- round(max(abs(extended_mat)), -1) + 10
+    start_point <- -color_range
+    end_point <- color_range
+    # Hover text
+    concs <- expand.grid(conc1, conc2)
+    hover_text <- NULL
+    for (i in 1:nrow(concs)) {
+      hover_text <- c(
+        hover_text,
+        paste0(
+          drug_pair[, c("drug1", "drug2")],
+          ": ",
+          sapply(concs[i, ], as.character),
+          " ",
+          drug_pair[, c("conc_unit1", "conc_unit1")],
+          "<br>",
+          collapse = ""
+        )
+      )
+    }
+    hover_text <- paste0(
+      hover_text,
+      "Value: ",
+      .RoundValues(plot_table$value),
+      sep = ""
+    )
+    hover_text <- matrix(hover_text, nrow = length(conc1))
+    hover_text_mat <- matrix(rep(NA, length(extended_mat)),
+                             nrow = nrow(extended_mat))
+    for (i in 1:length(x_ticks)) {
+      for (j in 1:length(y_ticks)) {
+        hover_text_mat[x_ticks[i], y_ticks[j]] <- hover_text[i, j]
+      }
+    }
+    p <- plotly::plot_ly(
+      x = x,
+      y = y,
+      z = t(extended_mat),
+      zmin = start_point,
+      zmax = end_point,
+      type = "contour",
+      line = list(width = 0),
+      text = t(hover_text_mat),
+      hoverinfo = "text",
+      autocolorscale = FALSE,
+      colorscale = list(
+        c(0, low_value_color),
+        c(0.5, "white"),
+        c(1, high_value_color)
+      ),
+      colorbar = list(
+        x = 1,
+        y = 0.75,
+        align = "center",
+        outlinecolor = "#FFFFFF",
+        tickcolor = "#FFFFFF",
+        title = legend_title
+      ),
+      contours = list(
+        x = list(
+          # highlight = FALSE,
+          show = TRUE,
+          color = 'black',
+          width = 1,
+          start = 1,
+          end = max(x),
+          size = 1 * text_size_scale
+        ),
+        y = list(
+          # highlight = FALSE,
+          show = TRUE,
+          color = 'black',
+          width = 1,
+          start = 1,
+          end = max(y),
+          size = 1 * text_size_scale
+        )
+      )) %>% 
+      plotly::add_annotations(
+        text = plot_subtitle,
+        x = 0.5,
+        y = 1.1,
+        yref = "paper",
+        xref = "paper",
+        xanchor = "middle",
+        yanchor = "top",
+        showarrow = FALSE,
+        font = list(size = 15 * text_size_scale)
+      ) %>% 
+      plotly::layout(
+        title = list(
+          text = paste0("<b>", plot_title, "</b>"),
+          tickfont = list(size = 18 * text_size_scale, family = "arial"),
+          y = 0.99
+        ),
+        xaxis = list(
+          title = paste0("<i>", x_axis_title, "</i>"),
+          tickfont = list(size = 12 * text_size_scale, family = "arial"),
+          ticks = "none",
+          showspikes = FALSE,
+          tickmode = "array", 
+          tickvals = x_ticks,
+          ticktext = x_ticks_text
+        ),
+        yaxis = list(
+          title = paste0("<i>", y_axis_title, "</i>"),
+          tickfont = list(size = 12 * text_size_scale, family = "arial"),
+          ticks = "none",
+          showspikes = FALSE,
+          tickmode = "array", 
+          tickvals = y_ticks,
+          ticktext = y_ticks_text
+        ),
+        margin = 0.01
+      )
+  } else{
+    extended_df <- reshape2::melt(extended_mat)
+    colnames(extended_df) <- c("x", "y", "value")
+    
+    # Color palette
+    color_range <- round(max(abs(extended_mat)), -1) + 10
+    start_point <- -color_range
+    end_point <- color_range
+    colfunc <- grDevices::colorRampPalette(
+      c(low_value_color, "white", high_value_color)
+    )
+    col <- colfunc(length(breaks))
+    p <- ggplot2::ggplot(extended_df) +
+      metR::geom_contour_fill(
+        ggplot2::aes(x = x, y = y, z = value)#,
+        # breaks = metR::MakeBreaks(binwidth = 10)
+      ) + 
+      ggplot2::scale_x_continuous(
+        breaks = x_ticks,
+        labels = x_ticks_text
+      ) +
+      ggplot2::scale_y_continuous(
+        breaks = y_ticks,
+        labels = y_ticks_text
+      ) +
+      ggplot2::scale_fill_gradient2(
+        high= high_value_color,
+        mid = "#FFFFFF",
+        low = low_value_color,
+        midpoint = 0,
+        name = legend_title,
+        limits = c(start_point, end_point),
+      ) +
+      ggplot2::guides(
+        fill = ggplot2::guide_colorbar(
+          barheight = 10,
+          barwidth = 1.5,
+          ticks = FALSE
+        )
+      ) +
+      ggplot2::xlab(x_axis_title) +
+      ggplot2::ylab(y_axis_title) +
+      ggplot2::ggtitle(
+        label = paste0(
+          plot_title
+        ),
+        subtitle = plot_subtitle
+      ) +
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(
+          size = 13.5 * text_size_scale,
+          face = "bold",
+          hjust = 0.5
+        ),
+        plot.subtitle = ggplot2::element_text(
+          size = 12 * text_size_scale,
+          hjust = 0.5
+        ),
+        panel.background = ggplot2::element_blank(),
+        # Set label's style of heatmap
+        axis.text = ggplot2::element_text(
+          size = 10 * text_size_scale
+        ),
+        axis.title = ggplot2::element_text(
+          face = "italic",
+          size = 10 * text_size_scale
+        ),
+        legend.background = element_rect(color = NA)
+      )
+  }
+  p
+  return(p)
+}
 
 #' 3D Surface Plot for 2-drug Combination Dose-Response/Synergy Scores
 #' 
@@ -259,6 +820,19 @@ Plot2DrugHeatmap <- function(data,
 #'     print different sample quantile. For example quantile_50 equal to median. 
 #'   }
 #'   If it is \code{NULL}, no statistics will be printed.
+#' @param plot_title A character value. It specifies the plot title. If it is
+#'   \code{NULL}, the function will automatically generate a title.
+#' @param interpolate_len An integer. It specifies how many values need to be
+#'   interpolated between two concentrations. It is used to control the 
+#'   smoothness of the synergy surface.
+#' @param col_range A vector of two integers. They specify the starting and 
+#'   ending concentration of the drug on x-axis. Use e.g., c(1, 3) to specify
+#'   that only from 1st to 3rd concentrations of the drug on x-axis are used. By
+#'   default, it is NULl so all the concentrations are used.
+#' @param row_range A vector of two integers. They specify the starting and
+#'   ending concentration of the drug on y-axis. Use e.g., c(1, 3) to specify
+#'   that only from 1st to 3rd concentrations of the drug on y-axis are used. By
+#'   default, it is NULl so all the concentrations are used.
 #' @param dynamic A logical value. If it is \code{TRUE}, this function will
 #'   use \link[plotly]{plot_ly} to generate an interactive plot. If it is
 #'   \code{FALSE}, this function will use \link[lattice]{wireframe} to generate
@@ -267,6 +841,8 @@ Plot2DrugHeatmap <- function(data,
 #'   high values.
 #' @param low_value_color An R color value. It indicates the color for low
 #'   values.
+#' @param text_size_scale A numeric value. It is used to control the size
+#'   of text in the plot. All the text size will multiply by this scale factor.
 #'
 #' @return If \code{dynamic = FALSE}, this function will return a plot project 
 #'   recorded by \link[grDevices]{recordPlot}. If \code{dynamic = FALSE}, this
@@ -290,9 +866,14 @@ Plot2DrugSurface <- function(data,
                              drugs = c(1, 2),
                              plot_value = "response",
                              summary_statistic = NULL,
+                             plot_title = NULL,
+                             interpolate_len = 2,
+                             col_range = NULL,
+                             row_range = NULL,
                              dynamic = FALSE,
                              high_value_color = "#A90217",
-                             low_value_color = "#2166AC") {
+                             low_value_color = "#2166AC",
+                             text_size_scale = 1) {
   # Extract plot data
   plot_data <- .Extract2DrugPlotData(
     data = data,
@@ -304,28 +885,46 @@ Plot2DrugSurface <- function(data,
   plot_table <- plot_data$plot_table
   drug_pair <- plot_data$drug_pair
   
+  # Subset plot matrix
+  if (!is.null(row_range)) {
+    selected_rows <- levels(plot_table$conc2)[row_range[1]:row_range[2]]
+    plot_table <- plot_table[plot_table$conc2 %in% selected_rows, ]
+    plot_table$conc2 <- factor(plot_table$conc2)
+  }
+  
+  if (!is.null(col_range)) {
+    selected_cols <- levels(plot_table$conc1)[col_range[1]:col_range[2]]
+    plot_table <- plot_table[plot_table$conc1 %in% selected_cols, ]
+    plot_table$conc1 <- factor(plot_table$conc1)
+  }
   # Generate plot title and legend title
   if (plot_value == "response") {
-    plot_title <- paste(
-      "Dose Response Matrix",
-      sep = " "
-    )
+    if (is.null(plot_title)){
+      plot_title <- paste(
+        "Dose Response Matrix",
+        sep = " "
+      )
+    }
     legend_title <- "Inhibition (%)"
     z_axis_title <- "Response (% inhibition)"
   } else if (plot_value == "response_origin") {
-    plot_title <- paste(
-      "Dose Response Matrix",
-      sep = " "
-    )
+    if (is.null(plot_title)){
+      plot_title <- paste(
+        "Dose Response Matrix",
+        sep = " "
+      )
+    }
     legend_title <- paste0(stringr::str_to_title(drug_pair$input_type), " (%)")
     z_axis_title <- paste0("Response (% ",drug_pair$input_type,")")
   } else {
-    plot_title <- switch(
-      sub(".*_", "", plot_value),
-      "ref" = sub("_ref", " Reference Additive Effect", plot_value),
-      "fit" = sub("_fit", " Fitted Effect", plot_value),
-      "synergy" = sub("_synergy", " Synergy Score", plot_value)
-    )
+    if (is.null(plot_title)){
+      plot_title <- switch(
+        sub(".*_", "", plot_value),
+        "ref" = sub("_ref", " Reference Additive Effect", plot_value),
+        "fit" = sub("_fit", " Fitted Effect", plot_value),
+        "synergy" = sub("_synergy", " Synergy Score", plot_value)
+      )
+    }
     legend_title <- switch(
       sub(".*_", "", plot_value),
       "ref" = "Inhibition (%)",
@@ -339,6 +938,8 @@ Plot2DrugSurface <- function(data,
       "synergy" = "Synergy Score"
     )
   }
+  
+
   # plot subtitle (summary statistics)
   plot_subtitle <- c()
   if (!is.null(summary_statistic)) {
@@ -355,8 +956,9 @@ Plot2DrugSurface <- function(data,
     if (length(qua) > 0) {
       for (q in qua) {
         pro <- as.numeric(sub("quantile_", "", q))
-        value <- .RoundValues(stats::quantile(plot_table$value, 
-                                              probs = pro / 100))
+        value <- .RoundValues(
+          stats::quantile(plot_table$value,probs = pro / 100)
+        )
         plot_subtitle <-  c(plot_subtitle, paste0(pro, "% Quantile: ", value))
       }
     }
@@ -368,21 +970,19 @@ Plot2DrugSurface <- function(data,
   
   # kriging with kriging from  (which )
   mat <- reshape2::acast(plot_table, conc1~conc2, value.var = "value")
-  # len: how many values need to be predicted between two concentrations
-  len <- 3
-  extended_mat <- .ExtendedScores(mat, len)
-  colnames(extended_mat) <- seq(1, nrow(extended_mat))
-  rownames(extended_mat) <- seq(1, ncol(extended_mat))
-  x_ticks <- seq(1, nrow(extended_mat), by = len + 1)
-  y_ticks <- seq(1, ncol(extended_mat), by = len + 1)
+  extended_mat <- .ExtendedScores(mat, len = interpolate_len)
+  colnames(extended_mat) <- seq(1, ncol(extended_mat))
+  rownames(extended_mat) <- seq(1, nrow(extended_mat))
+  x_ticks <- seq(1, nrow(extended_mat), by = interpolate_len + 1)
+  y_ticks <- seq(1, ncol(extended_mat), by = interpolate_len + 1)
   x_ticks_text <- as.character(sort(conc1))
   y_ticks_text <- as.character(sort(conc2))
   x_axis_title <- paste0(drug_pair$drug1, " (", drug_pair$conc_unit1, ")")
   y_axis_title <- paste0(drug_pair$drug2, " (", drug_pair$conc_unit2, ")")
   
   if (dynamic) {
-    x <-  seq(1, ncol(extended_mat))
-    y <- seq(1, nrow(extended_mat))
+    y <- seq(1, ncol(extended_mat))
+    x <- seq(1, nrow(extended_mat))
     # Color palette
     color_range <- max(abs(extended_mat)) + 5
     start_point <- -color_range
@@ -451,7 +1051,7 @@ Plot2DrugSurface <- function(data,
             width = 1,
             start = 1,
             end = max(x),
-            size = 1
+            size = 1 * text_size_scale
           ),
           y = list(
             # highlight = FALSE,
@@ -460,22 +1060,33 @@ Plot2DrugSurface <- function(data,
             width = 1,
             start = 1,
             end = max(y),
-            size = 1
+            size = 1 * text_size_scale
           )#,
           # z = list(highlight = FALSE)
         )
       ) %>% 
+      plotly::add_annotations(
+        text = plot_subtitle,
+        x = 0.5,
+        y = 1.1,
+        yref = "paper",
+        xref = "paper",
+        xanchor = "middle",
+        yanchor = "top",
+        showarrow = FALSE,
+        font = list(size = 15 * text_size_scale)
+      ) %>% 
       plotly::layout(
         title = list(
           text = paste0("<b>", plot_title, "</b>"),
-          tickfont = list(size = 18, family = "arial"),
+          tickfont = list(size = 18 * text_size_scale, family = "arial"),
           y = 0.99
         ),
         scene = list(
           aspectratio = list(x=1, y=1, z=1),
           xaxis = list(
             title = paste0("<i>", x_axis_title, "</i>"),
-            tickfont = list(size = 12, family = "arial"),
+            tickfont = list(size = 12 * text_size_scale, family = "arial"),
             ticks = "none",
             showspikes = FALSE,
             tickmode = "array", 
@@ -484,7 +1095,7 @@ Plot2DrugSurface <- function(data,
           ),
           yaxis = list(
             title = paste0("<i>", y_axis_title, "</i>"),
-            tickfont = list(size = 12, family = "arial"),
+            tickfont = list(size = 12 * text_size_scale, family = "arial"),
             ticks = "none",
             showspikes = FALSE,
             tickmode = "array", 
@@ -493,13 +1104,14 @@ Plot2DrugSurface <- function(data,
           ),
           zaxis = list(
             title = paste0("<i>", z_axis_title, "</i>"),
-            tickfont = list(size = 12, family = "arial"),
+            tickfont = list(size = 12 * text_size_scale, family = "arial"),
             ticks = "none",
             tickmode = "array",
             showspikes = FALSE
           ),
           camera = list(eye = list(x = -1.25, y = -1.25, z = 1.25))
-        )
+        ),
+        margin = 0.1
       )
   } else { # static plot
     # Color palette
@@ -522,16 +1134,16 @@ Plot2DrugSurface <- function(data,
       col = 1,
       z = list(
         tick.number = 6,
-        cex = 0.75),
+        cex = 0.75 * text_size_scale),
       x =  list(
         at = x_ticks,
         labels = x_ticks_text,
-        cex = 0.75
+        cex = 0.75 * text_size_scale
       ),
       y = list(
         at = y_ticks,
         labels = y_ticks_text,
-        cex = 0.75
+        cex = 0.75 * text_size_scale
       )
     )
   
@@ -553,17 +1165,17 @@ Plot2DrugSurface <- function(data,
       zlab = list(
         z_axis_title,
         axis.key.padding = 0,
-        cex = 0.75,
+        cex = 0.75 * text_size_scale,
         rot = 93
       ),
       xlab = list(
         x_axis_title,
-        cex = 0.75,
+        cex = 0.75 * text_size_scale,
         rot = 23
       ),
       ylab = list(
         y_axis_title,
-        cex = 0.75,
+        cex = 0.75 * text_size_scale,
         rot = -53
       ),
       zlim = c(min(plot_table$value) - 5, max(plot_table$value) + 5),
@@ -588,14 +1200,20 @@ Plot2DrugSurface <- function(data,
           label = plot_subtitle,
           x=unit(0.55, "npc"),
           y=unit(1, "npc"),
-          gp = grid::gpar(col = "black", fontsize = 10.5) # pt
+          gp = grid::gpar(
+            col = "black",
+            fontsize = 10.5 * text_size_scale
+          ) # pt
         )
         # legend title
         grid::grid.text(
           label = legend_title,
           x = unit(1.05, "npc"),
           y = unit(0.75, "npc"),
-          gp = grid::gpar(col = "black", fontsize = 8.5) # pt
+          gp = grid::gpar(
+            col = "black",
+            fontsize = 8.5 * text_size_scale
+          ) # pt
         )
         },
       pretty = TRUE
@@ -837,8 +1455,14 @@ Plot2DrugSurface <- function(data,
 #' }
 #' 
 .RoundValues <- function(numbers) {
-  numbers[abs(numbers) >= 1] <- round(numbers[abs(numbers) >= 1], 2)
-  numbers[abs(numbers) < 1] <- signif(numbers[abs(numbers) < 1], 2)
+  numbers[abs(numbers) >= 1 & !is.na(numbers)] <- round(
+    numbers[abs(numbers) >= 1 & !is.na(numbers)],
+    2
+  )
+  numbers[abs(numbers) < 1 & !is.na(numbers)] <- signif(
+    numbers[abs(numbers) < 1 & !is.na(numbers)],
+    2
+  )
   return(numbers)
 }
 

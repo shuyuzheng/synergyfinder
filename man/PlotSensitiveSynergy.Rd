@@ -8,7 +8,9 @@ PlotSensitiveSynergy(
   data,
   plot_synergy,
   point_color = "#2D72AD",
-  point_label_color = "#2D72AD"
+  point_size = 1,
+  point_label_color = "#2D72AD",
+  show_labels = FALSE
 )
 }
 \arguments{
@@ -19,8 +21,14 @@ visualization. The available values are: "ZIP", "HSA", Bliss", "Leowe".}
 
 \item{point_color}{An R color value. It indicates the color for the points.}
 
+\item{point_size}{A numeric value. It indicates the size of points. The unit
+is "mm"}
+
 \item{point_label_color}{An R color value. It indicates the color for the
 label of data points.}
+
+\item{show_labels}{A logic value. It indicates whether to show the labels
+along with points or not.}
 }
 \value{
 A ggplot object.
@@ -33,7 +41,6 @@ input data. The x-axis is the Combination Sensitive score (CSS).
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
 data <- CalculateSynergy(data, method = c("ZIP"))
-data <- CalculateSensitivity(data)
 PlotSensitiveSynergy(data, plot_synergy = "ZIP")
 }
 \author{

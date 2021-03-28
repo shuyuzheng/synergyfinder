@@ -8,10 +8,14 @@ GenerateSurface(
   dim_reduced_data,
   high_value_color,
   low_value_color,
+  show_data_points = TRUE,
   point_color,
   plot_title,
   legend_title,
-  z_axis_title
+  z_axis_title,
+  width = 500,
+  height = 500,
+  scale = 1
 )
 }
 \arguments{
@@ -33,6 +37,19 @@ values.}
 \item{legend_title}{A character value. It is the title for legend.}
 
 \item{z_axis_title}{A character value. It is the title for z-axis.}
+
+\item{width}{A numeric value. It indicates the output figure's width on 
+pixel.}
+
+\item{height}{A numeric value. It indicates the output figure's height on 
+pixel.}
+
+\item{scale}{A numeric value. The output plot will multiply 
+title/legend/axis/canvas sizes by this factor.}
+
+\item{show_data_poinst}{A logical value. If it is \code{TRUE}, the raw data
+points will be shown on the plot. If it is \code{FALSE}, no points will be
+plotted.}
 }
 \value{
 A ggplot object.

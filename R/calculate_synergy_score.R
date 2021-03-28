@@ -122,7 +122,6 @@ CalculateSynergy <- function(data,
       dplyr::select(-block_id) %>% 
       dplyr::ungroup()
     # Correct baseline
-    response_one_block <- CorrectBaseLine(response_one_block)
     concs <- grep("conc\\d", colnames(response_one_block), value = TRUE)
     tmp <- dplyr::select(response_one_block, dplyr::all_of(concs)) %>% 
       unique()
@@ -135,6 +134,10 @@ CalculateSynergy <- function(data,
         message("Calculating ", m, " score for block ", b, "...")
         iter <- pbapply::pblapply(seq(1, iteration), function(x){
           response_boot <- .Bootstrapping(response_one_block)
+          response_boot <- CorrectBaseLine(
+            response_boot,
+            method = correct_baseline
+          )
           s <- eval(call(m, response_boot))
           }) %>% 
           purrr::reduce(dplyr::left_join, by = concs) %>% 
@@ -167,7 +170,10 @@ CalculateSynergy <- function(data,
                                            tmp_scores_statistic)
     } else { # Blocks without replicates
       # Correct base line
-      response_one_block <- CorrectBaseLine(response_one_block)
+      response_one_block <- CorrectBaseLine(
+        response_one_block,
+        method = correct_baseline
+      )
       tmp <- dplyr::select(response_one_block, dplyr::all_of(concs)) %>% 
         unique()
       for (m in method) {

@@ -74,7 +74,7 @@
 ReshapeData <- function(data,
                         impute = TRUE,
                         impute_method = NULL,
-                        noise = TRUE,
+                        noise = FALSE,
                         seed = NULL,
                         data_type = "viability") {
   data <- .AdjustColumnName(data)
@@ -137,8 +137,8 @@ ReshapeData <- function(data,
       response
     ) %>% 
     dplyr::arrange(block_id) %>% 
-    dplyr::mutate(response_origin = response) %>% 
-    unique()
+    dplyr::mutate(response_origin = response)# %>% 
+    # unique()
   
   # 3. make sure the response values are % inhibition
   if (data_type == "viability") {
@@ -187,10 +187,20 @@ ReshapeData <- function(data,
         "Please complete them manually or run 'ReshapeData' with 'impute=TRUE'."
       )
     } else {
-      imp <- mice::mice(combs, method = impute_method, printFlag = FALSE)
-      combs <- complete(imp) %>% 
-        dplyr::rename(response_adj = response) %>% 
-        dplyr::left_join(response, by = c("block_id", concs))
+      warning(
+        sum(is.na(combs$response)),
+        " missing values are imputed."
+      )
+      imp <- suppressWarnings(
+        mice::mice(combs, method = impute_method, printFlag = FALSE)
+      )
+      response <- suppressWarnings(mice::complete(imp)) %>% 
+        dplyr::select(-response_origin) %>% 
+        dplyr::left_join(
+          response %>% 
+            dplyr::select(-response),
+          by = c("block_id", concs)
+        )
     }
   }
   

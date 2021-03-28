@@ -79,10 +79,10 @@
 #' @export
 #'
 #' @examples
-#' data("NCATS_10023_data")
-#' data <- ReshapeData(NCATS_10023_data)
+#' data("mathews_screening_data")
+#' data <- ReshapeData(mathews_screening_data)
 #' data <- CalculateSynergy(data, method = c("ZIP", "HSA", "Bliss", "Loewe"))
-#' p <- PlotBarometer(data, plot_block = 1, c(0.009375, 0.0125, 0.75))
+#' p <- PlotBarometer(data, plot_block = 1, c(625, 50), needle_text_offset = -2)
 #' p
 PlotBarometer <- function(data,
                           plot_block = 1,
@@ -90,7 +90,7 @@ PlotBarometer <- function(data,
                           graduation_color = "#6C6C6C",
                           needle_color = "#6C6C6C",
                           needle_text_size = 5,
-                          needle_text_offset = 50,
+                          needle_text_offset = 2,
                           graduation_label_size = 4,
                           graduation_label_offset = 0.7,
                           annotation_label_size = 4,
@@ -149,7 +149,7 @@ PlotBarometer <- function(data,
       plot_table[paste0("conc", i)][[1]]
   }
   if (!all(conc_exist)) {
-    stop("The concentrations for drug ", paste(which(!conc_exist), sep = ", "), 
+    stop("The concentrations for drug ", paste(which(!conc_exist), collapse = ", "), 
          " specified by 'highlight_row' are not in data.")
   }
   selected_data <- plot_table[
@@ -311,7 +311,7 @@ PlotBarometer <- function(data,
     ) + 
     # response text
     geom_text(
-      aes(x = 0, y = -2),
+      aes(x = 0, y = -needle_text_offset),
       size = needle_text_size,
       family = font_family,
       label = paste0(

@@ -11,8 +11,13 @@ Plot2DrugHeatmap(
   plot_value = "response",
   statistic = NULL,
   summary_statistic = NULL,
+  dynamic = FALSE,
+  plot_title = NULL,
+  col_range = NULL,
+  row_range = NULL,
   high_value_color = "#A90217",
-  low_value_color = "#2166AC"
+  low_value_color = "#2166AC",
+  text_size_scale = 1
 )
 }
 \arguments{
@@ -67,11 +72,32 @@ matrix. Available values are:
 }
 If it is \code{NULL}, no statistics will be printed.}
 
+\item{dynamic}{A logical value. If it is \code{TRUE}, this function will
+use \link[plotly]{plot_ly} to generate an interactive plot. If it is
+\code{FALSE}, this function will use \link[lattice]{wireframe} to generate
+a static plot.}
+
+\item{plot_title}{A character value. It specifies the plot title. If it is
+\code{NULL}, the function will automatically generate a title.}
+
+\item{col_range}{A vector of two integers. They specify the starting and 
+ending concentration of the drug on x-axis. Use e.g., c(1, 3) to specify
+that only from 1st to 3rd concentrations of the drug on x-axis are used. By
+default, it is NULl so all the concentrations are used.}
+
+\item{row_range}{A vector of two integers. They specify the starting and
+ending concentration of the drug on y-axis. Use e.g., c(1, 3) to specify
+that only from 1st to 3rd concentrations of the drug on y-axis are used. By
+default, it is NULl so all the concentrations are used.}
+
 \item{high_value_color}{An R color value. It indicates the color for the
 high values.}
 
 \item{low_value_color}{An R color value. It indicates the color for low
 values.}
+
+\item{text_size_scale}{A numeric value. It is used to control the size
+of text in the plot. All the text size will multiply by this scale factor.}
 }
 \value{
 A ggplot plot object.

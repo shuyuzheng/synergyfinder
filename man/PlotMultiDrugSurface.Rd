@@ -9,10 +9,15 @@ PlotMultiDrugSurface(
   plot_block,
   plot_value,
   statistic = NULL,
-  distance_method = "euclidean",
+  plot_title = NULL,
+  distance_method = "mahalanobis",
   high_value_color = "#A90217",
   low_value_color = "#2166AC",
-  point_color = "#DDA137"
+  show_data_points = TRUE,
+  point_color = "#DDA137",
+  width = 1000,
+  height = 1000,
+  scale = 1
 )
 }
 \arguments{
@@ -50,6 +55,9 @@ in the plot while there are replicates in input data. Available values are:
 }
 If it is \code{NULL}, no statistics will be printed.}
 
+\item{plot_title}{A charactor value. It specifies the plot title. If it is
+\code{NULL}, the function will automatically generate a title.}
+
 \item{distance_method}{The methods to calculate the distance between
 different data points from the concentration of drugs. The distance matrix
 is used for dimension reduction. This parameter is used to set the 
@@ -63,6 +71,19 @@ high values.}
 values.}
 
 \item{point_color}{An R color value. It indicates the color for data points.}
+
+\item{width}{A numeric value. It indicates the output figure's width on 
+pixel.}
+
+\item{height}{A numeric value. It indicates the output figure's height on 
+pixel.}
+
+\item{scale}{A numeric value. The output plot will multiply 
+title/legend/axis/canvas sizes by this factor.}
+
+\item{show_data_poinst}{A logical value. If it is \code{TRUE}, the raw data
+points will be shown on the plot. If it is \code{FALSE}, no points will be
+plotted.}
 }
 \value{
 A plotly plot object.
@@ -82,7 +103,7 @@ p <- PlotMultiDrugSurface(
   plot_block = 1,
   plot_value = "response",
   statistic = NULL,
-  distance_method = "euclidean"
+  show_data_points = TRUE
 )
 p
 }

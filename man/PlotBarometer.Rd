@@ -11,7 +11,7 @@ PlotBarometer(
   graduation_color = "#6C6C6C",
   needle_color = "#6C6C6C",
   needle_text_size = 5,
-  needle_text_offset = 50,
+  needle_text_offset = 2,
   graduation_label_size = 4,
   graduation_label_offset = 0.7,
   annotation_label_size = 4,
@@ -102,10 +102,10 @@ reference additive effects calculated by different models will be marked on
 the bar if they are included in input \code{data}.
 }
 \examples{
-data("NCATS_10023_data")
-data <- ReshapeData(NCATS_10023_data)
+data("mathews_screening_data")
+data <- ReshapeData(mathews_screening_data)
 data <- CalculateSynergy(data, method = c("ZIP", "HSA", "Bliss", "Loewe"))
-p <- PlotBarometer(data, plot_block = 1, c(0.009375, 0.0125, 0.75))
+p <- PlotBarometer(data, plot_block = 1, c(625, 50), needle_text_offset = -2)
 p
 }
 \references{

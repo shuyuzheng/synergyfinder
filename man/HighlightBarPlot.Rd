@@ -4,7 +4,7 @@
 \alias{HighlightBarPlot}
 \title{Highlight Bars}
 \usage{
-HighlightBarPlot(selected_data)
+HighlightBarPlot(selected_data, text_size = 10)
 }
 \arguments{
 \item{selected_data}{A data frame. It contain the information for the bars
