@@ -8,6 +8,7 @@
   data,
   plot_block = 1,
   plot_value = "response",
+  summary_statistic = NULL,
   statistic = NULL,
   titles = TRUE
 )
@@ -57,6 +58,7 @@ A list. It contains the elements:
       drugs, the values for \code{plot_value}.
     \item \strong{drug_pair} A data frame contains the drug names and
       concentration unites, whither the block is replicate or not.
+    \item \strong{plot_subtitle} A string for plot subtitle.
     \item \strong{plot_title} A string for plot title.
     \item \strong{z_axis_subtitle} A string for plot z-axis title.
   }

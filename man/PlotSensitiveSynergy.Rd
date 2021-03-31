@@ -10,7 +10,10 @@ PlotSensitiveSynergy(
   point_color = "#2D72AD",
   point_size = 1,
   point_label_color = "#2D72AD",
-  show_labels = FALSE
+  show_labels = FALSE,
+  plot_title = NULL,
+  dynamic = FALSE,
+  label_size = 10
 )
 }
 \arguments{
@@ -29,6 +32,13 @@ label of data points.}
 
 \item{show_labels}{A logic value. It indicates whether to show the labels
 along with points or not.}
+
+\item{dynamic}{A logical value. If it is \code{TRUE}, this function will
+use \link[plotly]{plot_ly} to generate an interactive plot. If it is
+\code{FALSE}, this function will use \link[lattice]{wireframe} to generate
+a static plot.}
+
+\item{label_size}{A numeric value. It controls the size of the labels in "pt"}
 }
 \value{
 A ggplot object.

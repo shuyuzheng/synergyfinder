@@ -30,6 +30,13 @@
 #'   'adjusted.response.mats' will be used to calculate synergy scores. If it is
 #'   \code{FALSE}, the raw data ('dose.response.mats') will be used to calculate
 #'   synergy scores.
+#' @param correct_baseline  A character value. It indicates the method used for
+#'   baseline correction. Available values are:
+#'   \itemize{
+#'     \item \strong{non} No baseline correction.
+#'     \item \strong{part} Adjust only the negative values in the matrix.
+#'     \item \strong{all} Adjust all values in the matrix.
+#'   }
 #' @param iteration An integer. It indicates the number of iterations for
 #'   synergy scores calculation on data with replicates.
 #' @param seed An integer or NULL. It is used to set the random seed in synergy
@@ -61,8 +68,11 @@
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
 #' data <- CalculateSensitivity(data)
-CalculateSensitivity <- function(data, adjusted = TRUE,
-                             iteration = 10, seed = 123) {
+CalculateSensitivity <- function(data,
+                                 adjusted = TRUE,
+                                 correct_baseline = "non",
+                                 iteration = 10,
+                                 seed = 123) {
   options(scipen = 999)
   # 1. Check the input data
   if (!is.list(data)) {
@@ -95,12 +105,16 @@ CalculateSensitivity <- function(data, adjusted = TRUE,
       dplyr::ungroup()
     concs <- grep("conc\\d", colnames(response_one_block), value = TRUE)
     
-    if (data$drug_pairs$replicate[data$drug_pairs$block_id == b]){
+    if (data$drug_pairs$replicate[data$drug_pairs$block_id == b]) {
       tmp_iter <- NULL
       set.seed(seed)
       pb <- utils::txtProgressBar(min = 1, max = iteration, style = 3)
       for(i in 1:iteration){
         response_boot <- .Bootstrapping(response_one_block)
+        response_boot <- CorrectBaseLine(
+          response_boot,
+          method = correct_baseline
+        )
         # Calculate RI
         single_drug_data <- ExtractSingleDrug(response_boot)
         ri <- as.data.frame(lapply(single_drug_data, CalculateSens))
@@ -136,14 +150,25 @@ CalculateSensitivity <- function(data, adjusted = TRUE,
                              function(x) stats::quantile(x, probs = 0.025))
       SensCI95_right <- apply(tmp_iter, 2, 
                              function(x) stats::quantile(x, probs = 0.975))
+      p_value <- apply(
+        tmp_iter, 2, 
+        function(x) {
+          z <- abs(mean(x)) / sd(x)
+          p <- exp(-0.717 * z - 0.416 * z ^2)
+          p <- formatC(p, format = "e", digits = 2, zero.print = "< 2e-324")
+          return(p)
+        })
+      
       names(SensMean) <- paste0(names(SensMean), "_mean")
       names(SensSem) <- paste0(names(SensSem), "_sem")
       names(SensCI95_left) <- paste0(names(SensCI95_left), "_ci_left")
       names(SensCI95_right) <- paste0(names(SensCI95_right), "_ci_right")
+      names(p_value) <-  paste0(names(p_value), "_p_value")
       tmp_sensitivity_statistic <- as.data.frame(as.list(c(SensMean,
                                                            SensSem,
                                                            SensCI95_left,
-                                                           SensCI95_right
+                                                           SensCI95_right,
+                                                           p_value
                                                            ))) %>% 
         dplyr::mutate(block_id = b)
       scores <- rbind.data.frame(scores, tmp)
@@ -152,6 +177,10 @@ CalculateSensitivity <- function(data, adjusted = TRUE,
         tmp_sensitivity_statistic
       )
     } else{
+      response_one_block <- CorrectBaseLine(
+        response_one_block,
+        method = correct_baseline
+      )
       # Calculate RI
       single_drug_data <- ExtractSingleDrug(response_one_block)
       ri <- as.data.frame(lapply(single_drug_data, CalculateSens))

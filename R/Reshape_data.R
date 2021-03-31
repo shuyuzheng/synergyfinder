@@ -76,6 +76,7 @@ ReshapeData <- function(data,
                         impute_method = NULL,
                         noise = FALSE,
                         seed = NULL,
+                        iteration = 10,
                         data_type = "viability") {
   data <- .AdjustColumnName(data)
   data <- dplyr::as_tibble(data)
@@ -223,11 +224,43 @@ ReshapeData <- function(data,
       response_origin_sem = response_origin_sd / sqrt(n),
       response_origin_CI95 = stats::qt(0.975, df = n - 1) * response_origin_sem,
       response_origin_ci_left = response_origin_mean - response_origin_CI95,
-      response_origin_ci_right = response_origin_mean + response_origin_CI95
+      response_origin_ci_right = response_origin_mean + response_origin_CI95,
     ) %>% 
-    dplyr::select(-dplyr::ends_with("_sd"), -dplyr::ends_with("_CI95"))
+    dplyr::select(-dplyr::ends_with("_sd"), -dplyr::ends_with("_CI95"), -dplyr::ends_with("_z"))
   dup_blocks <- replicate_response$block_id
   drug_pairs$replicate <- drug_pairs$block_id %in% dup_blocks
+  # p value
+  if (any(drug_pairs$replicate)){
+    drug_pairs$response_p_value <- rep(NA, nrow(drug_pairs))
+    drug_pairs$response_origin_p_value <- rep(NA, nrow(drug_pairs))
+    blocks <- drug_pairs$block_id[drug_pairs$replicate]
+    for (b in blocks) {
+      # Calculate synergy score. Different work flow for replicated data
+      replicate <- drug_pairs$replicate[drug_pairs$block_id == b]
+        response_one_block <- response %>%
+          dplyr::filter(block_id == b) %>%
+          dplyr::select(-block_id) %>%
+          dplyr::ungroup()
+        concs <- grep("conc\\d", colnames(response_one_block), value = TRUE)
+        iter_response <- pbapply::pblapply(seq(1, iteration), function(x){
+          response_boot <- .Bootstrapping(response_one_block)
+          s <- response_boot[, c("response", "response_origin")] %>% 
+            colMeans()
+          s <- as.data.frame(as.list(s))
+          return(s)
+        }) %>% 
+          purrr::reduce(rbind.data.frame)
+      p <- apply(iter_response, 2, function(x){
+        z <- abs(mean(x)) / sd(x)
+        p <- exp(-0.717 * z - 0.416 * z ^2)
+        p <- formatC(p, format = "e", digits = 2, zero.print = "< 2e-324")
+        return(p)
+      })
+      names(p) <- paste0(names(p), "_p_value")
+      drug_pairs$response_p_value[drug_pairs$block_id == b] <- p["response_p_value"]
+      drug_pairs$response_origin_p_value[drug_pairs$block_id == b] <- p["response_origin_p_value"]
+    }
+  }
   
   # 7. assemble output data
   data <- list(drug_pairs = drug_pairs, response = response)

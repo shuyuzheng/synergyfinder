@@ -6,18 +6,19 @@
 \usage{
 PlotMultiDrugSurface(
   data,
-  plot_block,
-  plot_value,
+  plot_block = 1,
+  plot_value = "response",
   statistic = NULL,
+  summary_statistic = NULL,
   plot_title = NULL,
   distance_method = "mahalanobis",
   high_value_color = "#A90217",
   low_value_color = "#2166AC",
   show_data_points = TRUE,
   point_color = "#DDA137",
-  width = 1000,
-  height = 1000,
-  scale = 1
+  camera_width = 500,
+  camera_height = 500,
+  camera_scale = 1
 )
 }
 \arguments{
@@ -72,14 +73,14 @@ values.}
 
 \item{point_color}{An R color value. It indicates the color for data points.}
 
-\item{width}{A numeric value. It indicates the output figure's width on 
-pixel.}
+\item{camera_width}{A numeric value. It indicates the output figure's width
+in pixel while clicking the camera button.}
 
-\item{height}{A numeric value. It indicates the output figure's height on 
-pixel.}
+\item{camera_height}{A numeric value. It indicates the output figure's height
+in pixel while clicking the camera button.}
 
-\item{scale}{A numeric value. The output plot will multiply 
-title/legend/axis/canvas sizes by this factor.}
+\item{camera_scale}{A numeric value. The output plot while clicking the
+camera button.will multiply title/legend/axis/canvas sizes by this factor.}
 
 \item{show_data_poinst}{A logical value. If it is \code{TRUE}, the raw data
 points will be shown on the plot. If it is \code{FALSE}, no points will be
