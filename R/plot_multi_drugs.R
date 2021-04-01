@@ -111,9 +111,9 @@
 #' )
 #' p
 PlotMultiDrugBar <- function(data,
-                             plot_block,
-                             plot_value,
-                             sort_by = "conc1",
+                             plot_block = 1,
+                             plot_value = c("response", "response_origin"),
+                             sort_by = "response",
                              highlight_row = NULL, 
                              pos_value_color = "#CC3311",
                              neg_value_color = "#448BD4",

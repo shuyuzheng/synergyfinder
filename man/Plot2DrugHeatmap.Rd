@@ -17,7 +17,9 @@ Plot2DrugHeatmap(
   row_range = NULL,
   high_value_color = "#A90217",
   low_value_color = "#2166AC",
-  text_size_scale = 1
+  text_label_size_scale = 1,
+  text_label_color = "#000000",
+  title_text_size_scale = 1
 )
 }
 \arguments{
@@ -96,8 +98,16 @@ high values.}
 \item{low_value_color}{An R color value. It indicates the color for low
 values.}
 
-\item{text_size_scale}{A numeric value. It is used to control the size
-of text in the plot. All the text size will multiply by this scale factor.}
+\item{text_label_size_scale}{A numeric value. It is used to control the size
+text labels on the heatmap. The text size will multiply by this scale
+factor.}
+
+\item{text_label_color}{NULL or an R color value. It indicates the color for
+text labels on the heatmap. If it is \code{NULL}, no text will be shown.}
+
+\item{title_text_size_scale}{A numeric value. It is used to control the size
+of legend title, legend text, plot title, axis title, axis tick, subtitle.
+All the text size will multiply by this scale factor.}
 }
 \value{
 A ggplot plot object.
