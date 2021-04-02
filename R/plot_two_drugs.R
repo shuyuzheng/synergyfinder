@@ -316,6 +316,7 @@ Plot2DrugHeatmap <- function(data,
           titlefont = list(size = 12 * title_text_size_scale, family = "arial"),
           ticks = "none",
           showspikes = FALSE,
+          showgrid = FALSE,
           tickmode = "array", 
           tickvals = x$x,
           ticktext = x$ticks
@@ -326,6 +327,7 @@ Plot2DrugHeatmap <- function(data,
           titlefont = list(size = 12 * title_text_size_scale, family = "arial"),
           ticks = "none",
           showspikes = FALSE,
+          showgrid = FALSE,
           tickmode = "array", 
           tickvals = y$y,
           ticktext = y$ticks
@@ -773,6 +775,7 @@ Plot2DrugContour <- function(data,
           titlefont = list(size = 12 * text_size_scale, family = "arial"),
           ticks = "none",
           showspikes = FALSE,
+          showgrid = FALSE,
           tickmode = "array", 
           tickvals = x_ticks,
           ticktext = x_ticks_text
@@ -783,6 +786,7 @@ Plot2DrugContour <- function(data,
           titlefont = list(size = 12 * text_size_scale, family = "arial"),
           ticks = "none",
           showspikes = FALSE,
+          showgrid = FALSE,
           tickmode = "array", 
           tickvals = y_ticks,
           ticktext = y_ticks_text
@@ -867,10 +871,10 @@ Plot2DrugContour <- function(data,
           size = 10 * text_size_scale
         ),
         legend.title = ggplot2::element_text(
-          size = 10 * title_text_size_scale
+          size = 10 * text_size_scale
         ),
         legend.text = ggplot2::element_text(
-          size = 10 * title_text_size_scale
+          size = 10 * text_size_scale
         ),
         legend.background = element_rect(color = NA)
       )

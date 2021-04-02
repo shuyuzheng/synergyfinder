@@ -16,6 +16,8 @@ PlotDoseResponse(
   point_color = "#C24B40",
   curve_color = "black",
   text_size_scale = 1,
+  heatmap_text_label_size_scale = 1,
+  heatmap_text_label_color = "#000000",
   curve_plot_title = NULL,
   heatmap_plot_title = NULL,
   Emin = NA,
@@ -77,6 +79,15 @@ dose response curve plots.}
 
 \item{text_size_scale}{A numeric value. It is used to control the size
 of text in the plot. All the text size will multiply by this scale factor.}
+
+\item{heatmap_text_label_size_scale}{A numeric value. It is used to control
+the size of text labels in the heatmap plot. It only works while 
+\code{plot_type = "heatmap}.}
+
+\item{heatmap_text_label_color}{NULL or an R color value. It is used to
+control the color of text labels in the heatmap plot. If it is \code{NULL},
+text label will not be shown.It only works while
+\code{plot_type = "heatmap}.}
 
 \item{heatmap_plot_title}{A character value to indicate the plot title for
 the heatmap.}
