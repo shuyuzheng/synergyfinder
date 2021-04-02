@@ -11,11 +11,13 @@ GenerateSurface(
   show_data_points = TRUE,
   point_color,
   plot_title,
+  plot_subtitle,
   legend_title,
   z_axis_title,
-  width = 500,
-  height = 500,
-  scale = 1
+  text_size_scale = 1,
+  camera_width = 500,
+  camera_height = 500,
+  camera_scale = 1
 )
 }
 \arguments{
@@ -34,17 +36,19 @@ values.}
 
 \item{plot_title}{A character value. It is the title for plot.}
 
+\item{plot_subtitle}{A character value. It is the subtitle for plot.}
+
 \item{legend_title}{A character value. It is the title for legend.}
 
 \item{z_axis_title}{A character value. It is the title for z-axis.}
 
-\item{width}{A numeric value. It indicates the output figure's width on 
+\item{camera_width}{A numeric value. It indicates the output figure's width on 
 pixel.}
 
-\item{height}{A numeric value. It indicates the output figure's height on 
+\item{camera_height}{A numeric value. It indicates the output figure's height on 
 pixel.}
 
-\item{scale}{A numeric value. The output plot will multiply 
+\item{camera_scale}{A numeric value. The output plot will multiply 
 title/legend/axis/canvas sizes by this factor.}
 
 \item{show_data_poinst}{A logical value. If it is \code{TRUE}, the raw data

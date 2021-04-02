@@ -15,6 +15,7 @@ Plot2DrugSurface(
   col_range = NULL,
   row_range = NULL,
   dynamic = FALSE,
+  grid = TRUE,
   high_value_color = "#A90217",
   low_value_color = "#2166AC",
   text_size_scale = 1
@@ -85,6 +86,9 @@ default, it is NULl so all the concentrations are used.}
 use \link[plotly]{plot_ly} to generate an interactive plot. If it is
 \code{FALSE}, this function will use \link[lattice]{wireframe} to generate
 a static plot.}
+
+\item{grid}{A logical value. It indicates whether to add grids on the 
+surface.}
 
 \item{high_value_color}{An R color value. It indicates the color for the
 high values.}

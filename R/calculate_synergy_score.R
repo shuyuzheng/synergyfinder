@@ -139,13 +139,19 @@ CalculateSynergy <- function(data,
             method = correct_baseline
           )
           s <- eval(call(m, response_boot))
+          return(s)
           }) %>% 
           purrr::reduce(dplyr::left_join, by = concs) %>% 
           dplyr::ungroup()
+        # column names for scores
         s <- grep("conc\\d", colnames(iter), value = TRUE, invert = TRUE)
         s <- unique(gsub("\\..*$", "", s))
         tmp_m <- dplyr::select(iter, concs)
         tmp_score_statistic_m <- tmp_m
+        # combo cell index
+        concs_iter <- iter[, grepl("conc\\d", colnames(iter))]
+        concs_iter <- apply(concs_iter, 2, function(x){x == 0})
+        index <- rowSums(concs_iter) < 1
         for (i in s){
           tmp_m[[i]] <- rowMeans(dplyr::select(iter, dplyr::starts_with(i)))
           tmp_score_statistic_m[[paste0(i, "_mean")]] <- tmp_m[[i]]
@@ -157,6 +163,15 @@ CalculateSynergy <- function(data,
           tmp_score_statistic_m[[paste0(i, "_ci_right")]] <- 
             apply(dplyr::select(iter, dplyr::starts_with(i)), 1, 
                   function(x) stats::quantile(x, probs = 0.975))
+          # calculate P value for synergy scores
+          if (endsWith(i, "synergy")) {
+            matrix_mean <- colMeans(iter[index, startsWith(colnames(iter), i)])
+            z <- abs(mean(matrix_mean)) / sd(matrix_mean)
+            p <- exp(-0.717 * z - 0.416 * z ^2)
+            p <- formatC(p, format = "e", digits = 2, zero.print = "< 2e-324")
+            data$drug_pairs[data$drug_pairs$block_id == b, 
+                            paste0(i, "_p_value")] <- p
+          }
         }
         tmp_scores_statistic <- dplyr::left_join(tmp_scores_statistic, 
                                                  tmp_score_statistic_m,
@@ -207,8 +222,13 @@ CalculateSynergy <- function(data,
     data$synergy_scores_statistics <- dplyr::select(scores_statistics, block_id,
                                             dplyr::everything())
   }
+  # combo cell index
+  concs <- data$synergy_scores[, grepl("conc\\d", colnames(data$synergy_scores))]
+  concs <- apply(data$synergy_scores, 2, function(x){x == 0})
+  index <- rowSums(concs) < 1
   summarized_score <- data$synergy_scores %>% 
     dplyr::select(block_id, dplyr::ends_with("_synergy")) %>% 
+    dplyr::filter(index) %>% 
     dplyr::group_by(block_id) %>%
     dplyr::summarise_all(mean) %>% 
     dplyr::ungroup()

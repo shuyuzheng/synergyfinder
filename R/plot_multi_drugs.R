@@ -55,6 +55,18 @@
 #'   points) will be sorted. It could be one of the available values for
 #'   \code{plot_value} or one of the concentration columns (e.g. "cocn1",
 #'   "conc2", ...)
+#' @param summary_statistic A vector of characters or NULL. It indicates the
+#'   summary statistics for all the \code{plot_value} in whole combination
+#'   matrix. Available values are:
+#'   \itemize{
+#'     \item \strong{mean} Median value for all the responses or synergy
+#'     scores in the matrix;
+#'     \item \strong{median} Median value for all the responses or synergy
+#'     scores in the matrix;
+#'     \item \strong{quantile_90} 90\% quantile. User could change the number to
+#'     print different sample quantile. For example quantile_50 equal to median. 
+#'   }
+#'   If it is \code{NULL}, no statistics will be printed.
 #' @param highlight_row A vector of numeric values with the length same as the
 #'   number of drugs in selected block. It contains the concentrations  for
 #'   "drug1", "drug2", ... The data point selected by these concentrations will
@@ -99,9 +111,9 @@
 #' )
 #' p
 PlotMultiDrugBar <- function(data,
-                             plot_block,
-                             plot_value,
-                             sort_by = "conc1",
+                             plot_block = 1,
+                             plot_value = c("response", "response_origin"),
+                             sort_by = "response",
                              highlight_row = NULL, 
                              pos_value_color = "#CC3311",
                              neg_value_color = "#448BD4",
@@ -286,12 +298,12 @@ PlotMultiDrugBar <- function(data,
 #' @param show_data_poinst A logical value. If it is \code{TRUE}, the raw data
 #'   points will be shown on the plot. If it is \code{FALSE}, no points will be
 #'   plotted.
-#' @param width A numeric value. It indicates the output figure's width on 
-#'   pixel.
-#' @param height A numeric value. It indicates the output figure's height on 
-#'   pixel.
-#' @param scale A numeric value. The output plot will multiply 
-#'   title/legend/axis/canvas sizes by this factor.
+#' @param camera_width A numeric value. It indicates the output figure's width
+#'   in pixel while clicking the camera button.
+#' @param camera_height A numeric value. It indicates the output figure's height
+#'   in pixel while clicking the camera button.
+#' @param camera_scale A numeric value. The output plot while clicking the
+#'   camera button.will multiply title/legend/axis/canvas sizes by this factor.
 #' 
 #' @return A plotly plot object.
 #'
@@ -315,23 +327,25 @@ PlotMultiDrugBar <- function(data,
 #' )
 #' p
 PlotMultiDrugSurface <- function(data,
-                                 plot_block,
-                                 plot_value,
+                                 plot_block = 1,
+                                 plot_value = "response",
                                  statistic = NULL,
+                                 summary_statistic = NULL,
                                  plot_title = NULL,
                                  distance_method = "mahalanobis", 
                                  high_value_color = "#A90217",
                                  low_value_color = "#2166AC",
                                  show_data_points = TRUE,
                                  point_color = "#DDA137",
-                                 width = 1000,
-                                 height = 1000,
-                                 scale = 1) {
+                                 camera_width = 500,
+                                 camera_height = 500,
+                                 camera_scale = 1) {
   plot_data <- .ExtractMultiDrugPlotData(
     data,
     plot_block = plot_block,
     plot_value = plot_value,
     statistic = statistic,
+    summary_statistic = summary_statistic,
     titles = TRUE
   )
   dim_reduced_data <- DimensionReduction(
@@ -348,12 +362,13 @@ PlotMultiDrugSurface <- function(data,
     low_value_color = low_value_color,
     show_data_points = show_data_points,
     point_color = point_color,
-    width = width,
-    height = height,
+    camera_width = camera_width,
+    camera_height = camera_height,
     legend_title = plot_data$legend_title,
     plot_title = plot_title,
+    plot_subtitle = plot_data$plot_subtitle,
     z_axis_title = plot_data$z_axis_title,
-    scale = scale
+    camera_scale = camera_scale
     )
   return(p)
 }
@@ -405,6 +420,7 @@ PlotMultiDrugSurface <- function(data,
 #'       drugs, the values for \code{plot_value}.
 #'     \item \strong{drug_pair} A data frame contains the drug names and
 #'       concentration unites, whither the block is replicate or not.
+#'     \item \strong{plot_subtitle} A string for plot subtitle.
 #'     \item \strong{plot_title} A string for plot title.
 #'     \item \strong{z_axis_subtitle} A string for plot z-axis title.
 #'   }
@@ -418,6 +434,7 @@ PlotMultiDrugSurface <- function(data,
 .ExtractMultiDrugPlotData <- function(data,
                                       plot_block = 1,
                                       plot_value = "response",
+                                      summary_statistic = NULL,
                                       statistic = NULL,
                                       titles = TRUE) {
   # Check the input data
@@ -557,12 +574,66 @@ PlotMultiDrugSurface <- function(data,
         "synergy" = "Synergy Score"
       )
     }
+    
+    # plot subtitle (summary statistics)
+    plot_subtitle <- c()
+    if (!is.null(summary_statistic)) {
+      if (endsWith(plot_value, "_synergy")) {
+        concs <- plot_table[, grepl("conc\\d+", colnames(plot_table))]
+        concs_zero <- apply(concs, 2, function(x){x == 0})
+        index <- rowSums(concs_zero) < 1
+        summary_value_table <- plot_table[index, ]
+      } else {
+        summary_value_table <- plot_table
+      }
+      avail_value <- grepl("mean|median|quantile_\\d+", summary_statistic)
+      if ("mean" %in% summary_statistic) {
+        value <- .RoundValues(mean(summary_value_table[[plot_value]]))
+        if (drug_pair$replicate) {
+          p_value <- data$drug_pairs[data$drug_pairs$block_id == plot_block,
+                                     paste0(plot_value, "_p_value")]
+          if (p_value != "< 2e-324") {
+            p_value <- paste0("= ", p_value)
+          }
+          plot_subtitle <- c(
+            plot_subtitle, 
+            paste0(
+              "Mean: ",
+              value,
+              " (p ",
+              p_value,
+              ")"
+            )
+          )
+        } else {
+          plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
+        }
+      }
+      if ("median" %in% summary_statistic) {
+        value <- .RoundValues(stats::median(summary_value_table[[plot_value]]))
+        plot_subtitle <-  c(plot_subtitle, paste0("Median: ", value))
+      }
+      qua <- grep("quantile_\\d+", summary_statistic, value = TRUE)
+      if (length(qua) > 0) {
+        for (q in qua) {
+          pro <- as.numeric(sub("quantile_", "", q))
+          value <- .RoundValues(
+            stats::quantile(summary_value_table[[plot_value]], probs = pro / 100)
+          )
+          plot_subtitle <-  c(plot_subtitle, paste0(pro, "% Quantile: ", value))
+        }
+      }
+    }
+    plot_subtitle <- paste(plot_subtitle, collapse = " | ")
+    
     plot_data <- list(
       plot_table = plot_table,
       drug_pair = drug_pair,
+      plot_subtitle = plot_subtitle,
       plot_title = plot_title,
       z_axis_title = z_axis_title,
       legend_title = legend_title)
+    
   } else {
     plot_data <- list(
       plot_table = plot_table,
@@ -696,16 +767,17 @@ DimensionReduction <- function(plot_table,
 #'   values.
 #' @param point_color An R color value. It indicates the color for data points.
 #' @param legend_title A character value. It is the title for legend.
+#' @param plot_subtitle A character value. It is the subtitle for plot.
 #' @param plot_title A character value. It is the title for plot.
 #' @param z_axis_title A character value. It is the title for z-axis.
 #' @param show_data_poinst A logical value. If it is \code{TRUE}, the raw data
 #'   points will be shown on the plot. If it is \code{FALSE}, no points will be
 #'   plotted.
-#' @param width A numeric value. It indicates the output figure's width on 
+#' @param camera_width A numeric value. It indicates the output figure's width on 
 #'   pixel.
-#' @param height A numeric value. It indicates the output figure's height on 
+#' @param camera_height A numeric value. It indicates the output figure's height on 
 #'   pixel.
-#' @param scale A numeric value. The output plot will multiply 
+#' @param camera_scale A numeric value. The output plot will multiply 
 #'   title/legend/axis/canvas sizes by this factor.
 #' 
 #' @return A ggplot object.
@@ -723,11 +795,13 @@ GenerateSurface <- function(dim_reduced_data,
                            show_data_points = TRUE,
                            point_color,
                            plot_title,
+                           plot_subtitle,
                            legend_title,
                            z_axis_title,
-                           width = 500,
-                           height = 500,
-                           scale = 1) {
+                           text_size_scale = 1, 
+                           camera_width = 500,
+                           camera_height = 500,
+                           camera_scale = 1) {
   plot_table <- dim_reduced_data$plot_table
   mds_data <- dim_reduced_data$mds_data
   extended_plot_table <- dim_reduced_data$extended_plot_table
@@ -748,10 +822,10 @@ GenerateSurface <- function(dim_reduced_data,
     plotly::config(
       toImageButtonOptions = list(
         format = "svg",
-        filename = "MultiDrugSurface",
-        width = width,
-        height = height,
-        scale = scale
+        filename = plot_title,
+        width = camera_width,
+        height = camera_height,
+        scale = camera_scale
       )
     ) %>% 
     plotly::add_surface(
@@ -799,32 +873,50 @@ GenerateSurface <- function(dim_reduced_data,
     plotly::layout(
       title = list(
         text = paste0("<b>", plot_title, "</b>"),
-        tickfont = list(size = 18, family = "arial"),
+        tickfont = list(size = 18 * text_size_scale, family = "arial"),
         y = 0.99
       ),
       scene = list(
         xaxis = list(
           title = "<i>Coordinate 1</i>",
-          tickfont = list(size = 12, family = "arial"),
+          tickfont = list(size = 12 * text_size_scale, family = "arial"),
           ticks = "none",
           showspikes = FALSE
         ),
         yaxis = list(
           title = "<i>Coordinate 2</i>",
-          tickfont = list(size = 12, family = "arial"),
+          tickfont = list(size = 12 * text_size_scale, family = "arial"),
           ticks = "none",
           showspikes = FALSE
         ),
         zaxis = list(
           title = paste0("<i>", z_axis_title, "</i>"),
-          tickfont = list(size = 12, family = "arial"),
+          tickfont = list(size = 12 * text_size_scale, family = "arial"),
           ticks = "none",
           tickmode = "array",
           showspikes = FALSE
         ),
         camera = list(eye = list(x = -1.25, y = -1.25, z = 1.25))
+      ),
+      margin = list(
+        l = 50,
+        r = 50,
+        b = 50,
+        t = 60,
+        pad = 4
       )
-    )
+    ) %>% 
+    plotly::add_annotations(
+      text = plot_subtitle,
+      x = 0.5,
+      y = 1.1,
+      yref = "paper",
+      xref = "paper",
+      xanchor = "middle",
+      yanchor = "top",
+      showarrow = FALSE,
+      font = list(size = 15 * text_size_scale)
+    ) 
   return(p)
 }
 

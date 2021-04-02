@@ -19,7 +19,11 @@
 #'  along with points or not.
 #' @param point_label_color An R color value. It indicates the color for the
 #' label of data points.
-#'
+#' @param label_size A numeric value. It controls the size of the labels in "pt"
+#' @param dynamic A logical value. If it is \code{TRUE}, this function will
+#'   use \link[plotly]{plot_ly} to generate an interactive plot. If it is
+#'   \code{FALSE}, this function will use \link[lattice]{wireframe} to generate
+#'   a static plot.
 #' @return A ggplot object.
 #'
 #' @author
@@ -40,7 +44,10 @@ PlotSensitiveSynergy <- function(data,
                                  point_color = "#2D72AD",
                                  point_size = 1,
                                  point_label_color = "#2D72AD",
-                                 show_labels = FALSE){
+                                 show_labels = FALSE,
+                                 plot_title = NULL,
+                                 dynamic = FALSE,
+                                 label_size = 10){
   plot_table <- data$drug_pairs
   # 1. Check the input data
   # Data structure of 'data'
@@ -71,65 +78,141 @@ PlotSensitiveSynergy <- function(data,
   }
   
   # Plot title
-  plot_title <- paste0(
-    sub("_synergy", "", plot_synergy),
-    " Synergy - Combination Sensitivity for all combinations")
-  
-  p <- plot_table %>%
-    tidyr::unite("label", block_id, dplyr::starts_with("drug"), sep = "-") %>% 
-    dplyr::select(synergy = !!plot_synergy, css, label) %>% 
-    ggplot2::ggplot(mapping = aes(x = css, y = synergy)) +
-    ggplot2::geom_point(colour = point_color, size = point_size) 
-  if (show_labels) {
-    p <- p +
-      ggrepel::geom_text_repel(
-        aes(label = label),
-        colour = point_label_color,
-        point.padding = 0.25,
-        max.overlaps = 30,
-        size = .Pt2mm(10),
-        fontface="bold",
-        show.legend=FALSE
-      ) 
+  if (is.null(plot_title)) {
+    plot_title <- paste0(
+      sub("_synergy", "", plot_synergy),
+      " Synergy - CSS")
   }
-  p <- p +
-    labs(
-      title = plot_title,
-      x = "Combination Sensitivity Score",
-      y = paste0(sub("_synergy", "", plot_synergy), " Synergy Score")
-    ) +
-    theme(
-      panel.background = ggplot2::element_rect(
-        fill = "white",
-        colour = "white",
-        size = 2,
-        linetype = "solid"
-      ),
-      panel.grid.major = ggplot2::element_line(
-        size = 0.5,
-        linetype = 'solid',
-        colour = "#DFDFDF"
-      ), 
-      panel.grid.minor = ggplot2::element_line(
-        size = 0.25,
-        linetype = 'solid',
-        colour = "#DFDFDF"
-      ),
-      plot.title = ggplot2::element_text(
-        size = 13.5,
-        face = "bold",
-        hjust = 0.5
-      ),
-      axis.text = ggplot2::element_text(
-        size = 10
-      ),
-      axis.title = ggplot2::element_text(
-        face = "italic",
-        size = 10
-      ),
-      # axis.ticks = element_blank(),
-      axis.line.y.left = ggplot2::element_line(color = "black"),
-      axis.line.x.bottom = ggplot2::element_line(color = "black")
-    )
+
+  
+  plot_table <- plot_table %>%
+    tidyr::unite("label", block_id, dplyr::starts_with("drug"), sep = "-") %>% 
+    dplyr::select(synergy = !!plot_synergy, css, label) 
+  
+  if (dynamic) {
+    if (show_labels) {
+      p <- plotly::plot_ly(
+        x = plot_table$css,
+        y = plot_table$synergy,
+        type = "scatter",
+        text = plot_table$label,
+        # hoverinfo = "text",
+        mode = "markers+text",
+        textposition = "top center",
+        marker = list(
+          size = 3.7795275591 * point_size, # mm to px
+          color = point_color
+        ),
+        textfont = list(
+          size = label_size, 
+          color = point_label_color
+        )
+      )
+    } else {
+      p <- plotly::plot_ly(
+        x = plot_table$css,
+        y = plot_table$synergy,
+        type = "scatter",
+        hovertext = plot_table$label,
+        mode = "markers",
+        marker = list(
+          size = 3.7795275591 * point_size, # mm to px
+          color = point_color
+        )
+      )
+    }
+    p <- p %>%
+      plotly::layout(
+        title = list(
+          text = paste0("<b>", plot_title, "</b>"),
+          tickfont = list(size = 18, family = "arial"),
+          y = 0.99
+        ),
+        xaxis = list(
+          title = paste0("<i>Combination Sensitivity Score</i>"),
+          tickfont = list(size = 12, family = "arial"),
+          # ticks = "none",
+          showspikes = FALSE
+        ),
+        yaxis = list(
+          title = paste0("<i>", sub("_synergy", "", plot_synergy),
+                         " Synergy Score", "</i>"),
+          tickfont = list(size = 12 , family = "arial"),
+          # ticks = "none",
+          showspikes = FALSE
+        )
+      ) %>% 
+      plotly::config(
+        toImageButtonOptions = list(
+          format = "svg",
+          filename = plot_title,
+          width = 1000,
+          height = 500,
+          scale = 1
+        )
+      ) 
+  } else {
+    p <- ggplot2::ggplot(
+      data = plot_table, 
+      mapping = aes(x = css, y = synergy)
+      ) +
+      ggplot2::geom_point(
+        colour = point_color,
+        size = point_size
+      )
+    if (show_labels) {
+      p <- p +
+        ggrepel::geom_text_repel(
+          aes(label = label),
+          colour = point_label_color,
+          point.padding = 0.25,
+          max.overlaps = 30,
+          size = .Pt2mm(label_size),
+          fontface="bold",
+          show.legend=FALSE
+        ) 
+    }
+    p <- p +
+      labs(
+        title = plot_title,
+        x = "Combination Sensitivity Score",
+        y = paste0(sub("_synergy", "", plot_synergy), " Synergy Score")
+      ) +
+      theme_classic() +
+      theme(
+        panel.background = ggplot2::element_rect(
+          fill = "white",
+          colour = "white",
+          size = 2,
+          linetype = "solid"
+        ),
+        panel.grid.major = ggplot2::element_line(
+          size = 0.5,
+          linetype = 'solid',
+          colour = "#DFDFDF"
+        ), 
+        panel.grid.minor = ggplot2::element_line(
+          size = 0.25,
+          linetype = 'solid',
+          colour = "#DFDFDF"
+        ),
+        plot.title = ggplot2::element_text(
+          size = 13.5,
+          face = "bold",
+          hjust = 0.5
+        ),
+        axis.text = ggplot2::element_text(
+          size = 10
+        ),
+        axis.title = ggplot2::element_text(
+          face = "italic",
+          size = 10
+        ),
+        # axis.ticks = element_blank(),
+        axis.line.y.left = ggplot2::element_line(color = "black"),
+        axis.line.x.bottom = ggplot2::element_line(color = "black")
+      )
+  }
+ 
   return(p)
 }

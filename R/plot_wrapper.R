@@ -52,6 +52,13 @@
 #'   dose response curve plots.
 #' @param text_size_scale A numeric value. It is used to control the size
 #'   of text in the plot. All the text size will multiply by this scale factor.
+#' @param heatmap_text_label_size_scale A numeric value. It is used to control
+#'   the size of text labels in the heatmap plot. It only works while 
+#'   \code{plot_type = "heatmap}.
+#' @param heatmap_text_label_color NULL or an R color value. It is used to
+#'   control the color of text labels in the heatmap plot. If it is \code{NULL},
+#'   text label will not be shown.It only works while
+#'   \code{plot_type = "heatmap}. 
 #' @param curve_plot_title. A character value to indicate the plot title for
 #'   the dose-response curve plots.
 #' @param heatmap_plot_title A character value to indicate the plot title for
@@ -107,6 +114,8 @@ PlotDoseResponse <- function(data,
                              point_color = "#C24B40",
                              curve_color = "black",
                              text_size_scale = 1,
+                             heatmap_text_label_size_scale = 1,
+                             heatmap_text_label_color = "#000000",
                              curve_plot_title = NULL,
                              heatmap_plot_title = NULL,
                              Emin = NA,
@@ -159,11 +168,13 @@ PlotDoseResponse <- function(data,
       drugs = drugs,
       plot_value = plot_value,
       statistic = statistic,
-      text_size_scale = text_size_scale,
+      title_text_size_scale = text_size_scale,
       summary_statistic = summary_statistic,
       high_value_color = high_value_color,
       low_value_color = low_value_color,
-      plot_title = heatmap_plot_title
+      plot_title = heatmap_plot_title,
+      text_label_size_scale = heatmap_text_label_size_scale,
+      text_label_color = heatmap_text_label_color
     )
     # plot dose response curve
     
@@ -321,6 +332,15 @@ PlotDoseResponse <- function(data,
 #'   values.
 #' @param text_size_scale A numeric value. It is used to control the size
 #'   of text in the plot. All the text size will multiply by this scale factor.
+#' @param heatmap_text_label_size_scale A numeric value. It is used to control
+#'   the size of text labels in the heatmap plot. It only works while 
+#'   \code{plot_type = "heatmap}.
+#' @param heatmap_text_label_color NULL or an R color value. It is used to
+#'   control the color of text labels in the heatmap plot. If it is \code{NULL},
+#'   text label will not be shown.It only works while
+#'   \code{plot_type = "heatmap}. 
+#' @param surface_grid A logical value. It indicates whether to add grids on the 
+#'   surface. It only works while \code{plot_type = "3D"}.
 #' @param dynamic A logic value. It indicates whether to generate interactive
 #'   plot wit package "plotly" or static plot with package "ggplot2"/"lattice".
 #' @param display A logic value. It specifies whether to automatically display
@@ -384,6 +404,9 @@ PlotSynergy <- function(data,
                         high_value_color = "#A90217",
                         low_value_color = "#2166AC",
                         text_size_scale = 1,
+                        heatmap_text_label_size_scale = 1,
+                        heatmap_text_label_color = "#000000",
+                        surface_grid = TRUE,
                         dynamic = FALSE,
                         display = TRUE, 
                         save_file = FALSE,
@@ -441,7 +464,9 @@ PlotSynergy <- function(data,
         low_value_color = low_value_color,
         row_range = row_range,
         col_range = col_range,
-        text_size_scale = text_size_scale)
+        title_text_size_scale = text_size_scale,
+        text_label_size_scale = heatmap_text_label_size_scale,
+        text_label_color = heatmap_text_label_color)
       if (display) {
         fig
       }
@@ -459,6 +484,7 @@ PlotSynergy <- function(data,
         low_value_color = low_value_color,
         row_range = row_range,
         col_range = col_range,
+        grid = surface_grid,
         text_size_scale = text_size_scale)
       if (display) {
         if (dynamic) {

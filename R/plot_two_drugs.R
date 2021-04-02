@@ -85,8 +85,14 @@
 #'   high values.
 #' @param low_value_color An R color value. It indicates the color for low
 #'   values.
-#' @param text_size_scale A numeric value. It is used to control the size
-#'   of text in the plot. All the text size will multiply by this scale factor.
+#' @param text_label_size_scale A numeric value. It is used to control the size
+#'   text labels on the heatmap. The text size will multiply by this scale
+#'   factor.
+#' @param text_label_color NULL or an R color value. It indicates the color for
+#'   text labels on the heatmap. If it is \code{NULL}, no text will be shown.
+#' @param title_text_size_scale A numeric value. It is used to control the size
+#'   of legend title, legend text, plot title, axis title, axis tick, subtitle.
+#'   All the text size will multiply by this scale factor.
 #'   
 #' @return A ggplot plot object.
 #'
@@ -114,7 +120,9 @@ Plot2DrugHeatmap <- function(data,
                              row_range = NULL,
                              high_value_color = "#A90217",
                              low_value_color = "#2166AC",
-                             text_size_scale = 1) {
+                             text_label_size_scale = 1,
+                             text_label_color = "#000000",
+                             title_text_size_scale = 1) {
   # Extract plot data
   plot_data <- .Extract2DrugPlotData(
     data = data,
@@ -175,10 +183,10 @@ Plot2DrugHeatmap <- function(data,
   # plot subtitle (summary statistics)
   plot_subtitle <- c()
   if (!is.null(summary_statistic)) {
+    concs <- plot_table[, grepl("conc\\d+", colnames(plot_table))]
     if (endsWith(plot_value, "_synergy")) {
-      concs <- plot_table[, grepl("conc\\d+", colnames(plot_table))]
-      concs <- apply(concs, 2, function(x){x == 0})
-      index <- rowSums(concs) < 1
+      concs_zero <- apply(concs, 2, function(x){x == 0})
+      index <- rowSums(concs_zero) < 1
       summary_value_table <- plot_table[index, ]
     } else {
       summary_value_table <- plot_table
@@ -186,7 +194,25 @@ Plot2DrugHeatmap <- function(data,
     avail_value <- grepl("mean|median|quantile_\\d+", summary_statistic)
     if ("mean" %in% summary_statistic) {
       value <- .RoundValues(mean(summary_value_table$value))
-      plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
+      if (length(concs == 2) & drug_pair$replicate) {
+        p_value <- data$drug_pairs[data$drug_pairs$block_id == plot_block,
+                                   paste0(plot_value, "_p_value")]
+        if (p_value != "< 2e-324") {
+          p_value <- paste0("= ", p_value)
+        }
+        plot_subtitle <- c(
+          plot_subtitle, 
+          paste0(
+            "Mean: ",
+            value,
+            " (p ",
+            p_value,
+            ")"
+          )
+        )
+      } else {
+        plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
+      }
     }
     if ("median" %in% summary_statistic) {
       value <- .RoundValues(stats::median(summary_value_table$value))
@@ -274,33 +300,45 @@ Plot2DrugHeatmap <- function(data,
         align = "center",
         outlinecolor = "#FFFFFF",
         tickcolor = "#FFFFFF",
-        title = legend_title
+        title = legend_title,
+        titlefont = list(size = 12 * title_text_size_scale, family = "arial"),
+        tickfont = list(size = 12 * title_text_size_scale, family = "arial")
       )) %>% 
       plotly::layout(
         title = list(
           text = paste0("<b>", plot_title, "</b>"),
-          tickfont = list(size = 18 * text_size_scale, family = "arial"),
+          font = list(size = 18 * title_text_size_scale, family = "arial"),
           y = 0.99
         ),
         xaxis = list(
           title = paste0("<i>", x_axis_title, "</i>"),
-          tickfont = list(size = 12 * text_size_scale, family = "arial"),
+          tickfont = list(size = 12 * title_text_size_scale, family = "arial"),
+          titlefont = list(size = 12 * title_text_size_scale, family = "arial"),
           ticks = "none",
           showspikes = FALSE,
+          showgrid = FALSE,
           tickmode = "array", 
           tickvals = x$x,
           ticktext = x$ticks
         ),
         yaxis = list(
           title = paste0("<i>", y_axis_title, "</i>"),
-          tickfont = list(size = 12 * text_size_scale, family = "arial"),
+          tickfont = list(size = 12 * title_text_size_scale, family = "arial"),
+          titlefont = list(size = 12 * title_text_size_scale, family = "arial"),
           ticks = "none",
           showspikes = FALSE,
+          showgrid = FALSE,
           tickmode = "array", 
           tickvals = y$y,
           ticktext = y$ticks
         ),
-        margin = 0.1
+        margin = list(
+          l = 50,
+          r = 50,
+          b = 50,
+          t = 60,
+          pad = 4
+        )
       ) %>%
       plotly::add_annotations(
         text = plot_subtitle,
@@ -311,19 +349,34 @@ Plot2DrugHeatmap <- function(data,
         xanchor = "middle",
         yanchor = "top",
         showarrow = FALSE,
-        font = list(size = 15 * text_size_scale)
-      ) %>% 
-      plotly::add_annotations(
-        x = ~plot_table$x,
-        y = ~plot_table$y,
-        text = ~plot_table$text,
-        showarrow = FALSE,
-        textfont = list(
-          color = '#000000',
-          size = 12 * text_size_scale
-        ),
-        ax = 20,
-        ay = -20)
+        font = list(size = 15 * title_text_size_scale, family = "arial")
+      )
+      
+    if (!is.null(text_label_color)) {
+      p <- p %>% 
+        plotly::add_annotations(
+          x = ~plot_table$x,
+          y = ~plot_table$y,
+          text = ~plot_table$text,
+          showarrow = FALSE,
+          font = list(
+            color = text_label_color,
+            size = 12 * text_label_size_scale
+          ),
+          ax = 20,
+          ay = -20
+        ) 
+    }
+    p <- p %>%
+      plotly::config(
+        toImageButtonOptions = list(
+          format = "svg",
+          filename = plot_title,
+          width = 500,
+          height = 500,
+          scale = 1
+        )
+      ) 
   } else{
     p <- ggplot2::ggplot(
       data = plot_table,
@@ -332,7 +385,7 @@ Plot2DrugHeatmap <- function(data,
       ggplot2::geom_tile() +
       ggplot2::geom_text(
         ggplot2::aes(label = text),
-        size = .Pt2mm(7) * text_size_scale
+        size = .Pt2mm(7) * text_label_size_scale
       ) +
       ggplot2::scale_fill_gradient2(
         high= high_value_color,
@@ -360,22 +413,28 @@ Plot2DrugHeatmap <- function(data,
       ) +
       ggplot2::theme(
         plot.title = ggplot2::element_text(
-          size = 13.5 * text_size_scale,
+          size = 13.5 * title_text_size_scale,
           face = "bold",
           hjust = 0.5
         ),
         plot.subtitle = ggplot2::element_text(
-          size = 12 * text_size_scale,
+          size = 12 * title_text_size_scale,
           hjust = 0.5
         ),
         panel.background = ggplot2::element_blank(),
         # Set label's style of heatmap
         axis.text = ggplot2::element_text(
-          size = 10 * text_size_scale
+          size = 10 * title_text_size_scale
         ),
         axis.title = ggplot2::element_text(
           face = "italic",
-          size = 10 * text_size_scale
+          size = 10 * title_text_size_scale
+        ),
+        legend.title = ggplot2::element_text(
+          size = 10 * title_text_size_scale
+        ),
+        legend.text = ggplot2::element_text(
+          size = 10 * title_text_size_scale
         ),
         legend.background = element_rect(color = NA)
       )
@@ -547,20 +606,46 @@ Plot2DrugContour <- function(data,
   # plot subtitle (summary statistics)
   plot_subtitle <- c()
   if (!is.null(summary_statistic)) {
+    concs <- plot_table[, grepl("conc\\d+", colnames(plot_table))]
+    if (endsWith(plot_value, "_synergy")) {
+      concs_zero <- apply(concs, 2, function(x){x == 0})
+      index <- rowSums(concs_zero) < 1
+      summary_value_table <- plot_table[index, ]
+    } else {
+      summary_value_table <- plot_table
+    }
     avail_value <- grepl("mean|median|quantile_\\d+", summary_statistic)
     if ("mean" %in% summary_statistic) {
-      value <- .RoundValues(mean(plot_table$value))
-      plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
+      value <- .RoundValues(mean(summary_value_table$value))
+      if (length(concs == 2) & drug_pair$replicate) {
+        p_value <- data$drug_pairs[data$drug_pairs$block_id == plot_block,
+                                   paste0(plot_value, "_p_value")]
+        if (p_value != "< 2e-324") {
+          p_value <- paste0("= ", p_value)
+        }
+        plot_subtitle <- c(
+          plot_subtitle, 
+          paste0(
+            "Mean: ",
+            value,
+            " (p ",
+            p_value,
+            ")"
+          )
+        )
+      } else {
+        plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
+      }
     }
     if ("median" %in% summary_statistic) {
-      value <- .RoundValues(stats::median(plot_table$value))
+      value <- .RoundValues(stats::median(summary_value_table$value))
       plot_subtitle <-  c(plot_subtitle, paste0("Median: ", value))
     }
     qua <- grep("quantile_\\d+", summary_statistic, value = TRUE)
     if (length(qua) > 0) {
       for (q in qua) {
         pro <- as.numeric(sub("quantile_", "", q))
-        value <- .RoundValues(stats::quantile(plot_table$value, 
+        value <- .RoundValues(stats::quantile(summary_value_table$value, 
                                               probs = pro / 100))
         plot_subtitle <-  c(plot_subtitle, paste0(pro, "% Quantile: ", value))
       }
@@ -643,7 +728,9 @@ Plot2DrugContour <- function(data,
         align = "center",
         outlinecolor = "#FFFFFF",
         tickcolor = "#FFFFFF",
-        title = legend_title
+        title = legend_title,
+        titlefont = list(size = 12 * text_size_scale, family = "arial"),
+        tickfont = list(size = 12 * text_size_scale, family = "arial")
       ),
       contours = list(
         x = list(
@@ -679,14 +766,16 @@ Plot2DrugContour <- function(data,
       plotly::layout(
         title = list(
           text = paste0("<b>", plot_title, "</b>"),
-          tickfont = list(size = 18 * text_size_scale, family = "arial"),
+          font = list(size = 18 * text_size_scale, family = "arial"),
           y = 0.99
         ),
         xaxis = list(
           title = paste0("<i>", x_axis_title, "</i>"),
           tickfont = list(size = 12 * text_size_scale, family = "arial"),
+          titlefont = list(size = 12 * text_size_scale, family = "arial"),
           ticks = "none",
           showspikes = FALSE,
+          showgrid = FALSE,
           tickmode = "array", 
           tickvals = x_ticks,
           ticktext = x_ticks_text
@@ -694,14 +783,31 @@ Plot2DrugContour <- function(data,
         yaxis = list(
           title = paste0("<i>", y_axis_title, "</i>"),
           tickfont = list(size = 12 * text_size_scale, family = "arial"),
+          titlefont = list(size = 12 * text_size_scale, family = "arial"),
           ticks = "none",
           showspikes = FALSE,
+          showgrid = FALSE,
           tickmode = "array", 
           tickvals = y_ticks,
           ticktext = y_ticks_text
         ),
-        margin = 0.01
-      )
+        margin = list(
+          l = 50,
+          r = 50,
+          b = 50,
+          t = 60,
+          pad = 4
+        )
+      ) %>% 
+      plotly::config(
+        toImageButtonOptions = list(
+          format = "svg",
+          filename = plot_title,
+          width = 500,
+          height = 500,
+          scale = 1
+        )
+      ) 
   } else{
     extended_df <- reshape2::melt(extended_mat)
     colnames(extended_df) <- c("x", "y", "value")
@@ -710,14 +816,9 @@ Plot2DrugContour <- function(data,
     color_range <- round(max(abs(extended_mat)), -1) + 10
     start_point <- -color_range
     end_point <- color_range
-    colfunc <- grDevices::colorRampPalette(
-      c(low_value_color, "white", high_value_color)
-    )
-    col <- colfunc(length(breaks))
     p <- ggplot2::ggplot(extended_df) +
       metR::geom_contour_fill(
-        ggplot2::aes(x = x, y = y, z = value)#,
-        # breaks = metR::MakeBreaks(binwidth = 10)
+        ggplot2::aes(x = x, y = y, z = value)
       ) + 
       ggplot2::scale_x_continuous(
         breaks = x_ticks,
@@ -767,6 +868,12 @@ Plot2DrugContour <- function(data,
         ),
         axis.title = ggplot2::element_text(
           face = "italic",
+          size = 10 * text_size_scale
+        ),
+        legend.title = ggplot2::element_text(
+          size = 10 * text_size_scale
+        ),
+        legend.text = ggplot2::element_text(
           size = 10 * text_size_scale
         ),
         legend.background = element_rect(color = NA)
@@ -837,6 +944,8 @@ Plot2DrugContour <- function(data,
 #'   use \link[plotly]{plot_ly} to generate an interactive plot. If it is
 #'   \code{FALSE}, this function will use \link[lattice]{wireframe} to generate
 #'   a static plot.
+#' @param grid A logical value. It indicates whether to add grids on the 
+#'   surface.
 #' @param high_value_color An R color value. It indicates the color for the
 #'   high values.
 #' @param low_value_color An R color value. It indicates the color for low
@@ -871,6 +980,7 @@ Plot2DrugSurface <- function(data,
                              col_range = NULL,
                              row_range = NULL,
                              dynamic = FALSE,
+                             grid = TRUE,
                              high_value_color = "#A90217",
                              low_value_color = "#2166AC",
                              text_size_scale = 1) {
@@ -939,17 +1049,42 @@ Plot2DrugSurface <- function(data,
     )
   }
   
-
   # plot subtitle (summary statistics)
   plot_subtitle <- c()
   if (!is.null(summary_statistic)) {
+    concs <- plot_table[, grepl("conc\\d+", colnames(plot_table))]
+    if (endsWith(plot_value, "_synergy")) {
+      concs_zero <- apply(concs, 2, function(x){x == 0})
+      index <- rowSums(concs_zero) < 1
+      summary_value_table <- plot_table[index, ]
+    } else {
+      summary_value_table <- plot_table
+    }
     avail_value <- grepl("mean|median|quantile_\\d+", summary_statistic)
     if ("mean" %in% summary_statistic) {
-      value <- .RoundValues(mean(plot_table$value))
-      plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
+      value <- .RoundValues(mean(summary_value_table$value))
+      if (length(concs == 2) & drug_pair$replicate) {
+        p_value <- data$drug_pairs[data$drug_pairs$block_id == plot_block,
+                                   paste0(plot_value, "_p_value")]
+        if (p_value != "< 2e-324") {
+          p_value <- paste0("= ", p_value)
+        }
+        plot_subtitle <- c(
+          plot_subtitle, 
+          paste0(
+            "Mean: ",
+            value,
+            " (p ",
+            p_value,
+            ")"
+          )
+        )
+      } else {
+        plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
+      }
     }
     if ("median" %in% summary_statistic) {
-      value <- .RoundValues(stats::median(plot_table$value))
+      value <- .RoundValues(stats::median(summary_value_table$value))
       plot_subtitle <-  c(plot_subtitle, paste0("Median: ", value))
     }
     qua <- grep("quantile_\\d+", summary_statistic, value = TRUE)
@@ -957,7 +1092,7 @@ Plot2DrugSurface <- function(data,
       for (q in qua) {
         pro <- as.numeric(sub("quantile_", "", q))
         value <- .RoundValues(
-          stats::quantile(plot_table$value,probs = pro / 100)
+          stats::quantile(summary_value_table$value, probs = pro / 100)
         )
         plot_subtitle <-  c(plot_subtitle, paste0(pro, "% Quantile: ", value))
       }
@@ -1039,28 +1174,30 @@ Plot2DrugSurface <- function(data,
           align = "center",
           outlinecolor = "#FFFFFF",
           tickcolor = "#FFFFFF",
-          title = legend_title
+          title = legend_title,
+          titlefont = list(size = 12 * text_size_scale, family = "arial"),
+          tickfont = list(size = 12 * text_size_scale, family = "arial")
         ),
         cmin = start_point,
         cmax = end_point,
         contours = list(
           x = list(
             # highlight = FALSE,
-            show = TRUE,
+            show = grid,
             color = 'black',
             width = 1,
             start = 1,
             end = max(x),
-            size = 1 * text_size_scale
+            size = 1
           ),
           y = list(
             # highlight = FALSE,
-            show = TRUE,
+            show = grid,
             color = 'black',
             width = 1,
             start = 1,
             end = max(y),
-            size = 1 * text_size_scale
+            size = 1
           )#,
           # z = list(highlight = FALSE)
         )
@@ -1079,7 +1216,7 @@ Plot2DrugSurface <- function(data,
       plotly::layout(
         title = list(
           text = paste0("<b>", plot_title, "</b>"),
-          tickfont = list(size = 18 * text_size_scale, family = "arial"),
+          font = list(size = 18 * text_size_scale, family = "arial"),
           y = 0.99
         ),
         scene = list(
@@ -1087,6 +1224,7 @@ Plot2DrugSurface <- function(data,
           xaxis = list(
             title = paste0("<i>", x_axis_title, "</i>"),
             tickfont = list(size = 12 * text_size_scale, family = "arial"),
+            titlefont = list(size = 12 * text_size_scale, family = "arial"),
             ticks = "none",
             showspikes = FALSE,
             tickmode = "array", 
@@ -1096,6 +1234,7 @@ Plot2DrugSurface <- function(data,
           yaxis = list(
             title = paste0("<i>", y_axis_title, "</i>"),
             tickfont = list(size = 12 * text_size_scale, family = "arial"),
+            titlefont = list(size = 12 * text_size_scale, family = "arial"),
             ticks = "none",
             showspikes = FALSE,
             tickmode = "array", 
@@ -1105,14 +1244,30 @@ Plot2DrugSurface <- function(data,
           zaxis = list(
             title = paste0("<i>", z_axis_title, "</i>"),
             tickfont = list(size = 12 * text_size_scale, family = "arial"),
+            titlefont = list(size = 12 * text_size_scale, family = "arial"),
             ticks = "none",
             tickmode = "array",
             showspikes = FALSE
           ),
           camera = list(eye = list(x = -1.25, y = -1.25, z = 1.25))
         ),
-        margin = 0.1
-      )
+        margin = list(
+          l = 50,
+          r = 50,
+          b = 50,
+          t = 60,
+          pad = 4
+        )
+      ) %>% 
+      plotly::config(
+        toImageButtonOptions = list(
+          format = "svg",
+          filename = plot_title,
+          width = 500,
+          height = 500,
+          scale = 1
+        )
+      ) 
   } else { # static plot
     # Color palette
     color_range <- round(max(abs(plot_table$value)) + 5, 2)
@@ -1159,7 +1314,7 @@ Plot2DrugSurface <- function(data,
         space = "right",
         width = 2,
         height = 0.4,
-        cex = 0.75
+        labels = list(cex = 0.75 * text_size_scale)
       ),
       screen = list(z = 30, x = -55),
       zlab = list(
@@ -1182,7 +1337,7 @@ Plot2DrugSurface <- function(data,
       col.regions = col,
       main = list(
         label = plot_title,
-        fontsize = 13.5
+        fontsize = 13.5 * text_size_scale
       ),
       at = lattice::do.breaks(
         c(start_point, end_point),
@@ -1425,6 +1580,15 @@ Plot2DrugSurface <- function(data,
       rowSums()
     plot_table <- plot_table[other_concs_sum == 0, ] %>% 
       dplyr::select(-dplyr::all_of(other_concs))
+    colnames(plot_table) <- sapply(colnames(plot_table), function(x){
+      if (x == selected_concs[1]){
+        return("conc1")
+      } else if (x == selected_concs[2]) {
+        return("conc2")
+      } else {
+        return(x)
+      }
+    })
   }
   
   # Transform conc into factor
@@ -1434,6 +1598,8 @@ Plot2DrugSurface <- function(data,
       factor(.RoundValues(x))
     }
   )
+  plot_table <- plot_table %>% 
+    dplyr::select(conc1, conc2, value, text)
   return(list(plot_table = plot_table, drug_pair = drug_pair))
 }
 

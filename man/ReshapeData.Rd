@@ -10,6 +10,7 @@ ReshapeData(
   impute_method = NULL,
   noise = FALSE,
   seed = NULL,
+  iteration = 10,
   data_type = "viability"
 )
 }
