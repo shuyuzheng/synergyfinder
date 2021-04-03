@@ -166,7 +166,7 @@ CalculateSynergy <- function(data,
           # calculate P value for synergy scores
           if (endsWith(i, "synergy")) {
             matrix_mean <- colMeans(iter[index, startsWith(colnames(iter), i)])
-            z <- abs(mean(matrix_mean)) / sd(matrix_mean)
+            z <- abs(mean(matrix_mean)) / stats::sd(matrix_mean)
             p <- exp(-0.717 * z - 0.416 * z ^2)
             p <- formatC(p, format = "e", digits = 2, zero.print = "< 2e-324")
             data$drug_pairs[data$drug_pairs$block_id == b, 
@@ -352,7 +352,7 @@ ZIP <- function(response,
   # Take the average of fitted response as the fit_zip
   response <- response %>% 
     purrr::reduce(dplyr::left_join, by = c(concs, "response")) %>% 
-    dplyr::mutate(ZIP_fit = rowMeans(dplyr::select(., starts_with("pred"))))
+    dplyr::mutate(ZIP_fit = rowMeans(dplyr::select(., dplyr::starts_with("pred"))))
   
   # 3. Calculate synergy score
   response <- response %>% 

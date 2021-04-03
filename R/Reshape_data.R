@@ -37,7 +37,9 @@
 #' @param seed a single value, interpreted as an integer, or NULL. It is the
 #'   random seed for calculating the noise. Default setting is \code{NULL}
 #' @param data_type a parameter to specify the response data type which can be
-#'  either "viability" or "inhibition".
+#'   either "viability" or "inhibition".
+#' @param iteration An integer. It indicates the number of iterations for
+#'   synergy scores calculation on data with replicates.
 #'
 #' @return a list of the following components:
 #'   \itemize{
@@ -251,7 +253,7 @@ ReshapeData <- function(data,
         }) %>% 
           purrr::reduce(rbind.data.frame)
       p <- apply(iter_response, 2, function(x){
-        z <- abs(mean(x)) / sd(x)
+        z <- abs(mean(x)) / stats::sd(x)
         p <- exp(-0.717 * z - 0.416 * z ^2)
         p <- formatC(p, format = "e", digits = 2, zero.print = "< 2e-324")
         return(p)
