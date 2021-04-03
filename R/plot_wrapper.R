@@ -54,15 +54,15 @@
 #'   of text in the plot. All the text size will multiply by this scale factor.
 #' @param heatmap_text_label_size_scale A numeric value. It is used to control
 #'   the size of text labels in the heatmap plot. It only works while 
-#'   \code{plot_type = "heatmap}.
+#'   \code{plot_type = "heatmap"}.
 #' @param heatmap_text_label_color NULL or an R color value. It is used to
 #'   control the color of text labels in the heatmap plot. If it is \code{NULL},
 #'   text label will not be shown.It only works while
-#'   \code{plot_type = "heatmap}. 
-#' @param curve_plot_title. A character value to indicate the plot title for
-#'   the dose-response curve plots.
+#'   \code{plot_type = "heatmap"}. 
 #' @param heatmap_plot_title A character value to indicate the plot title for
 #'   the heatmap.
+#' @param curve_plot_title A character value to indicate the plot title for
+#'   the dose-response curve.
 #' @param Emin A numeric or \code{NA}. the minimal effect of the drug used in
 #'   the 4-parameter log-logistic function to fit the dose-response curve. If
 #'   it is not NA, it is fixed the value assigned by the user. Default setting
@@ -334,11 +334,11 @@ PlotDoseResponse <- function(data,
 #'   of text in the plot. All the text size will multiply by this scale factor.
 #' @param heatmap_text_label_size_scale A numeric value. It is used to control
 #'   the size of text labels in the heatmap plot. It only works while 
-#'   \code{plot_type = "heatmap}.
+#'   \code{plot_type = "heatmap"}.
 #' @param heatmap_text_label_color NULL or an R color value. It is used to
 #'   control the color of text labels in the heatmap plot. If it is \code{NULL},
-#'   text label will not be shown.It only works while
-#'   \code{plot_type = "heatmap}. 
+#'   text label will not be shown. It only works while
+#'   \code{plot_type = "heatmap"}.
 #' @param surface_grid A logical value. It indicates whether to add grids on the 
 #'   surface. It only works while \code{plot_type = "3D"}.
 #' @param dynamic A logic value. It indicates whether to generate interactive

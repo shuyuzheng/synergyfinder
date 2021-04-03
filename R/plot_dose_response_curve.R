@@ -45,10 +45,13 @@
 #' @param plot_new A logic value. If it is \code{TRUE}, a new device will be
 #'   initiate with \link[graphics]{plot.new}. You might want to set it as
 #'   \code{FALSE} while combining with other plots by using
-#'    \link[graphiccs]{layout} function.
+#'    \link[graphics]{layout} function.
 #' @param record_plot A logic value. If it is \code{TRUE}, a plot object 
 #'   recorded by \link[grDevices]{recordPlot} will be returned. If it is
 #'   \code{FALSE}, this function will return \code{NULL}.
+#' @param text_size_scale A numeric value. It is used to control the size
+#'   of text in the plot. All the text size will multiply by this scale factor.
+#' 
 #' @return A plot object recorded by \link[grDevices]{recordPlot} or NULL.
 #' 
 #' @author
@@ -150,7 +153,7 @@ PlotDoseResponseCurve <- function(data,
   #the graphical device. From ?pdf:
   if (plot_new) {
     graphics::plot.new()
-    dev.control("enable")
+    grDevices::dev.control("enable")
   }
 
   suppressWarnings(graphics::par(plot_setting))

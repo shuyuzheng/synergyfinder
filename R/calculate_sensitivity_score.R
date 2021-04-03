@@ -153,7 +153,7 @@ CalculateSensitivity <- function(data,
       p_value <- apply(
         tmp_iter, 2, 
         function(x) {
-          z <- abs(mean(x)) / sd(x)
+          z <- abs(mean(x)) / stats::sd(x)
           p <- exp(-0.717 * z - 0.416 * z ^2)
           p <- formatC(p, format = "e", digits = 2, zero.print = "< 2e-324")
           return(p)

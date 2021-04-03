@@ -55,18 +55,6 @@
 #'   points) will be sorted. It could be one of the available values for
 #'   \code{plot_value} or one of the concentration columns (e.g. "cocn1",
 #'   "conc2", ...)
-#' @param summary_statistic A vector of characters or NULL. It indicates the
-#'   summary statistics for all the \code{plot_value} in whole combination
-#'   matrix. Available values are:
-#'   \itemize{
-#'     \item \strong{mean} Median value for all the responses or synergy
-#'     scores in the matrix;
-#'     \item \strong{median} Median value for all the responses or synergy
-#'     scores in the matrix;
-#'     \item \strong{quantile_90} 90\% quantile. User could change the number to
-#'     print different sample quantile. For example quantile_50 equal to median. 
-#'   }
-#'   If it is \code{NULL}, no statistics will be printed.
 #' @param highlight_row A vector of numeric values with the length same as the
 #'   number of drugs in selected block. It contains the concentrations  for
 #'   "drug1", "drug2", ... The data point selected by these concentrations will
@@ -295,15 +283,29 @@ PlotMultiDrugBar <- function(data,
 #' @param low_value_color An R color value. It indicates the color for low
 #'   values.
 #' @param point_color An R color value. It indicates the color for data points.
-#' @param show_data_poinst A logical value. If it is \code{TRUE}, the raw data
-#'   points will be shown on the plot. If it is \code{FALSE}, no points will be
-#'   plotted.
+#' @param text_size_scale A numeric value. It is used to control the size
+#'   of text in the plot. All the text size will multiply by this scale factor.
 #' @param camera_width A numeric value. It indicates the output figure's width
 #'   in pixel while clicking the camera button.
 #' @param camera_height A numeric value. It indicates the output figure's height
 #'   in pixel while clicking the camera button.
 #' @param camera_scale A numeric value. The output plot while clicking the
 #'   camera button.will multiply title/legend/axis/canvas sizes by this factor.
+#' @param summary_statistic A vector of characters or NULL. It indicates the
+#'   summary statistics for all the \code{plot_value} in whole combination
+#'   matrix. Available values are:
+#'   \itemize{
+#'     \item \strong{mean} Median value for all the responses or synergy
+#'     scores in the matrix;
+#'     \item \strong{median} Median value for all the responses or synergy
+#'     scores in the matrix;
+#'     \item \strong{quantile_90} 90\% quantile. User could change the number to
+#'     print different sample quantile. For example quantile_50 equal to median. 
+#'   }
+#'   If it is \code{NULL}, no statistics will be printed.
+#' @param show_data_points A logical value. If it is \code{TRUE}, the raw data
+#'   points will be shown on the plot. If it is \code{FALSE}, no points will be
+#'   plotted.
 #' 
 #' @return A plotly plot object.
 #'
@@ -337,6 +339,7 @@ PlotMultiDrugSurface <- function(data,
                                  low_value_color = "#2166AC",
                                  show_data_points = TRUE,
                                  point_color = "#DDA137",
+                                 text_size_scale = 1,
                                  camera_width = 500,
                                  camera_height = 500,
                                  camera_scale = 1) {
@@ -368,6 +371,7 @@ PlotMultiDrugSurface <- function(data,
     plot_title = plot_title,
     plot_subtitle = plot_data$plot_subtitle,
     z_axis_title = plot_data$z_axis_title,
+    text_size_scale = text_size_scale,
     camera_scale = camera_scale
     )
   return(p)
@@ -413,6 +417,18 @@ PlotMultiDrugSurface <- function(data,
 #'   If it is \code{NULL}, no statistics will be printed.
 #' @param titles A logical value. If it is \code{TRUE}, the plot tile, subtilte,
 #'   and title for z axis will be extracted and output.
+#' @param summary_statistic A vector of characters or NULL. It indicates the
+#'   summary statistics for all the \code{plot_value} in whole combination
+#'   matrix. Available values are:
+#'   \itemize{
+#'     \item \strong{mean} Median value for all the responses or synergy
+#'     scores in the matrix;
+#'     \item \strong{median} Median value for all the responses or synergy
+#'     scores in the matrix;
+#'     \item \strong{quantile_90} 90\% quantile. User could change the number to
+#'     print different sample quantile. For example quantile_50 equal to median. 
+#'   }
+#'   If it is \code{NULL}, no statistics will be printed.
 #'
 #' @return A list. It contains the elements:
 #'   \itemize{
@@ -770,15 +786,17 @@ DimensionReduction <- function(plot_table,
 #' @param plot_subtitle A character value. It is the subtitle for plot.
 #' @param plot_title A character value. It is the title for plot.
 #' @param z_axis_title A character value. It is the title for z-axis.
-#' @param show_data_poinst A logical value. If it is \code{TRUE}, the raw data
-#'   points will be shown on the plot. If it is \code{FALSE}, no points will be
-#'   plotted.
+#' @param text_size_scale A numeric value. It is used to control the size
+#'   of text in the plot. All the text size will multiply by this scale factor.
 #' @param camera_width A numeric value. It indicates the output figure's width on 
 #'   pixel.
 #' @param camera_height A numeric value. It indicates the output figure's height on 
 #'   pixel.
 #' @param camera_scale A numeric value. The output plot will multiply 
 #'   title/legend/axis/canvas sizes by this factor.
+#' @param show_data_points A logical value. If it is \code{TRUE}, the raw data
+#'   points will be shown on the plot. If it is \code{FALSE}, no points will be
+#'   plotted.
 #' 
 #' @return A ggplot object.
 #'
@@ -926,6 +944,8 @@ GenerateSurface <- function(dim_reduced_data,
 #' 
 #' @param selected_data A data frame. It contain the information for the bars
 #'   to be highlighted.
+#' @param text_size A numeric value. It indicates the label text size in "pt"
+#'   for the highlighted row. 
 #'
 #' @return A ggplot object
 #' 

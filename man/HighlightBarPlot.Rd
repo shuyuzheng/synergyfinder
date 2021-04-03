@@ -9,6 +9,9 @@ HighlightBarPlot(selected_data, text_size = 10)
 \arguments{
 \item{selected_data}{A data frame. It contain the information for the bars
 to be highlighted.}
+
+\item{text_size}{A numeric value. It indicates the label text size in "pt"
+for the highlighted row.}
 }
 \value{
 A ggplot object

@@ -40,6 +40,19 @@ values are also available:
   \item \strong{ZIP_fit} The response fitted by ZIP model.
 }}
 
+\item{summary_statistic}{A vector of characters or NULL. It indicates the
+summary statistics for all the \code{plot_value} in whole combination
+matrix. Available values are:
+\itemize{
+  \item \strong{mean} Median value for all the responses or synergy
+  scores in the matrix;
+  \item \strong{median} Median value for all the responses or synergy
+  scores in the matrix;
+  \item \strong{quantile_90} 90\% quantile. User could change the number to
+  print different sample quantile. For example quantile_50 equal to median. 
+}
+If it is \code{NULL}, no statistics will be printed.}
+
 \item{statistic}{A character or NULL. It indicates the statistics printed
 in the plot while there are replicates in input data. Available values are:
 \itemize{

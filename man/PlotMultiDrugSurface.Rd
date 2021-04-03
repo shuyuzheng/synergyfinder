@@ -16,6 +16,7 @@ PlotMultiDrugSurface(
   low_value_color = "#2166AC",
   show_data_points = TRUE,
   point_color = "#DDA137",
+  text_size_scale = 1,
   camera_width = 500,
   camera_height = 500,
   camera_scale = 1
@@ -56,6 +57,19 @@ in the plot while there are replicates in input data. Available values are:
 }
 If it is \code{NULL}, no statistics will be printed.}
 
+\item{summary_statistic}{A vector of characters or NULL. It indicates the
+summary statistics for all the \code{plot_value} in whole combination
+matrix. Available values are:
+\itemize{
+  \item \strong{mean} Median value for all the responses or synergy
+  scores in the matrix;
+  \item \strong{median} Median value for all the responses or synergy
+  scores in the matrix;
+  \item \strong{quantile_90} 90\% quantile. User could change the number to
+  print different sample quantile. For example quantile_50 equal to median. 
+}
+If it is \code{NULL}, no statistics will be printed.}
+
 \item{plot_title}{A charactor value. It specifies the plot title. If it is
 \code{NULL}, the function will automatically generate a title.}
 
@@ -71,7 +85,14 @@ high values.}
 \item{low_value_color}{An R color value. It indicates the color for low
 values.}
 
+\item{show_data_points}{A logical value. If it is \code{TRUE}, the raw data
+points will be shown on the plot. If it is \code{FALSE}, no points will be
+plotted.}
+
 \item{point_color}{An R color value. It indicates the color for data points.}
+
+\item{text_size_scale}{A numeric value. It is used to control the size
+of text in the plot. All the text size will multiply by this scale factor.}
 
 \item{camera_width}{A numeric value. It indicates the output figure's width
 in pixel while clicking the camera button.}
@@ -81,10 +102,6 @@ in pixel while clicking the camera button.}
 
 \item{camera_scale}{A numeric value. The output plot while clicking the
 camera button.will multiply title/legend/axis/canvas sizes by this factor.}
-
-\item{show_data_poinst}{A logical value. If it is \code{TRUE}, the raw data
-points will be shown on the plot. If it is \code{FALSE}, no points will be
-plotted.}
 }
 \value{
 A plotly plot object.

@@ -56,6 +56,9 @@ dose response curve plots.}
 \item{curve_color}{An R color value. It indicates the color for curves in 
 dose response curve plots.}
 
+\item{text_size_scale}{A numeric value. It is used to control the size
+of text in the plot. All the text size will multiply by this scale factor.}
+
 \item{plot_title}{A character value or NULL. It specifies the plot title.
 If it is \code{NULL}, the function will automatically generate a title.}
 
@@ -69,7 +72,7 @@ to \link[graphics]{par} function to modify the appearance of plots.}
 \item{plot_new}{A logic value. If it is \code{TRUE}, a new device will be
 initiate with \link[graphics]{plot.new}. You might want to set it as
 \code{FALSE} while combining with other plots by using
- \link[graphiccs]{layout} function.}
+ \link[graphics]{layout} function.}
 
 \item{record_plot}{A logic value. If it is \code{TRUE}, a plot object 
 recorded by \link[grDevices]{recordPlot} will be returned. If it is

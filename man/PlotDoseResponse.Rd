@@ -82,12 +82,15 @@ of text in the plot. All the text size will multiply by this scale factor.}
 
 \item{heatmap_text_label_size_scale}{A numeric value. It is used to control
 the size of text labels in the heatmap plot. It only works while 
-\code{plot_type = "heatmap}.}
+\code{plot_type = "heatmap"}.}
 
 \item{heatmap_text_label_color}{NULL or an R color value. It is used to
 control the color of text labels in the heatmap plot. If it is \code{NULL},
 text label will not be shown.It only works while
-\code{plot_type = "heatmap}.}
+\code{plot_type = "heatmap"}.}
+
+\item{curve_plot_title}{A character value to indicate the plot title for
+the dose-response curve.}
 
 \item{heatmap_plot_title}{A character value to indicate the plot title for
 the heatmap.}
@@ -117,9 +120,6 @@ user, a default name will be assigned.}
 \item{width}{a numeric value. It indicates the width of saved file.}
 
 \item{height}{a numeric value. It indicates the height of saved file.}
-
-\item{curve_plot_title.}{A character value to indicate the plot title for
-the dose-response curve plots.}
 }
 \value{
 A list of plot objects recorded by \link[grDevices]{recordPlot}. The 

@@ -32,6 +32,10 @@ high values.}
 \item{low_value_color}{An R color value. It indicates the color for low
 values.}
 
+\item{show_data_points}{A logical value. If it is \code{TRUE}, the raw data
+points will be shown on the plot. If it is \code{FALSE}, no points will be
+plotted.}
+
 \item{point_color}{An R color value. It indicates the color for data points.}
 
 \item{plot_title}{A character value. It is the title for plot.}
@@ -42,6 +46,9 @@ values.}
 
 \item{z_axis_title}{A character value. It is the title for z-axis.}
 
+\item{text_size_scale}{A numeric value. It is used to control the size
+of text in the plot. All the text size will multiply by this scale factor.}
+
 \item{camera_width}{A numeric value. It indicates the output figure's width on 
 pixel.}
 
@@ -50,10 +57,6 @@ pixel.}
 
 \item{camera_scale}{A numeric value. The output plot will multiply 
 title/legend/axis/canvas sizes by this factor.}
-
-\item{show_data_poinst}{A logical value. If it is \code{TRUE}, the raw data
-points will be shown on the plot. If it is \code{FALSE}, no points will be
-plotted.}
 }
 \value{
 A ggplot object.
