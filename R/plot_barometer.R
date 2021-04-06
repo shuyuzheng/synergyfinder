@@ -63,7 +63,9 @@
 #' @param major_graduation_inner A numerical value. It indicates the proportion
 #'   of the radius for the outer side of graduation comparing to the outermost
 #'   edge for plotting area. It ranges from 0 to 1.
-#'
+#' @param show_concs A logical value. If it is \code{TRUE}, the concentration of
+#'   drugs will be shown on the plot.
+#'   
 #' @return A ggplot object.
 #' 
 #' @author
@@ -83,7 +85,7 @@
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
 #' data <- CalculateSynergy(data, method = c("ZIP", "HSA", "Bliss", "Loewe"))
-#' p <- PlotBarometer(data, plot_block = 1, c(625, 50), needle_text_offset = -2)
+#' p <- PlotBarometer(data, plot_block = 1, c(625, 50))
 #' p
 PlotBarometer <- function(data,
                           plot_block = 1,
@@ -103,7 +105,8 @@ PlotBarometer <- function(data,
                           color_bar_inner = 8,
                           major_graduation_outer = 7.8,
                           minor_graduation_inner = 7.5,
-                          major_graduation_inner = 7) {
+                          major_graduation_inner = 7,
+                          show_concs = TRUE) {
   # Check plot_block
   if (!plot_block %in% data$drug_pairs$block_id) {
     stop("The input block id '", plot_block, "' could not be found in the input
@@ -162,15 +165,7 @@ PlotBarometer <- function(data,
       }
     ),
   ]
-  # Generate text for concentrations
-  conc_text <- sapply(1:length(plot_concs), function(i){
-    paste0(
-      drug_pair[, paste0("drug", i)], ": ",
-      .RoundValues(plot_concs[i]),
-      " (", drug_pair[, paste0("conc_unit", i)], ")"
-    )
-  })
-  conc_text <- paste(conc_text, collapse = "\n")
+  
   # Data table for color bar
   start_angle <- - pi * 1 / 4
   end_angle <- pi * 5 / 4
@@ -232,7 +227,27 @@ PlotBarometer <- function(data,
       }
     }
   }
-  
+  if (show_concs){
+    # Generate text for concentrations
+    conc_text <- sapply(1:length(plot_concs), function(i){
+      paste0(
+        drug_pair[, paste0("drug", i)], ": ",
+        .RoundValues(plot_concs[i]),
+        " (", drug_pair[, paste0("conc_unit", i)], ")"
+      )
+    })
+    conc_text <- paste(conc_text, collapse = "\n")
+    center_texts <- paste0(
+      "[ ", 
+      .RoundValues(needle_value), 
+      "% ]\n",
+      conc_text)
+  } else {
+    center_texts <- paste0(
+      "[ ", 
+      .RoundValues(needle_value), 
+      "% ]\n")
+  }
   p <- ggplot(color_bar_data) +
     ggforce::geom_arc_bar(
       data = color_bar_data[-101,],
@@ -315,11 +330,7 @@ PlotBarometer <- function(data,
       aes(x = 0, y = -needle_text_offset),
       size = needle_text_size,
       family = font_family,
-      label = paste0(
-        "[ ", 
-        .RoundValues(needle_value), 
-        "% ]\n",
-        conc_text),
+      label = center_texts,
       color = needle_color
     )
   # Mark reference

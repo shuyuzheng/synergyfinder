@@ -23,7 +23,8 @@ PlotBarometer(
   color_bar_inner = 8,
   major_graduation_outer = 7.8,
   minor_graduation_inner = 7.5,
-  major_graduation_inner = 7
+  major_graduation_inner = 7,
+  show_concs = TRUE
 )
 }
 \arguments{
@@ -92,6 +93,9 @@ edge for plotting area. It ranges from 0 to 1.}
 \item{major_graduation_inner}{A numerical value. It indicates the proportion
 of the radius for the outer side of graduation comparing to the outermost
 edge for plotting area. It ranges from 0 to 1.}
+
+\item{show_concs}{A logical value. If it is \code{TRUE}, the concentration of
+drugs will be shown on the plot.}
 }
 \value{
 A ggplot object.
@@ -106,7 +110,7 @@ the bar if they are included in input \code{data}.
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
 data <- CalculateSynergy(data, method = c("ZIP", "HSA", "Bliss", "Loewe"))
-p <- PlotBarometer(data, plot_block = 1, c(625, 50), needle_text_offset = -2)
+p <- PlotBarometer(data, plot_block = 1, c(625, 50))
 p
 }
 \references{
