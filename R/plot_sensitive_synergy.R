@@ -88,7 +88,7 @@ PlotSensitiveSynergy <- function(data,
   if (is.null(plot_title)) {
     plot_title <- paste0(
       sub("_synergy", "", plot_synergy),
-      " Synergy - CSS")
+      " - CSS")
   }
 
   
@@ -142,8 +142,7 @@ PlotSensitiveSynergy <- function(data,
           showspikes = FALSE
         ),
         yaxis = list(
-          title = paste0("<i>", sub("_synergy", "", plot_synergy),
-                         " Synergy Score", "</i>"),
+          title = paste0("<i>", "Synergy Score", "</i>"),
           tickfont = list(size = 12 , family = "arial"),
           # ticks = "none",
           showspikes = FALSE
@@ -183,7 +182,7 @@ PlotSensitiveSynergy <- function(data,
       labs(
         title = plot_title,
         x = "Combination Sensitivity Score",
-        y = paste0(sub("_synergy", "", plot_synergy), " Synergy Score")
+        y = paste0("Synergy Score")
       ) +
       theme_classic() +
       theme(
