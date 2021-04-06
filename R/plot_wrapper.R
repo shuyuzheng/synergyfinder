@@ -378,10 +378,10 @@ PlotDoseResponse <- function(data,
 #' @return A list of ggplot objects.
 #'    
 #' @author
-#'   \itemize{
-#'     \item Liye He \email{liye.he@helsinki.fi},
-#'     \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
-#'   }
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
 #'
 #' @export
 #' 
