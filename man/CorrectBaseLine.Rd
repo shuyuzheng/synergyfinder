@@ -7,8 +7,8 @@
 CorrectBaseLine(response, method = c("non", "part", "all"))
 }
 \arguments{
-\item{response}{A drug cobination dose-response matrix. It's column name
-and row name are representing the concerntrations of drug added to column
+\item{response}{A drug combination dose-response matrix. It's column name
+and row name are representing the concentrations of drug added to column
 and row, respectively. The values in matrix indicate the inhibition rate to
 cell growth.}
 

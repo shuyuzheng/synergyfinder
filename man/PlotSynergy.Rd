@@ -175,7 +175,7 @@ plots <- PlotSynergy(data, "2D", block_ids = NULL)
 }
 \author{
 \itemize{
-    \item Liye He \email{liye.he@helsinki.fi},
-    \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
-  }
+  \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+  \item Jing Tang \email{jing.tang@helsinki.fi}
+}
 }
