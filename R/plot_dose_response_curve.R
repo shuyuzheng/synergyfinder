@@ -135,7 +135,13 @@ PlotDoseResponseCurve <- function(data,
   single_drug_data <- ExtractSingleDrug(response)
   single_drug_data <- single_drug_data[[paste0("conc", drug_index)]]
   # Fit model for the row drug
-  drug_model <- FitDoseResponse(single_drug_data, Emin = Emin, Emax = Emax)
+  drug_model <- suppressWarnings(
+    FitDoseResponse(
+      single_drug_data,
+      Emin = Emin,
+      Emax = Emax
+    )
+  )
   
   if (is.null(plot_subtitle)) {
     plot_subtitle <- paste(
@@ -147,10 +153,24 @@ PlotDoseResponseCurve <- function(data,
   if (is.null(plot_title)) {
     plot_title <- "Dose-Response Curve"
   }
+  
   # plot the curve for the drug
   # For all of R's graphical devices, the default text size is 12 points but it
   # can be reset by including a pointsize argument to the function that opens
   #the graphical device. From ?pdf:
+  # curve_pred <- data.frame(
+  #   dose = seq(0, max(single_drug_data$dose), length.out = 700),
+  #   response = PredictModelSpecify(
+  #     drug_model, 
+  #     seq(0, max(single_drug_data$dose), length.out = 700)
+  #   ),
+  #   stringsAsFactors = FALSE
+  # )
+  # p1 <- ggplot(single_drug_data) +
+  #   geom_point(aes(log10(dose), response)) +
+  #   geom_line(aes(log10(dose), response), data = curve_pred) + 
+  #   scale_y_continuous(trans = log10_trans())
+  # p1
   if (plot_new) {
     graphics::plot.new()
     grDevices::dev.control("enable")

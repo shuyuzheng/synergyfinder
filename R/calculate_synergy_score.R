@@ -312,7 +312,7 @@ ZIP <- function(response,
   single_drug_data <- ExtractSingleDrug(response)
   single_drug_model <- lapply(
     single_drug_data,
-    function(x) FitDoseResponse(x, Emin = Emin, Emax = Emax)
+    function(x)  suppressWarnings(FitDoseResponse(x, Emin = Emin, Emax = Emax))
   )
   
   single_drug_pred <- lapply(single_drug_model, 
@@ -340,12 +340,16 @@ ZIP <- function(response,
       tidyr::nest(dplyr::any_of(c("dose", "response"))) %>% 
       dplyr::mutate(pred = furrr::future_map(data, function(x, conc) {
         condition_baseline <- x$response[which(x$dose == 0)]
-        model <- FitDoseResponse(x, Emin = condition_baseline,
-                                 Emax = NA) # Fit dose response curve
-        pred <- stats::predict(model) # Predict response on corresponding dosage
+        model <-  suppressWarnings(
+          FitDoseResponse(
+            x,
+            Emin = condition_baseline,
+            Emax = NA
+          )) # Fit dose response curve
+        pred <-  suppressWarnings(stats::predict(model)) # Predict response on corresponding dosage
         return(pred)
       })) %>% 
-      tidyr::unnest() %>% 
+      tidyr::unnest(cols = c(data, pred)) %>% 
       dplyr::rename(!!conc := "dose")
   })
   
@@ -592,7 +596,7 @@ Loewe <- function(response,
   single_drug_data <- ExtractSingleDrug(response)
   single_drug_model <- lapply(
     single_drug_data,
-    function(x) FitDoseResponse(x, Emin = Emin, Emax = Emax)
+    function(x)  suppressWarnings(FitDoseResponse(x, Emin = Emin, Emax = Emax))
   )
 
   single_par <- lapply(single_drug_model, FindModelPar)
@@ -616,7 +620,7 @@ Loewe <- function(response,
       if (all(!is.finite(x_cap))) { # if none of drug achieve the combination response
         # max of the single drug response
         y_loewe[i] <- max(mapply(function(model) {
-          PredictModelSpecify(model, sum(x))
+          suppressWarnings(PredictModelSpecify(model, sum(x)))
         },
         model = single_drug_model
         ))
@@ -644,8 +648,8 @@ Loewe <- function(response,
 #' \code{CorrectBaseLine} adjusts the base line of drug combination
 #' dose-response matrix to make it closer to 0.
 #'
-#' @param response A drug cobination dose-response matrix. It's column name
-#'   and row name are representing the concerntrations of drug added to column
+#' @param response A drug combination dose-response matrix. It's column name
+#'   and row name are representing the concentrations of drug added to column
 #'   and row, respectively. The values in matrix indicate the inhibition rate to
 #'   cell growth.
 #' @param method A character value. It indicates the method used for
@@ -677,7 +681,7 @@ CorrectBaseLine <- function(response, method = c("non", "part", "all")) {
     single_drug_data <- ExtractSingleDrug(response)
     single_drug_model <- lapply(
       single_drug_data,
-      function(x) FitDoseResponse(x)
+      function(x)  suppressWarnings(FitDoseResponse(x))
     )
     
     baseline <- Reduce(min, lapply(single_drug_model, stats::fitted))
