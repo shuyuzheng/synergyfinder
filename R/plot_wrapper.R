@@ -199,6 +199,7 @@ PlotDoseResponse <- function(data,
         Emin = Emin,
         Emax = Emax,
         plot_new = FALSE,
+        record_plot = FALSE,
         text_size_scale = text_size_scale,
         plot_title = curve_plot_title
       )
@@ -259,8 +260,6 @@ PlotDoseResponse <- function(data,
           units = "in", res = 600
         ))
       }
-      #
-      # grDevices::jpeg(file_name, width = 800, height = 600)
       grDevices::replayPlot(merge_plot)
       grDevices::dev.off()
     }
