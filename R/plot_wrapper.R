@@ -192,7 +192,7 @@ PlotDoseResponse <- function(data,
           cex.main = 1 / 12 * 13.5,
           cex.sub = 1
         ),
-        plot_subtitle = "",
+        plot_subtitle = NULL,
         grid = grid,
         point_color = point_color,
         curve_color = curve_color,
