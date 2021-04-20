@@ -114,8 +114,8 @@ x an y axis. A surface for the selected \code{plot_value} and points for
 all the concentration combinations will be plotted.
 }
 \examples{
-data("NCATS_10023_data")
-data <- ReshapeData(NCATS_10023_data)
+data("NCATS_screening_data")
+data <- ReshapeData(NCATS_screening_data)
 p <- PlotMultiDrugSurface(
   data,
   plot_block = 1,

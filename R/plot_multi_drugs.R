@@ -88,8 +88,8 @@
 #' @export
 #'
 #' @examples
-#' data("NCATS_10023_data")
-#' data <- ReshapeData(NCATS_10023_data)
+#' data("NCATS_screening_data")
+#' data <- ReshapeData(NCATS_screening_data)
 #' data <- CalculateSynergy(data, method = c("HSA"))
 #' p <- PlotMultiDrugBar(data, 
 #'   plot_block = 1,
@@ -318,8 +318,8 @@ PlotMultiDrugBar <- function(data,
 #' @export
 #'
 #' @examples
-#' data("NCATS_10023_data")
-#' data <- ReshapeData(NCATS_10023_data)
+#' data("NCATS_screening_data")
+#' data <- ReshapeData(NCATS_screening_data)
 #' p <- PlotMultiDrugSurface(
 #'   data,
 #'   plot_block = 1,

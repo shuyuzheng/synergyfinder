@@ -93,8 +93,8 @@ in the combination data. The data point specified by \code{highlight_row}
 will be highlighted in different color.
 }
 \examples{
-data("NCATS_10023_data")
-data <- ReshapeData(NCATS_10023_data)
+data("NCATS_screening_data")
+data <- ReshapeData(NCATS_screening_data)
 data <- CalculateSynergy(data, method = c("HSA"))
 p <- PlotMultiDrugBar(data, 
   plot_block = 1,
