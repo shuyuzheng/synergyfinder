@@ -18,19 +18,19 @@ knitr::opts_chunk$set(
 
 # Summary
 
-Combinatorial therapies have been recently proposed for improving anticancer treatment efficacy. To facilitate the drug combination discovery, high-throughput drug combination screening has the advantage of assaying a large collection of chemical compounds, generating dynamic dose-response profiles that allow us to quantify the degree of drug-drug interactions at an unprecedented level. *SynergyFinder* R package is a software tool to analyze pre-clinical drug combination data sets. It provides efficient implementations for 
+Combinatorial therapies is one of the major strategies for improving treatment efficacy in treating cancer. High-throughput drug combination screening has the advantage of assaying a large collection of chemical compounds in search for promising drug pairs. Studies that utilizes drug combination screening have generated dynamic dose-response profiles that allow researchers to quantify the degree of drug-drug interactions at an unprecedented level. *SynergyFinder* R package is a software tool to analyze such pre-clinical drug combination data sets. It provides efficient implementations for 
 
 1. all the popular synergy scoring models, including HSA, Loewe, Bliss, and ZIP to quantify the degree of drug synergy;
 2. higher order drug combination data analysis and synergy landscape visualization for unlimited number of drugs in a combination;
 3. statistical analysis of drug combination synergy and sensitivity with confidence intervals and p-values;
-4. synergy barometer to harmonize multiple synergy scoring methods to provide a consensus metric of synergy;
-5. evaluation of drug combination synergy and sensitivity simultaneously to provide an unbiased interpretation of the clinical potential.
+4. synergy barometer for harmonizing multiple synergy scoring methods to provide a consensus metric of synergy;
+5. evaluation of synergy and sensitivity simultaneously to provide an unbiased interpretation of the clinical potential of the drug combinations.
 
-To facilitate the use of the R package for the drug discovery community, we also provide a web server at http://synergyfinderplus.org/ that provides a user-friendly interface to enable a more flexible and versatile analysis of drug combination data. In the web application, in addition to the functions in R package, we provide the annotation of drugs and cell lines that are tested in an experiment, including their chemical information, targets and signaling network information.
+To facilitate the use of the R package for the drug discovery community, we also provide a web server at http://synergyfinderplus.org/ as a user-friendly interface to enable a more flexible and versatile analysis of drug combination data. In the web application, in addition to the functions in R package, we provide the annotation of drugs and cell lines that are tested in an experiment, including their chemical information, targets and signaling network information.
 
 # 1. Install and load the SynergyFinder
 
-**Note:** It is recommend to install *Bioconductor >= 3.13* and *SynergyFinder >= 3.0.1* to access the new features described in this vignette. 
+**Note:** We recommend to install *Bioconductor >= 3.13* and *SynergyFinder >= 3.0.1* to access the new features described in this vignette. 
 
 To install the *SynergyFinder* package from [Bioconductor](https://www.bioconductor.org/packages/release/bioc/html/synergyfinder.html), start R (>= 4.0) and then enter:
 
@@ -79,7 +79,7 @@ There are several optional columns available for the higher-order drug combinati
 2. There is no restriction on the number of drug combinations (blocks) for the input file. The data should however, contain **at least three concentrations for each drug** in each block, so that sensible synergy scores can be calculated.
 3. *synergyfinder* allows for missing values in the dose-response matrix. The missing value will be automatically imputed by [mice](https://amices.org/mice/) R package.
 
-*SynergyFinder* provides an example input data (`mathews_screening_data`) in the package, which is extracted from a drug combination screening study for the treatment of diffuse large B-cell lymphoma (DLBCL) [1]. The example input data contains two representative drug combinations (ibrutinib & ispinesib and ibrutinib & canertinib) for which the %viability of a cell line TMD8 was assayed using a 6 by 6 dose matrix design. To load the example data, we use the command:
+*SynergyFinder* provides an example input data (`mathews_screening_data`) in the package, which is extracted from a published drug combination screening study for the treatment of diffuse large B-cell lymphoma (DLBCL) [1]. The example input data contains two representative drug combinations (ibrutinib & ispinesib and ibrutinib & canertinib) for which the %viability of a cell line TMD8 was assayed using a 6 by 6 dose matrix design. To load the example data, please run:
 
 ```{r}
 data("mathews_screening_data")
@@ -128,14 +128,14 @@ The synergistic effect can be determined as the excess of observed effect over e
 * **Highest Single Agent (HSA)** [2] states that the expected combination effect equals to the higher effect of individual drugs:
 
 $$y_{HSA} = max(y_1, y_2)$$
-, where $y_1$ and $y_2$ are the monotherapy effect of combined drug 1 and drug 2
+where $y_1$ and $y_2$ are the monotherapy effect of combined drug 1 and drug 2
 
 * **Bliss** model [3] assumes a stochastic process in which two drugs exert their effects independently, and the expected combination effect can be calculated based on the probability of independent events as:
 
 $$
 		y_{Bliss} = y_1 + y_2 - y_1 \cdot y_2
 $$
-, where $y_1$ and $y_2$ are the monotherapy effect of combined drug 1 and drug 2
+where $y_1$ and $y_2$ are the monotherapy effect of combined drug 1 and drug 2
 
 * **Loewe** additivity model [4] defines the expected effect $y_{Loewe}$ as if a drug was combined with itself, i.e. $y_{Loewe} = y_1(x_1 + x_2) = y_2(x_1 + x_2)$. Unlike the HSA and the Bliss independence models, which give a point estimate using different assumptions, the Loewe additivity model considers the dose-response curves of individual drugs. The expected effect $y_{Loewe}$ must satisfy:
 
@@ -147,7 +147,7 @@ $$
 		= 1
 $$
 
-, where $x_{1,2}$ are drug doses and $\chi_{Loewe}^1,\ \chi_{Loewe}^2$ are the doses of drug 1 and 2 alone that produce $y_{Loewe}$.
+where $x_{1,2}$ are drug doses and $\chi_{Loewe}^1,\ \chi_{Loewe}^2$ are the doses of drug 1 and 2 alone that produce $y_{Loewe}$.
 Using 4-parameter log-logistic (4PL) curves to describe dose-response curves the following parametric form of previous equation is derived:
 
 $$
@@ -157,14 +157,14 @@ $$
 		\frac{x_2}{m_2(\frac{y_{Loewe}-E_{min}^2}{E_{max}^2 - y_{Loewe}})^{\frac{1}{\lambda_2}}}
 		= 1
 $$
-, where $E_{min}, E_{max}\in[0,1]$ are minimal and maximal effects of the drug, $m_{1,2}$ are the doses of drugs that produce the midpoint effect of $E_{min} + E_{max}$, also known as relative $EC_{50}$ or $IC_{50}$, and $\lambda_{1,2}(\lambda>0)$ are the shape parameters indicating the sigmoidicity or slope of dose-response curves. A numerical nonlinear solver can be then used to determine $y_{Loewe}$ for ($x_1$, $x_2$).
+where $E_{min}, E_{max}\in[0,1]$ are minimal and maximal effects of the drug, $m_{1,2}$ are the doses of drugs that produce the midpoint effect of $E_{min} + E_{max}$, also known as relative $EC_{50}$ or $IC_{50}$, and $\lambda_{1,2}(\lambda>0)$ are the shape parameters indicating the sigmoidicity or slope of dose-response curves. A numerical nonlinear solver can be then used to determine $y_{Loewe}$ for ($x_1$, $x_2$).
 
 * **Zero Interaction Potency (ZIP)** [5] calculates the expected effect of two drugs under the assumption that they do not potentiate each other, i.e. both the assumptions of the Loewe model and the Bliss model are met:
 
 $$
 y_{ZIP} = \frac{(\frac{x_1}{m_1}) ^ {\lambda_1}}{(1 + \frac{x_1}{m_1})^{\lambda_1}}+\frac{(\frac{x_2}{m_2})^{\lambda_2}}{(1 + \frac{x_2}{m_2})^{\lambda_2}} - \frac{(\frac{x_1}{m_1})^{\lambda_1}}{(1 + \frac{x_1}{m_1})^{\lambda_1}} \cdot \frac{(\frac{x_2}{m_2})^{\lambda_2}}{(1 + \frac{x_2}{m_2})^{\lambda_2}}
 $$
-, where $x_{1, 2}, m_{1, 2}, and\ \lambda_{1, 2}$ are defined in the Loewe model.
+where $x_{1, 2}, m_{1, 2}, and\ \lambda_{1, 2}$ are defined in the Loewe model.
 
 For the input data without replicates, the statistical analysis for synergy scores of the whole dose-response matrix is estimated under the null hypothesis of non-interaction (zero synergy score). Suppose that $S_1, S_2, ...S_n$ are the synergy scores for all the concentration combinations (excluding monotherapies) for the dose-response matrix with mean of $\bar s$. The p-value is:
 
@@ -210,7 +210,7 @@ str(res$synergy_scores)
 * **Relative IC50**: *SynergyFinder* extracts the single drug treatment response data from the combination matrix to fit the 4-parameter log-logistic curve:
 
 $$y = y_{min} + \frac{y_{max} - y_{min}}{1 + 10^{\lambda(log_{10}IC_{50} - x')}}$$
-, where $y_{min}, y_{max}$ are minimal and maximal inhibition and $x' = log_{10}x$
+where $y_{min}, y_{max}$ are minimal and maximal inhibition and $x' = log_{10}x$
 
 * **RI**: RI is the abbreviation of “relative inhibition”. It is the proportion of the area under the dose-response curve (fitted by four parameter log logistic model), to the maximal area that one drug can achieve at the same dose range (Figure 1). For example, RI of 40 suggests that the drug is able to achieve 40% of the maximal of inhibition (e.g. a positive control where the cell is 100% inhibited in each dose that in the range). RI is comparable between 
 different scenarios, even for the same drug-cell pair but tested in different concentration ranges.
@@ -222,7 +222,7 @@ knitr::include_graphics("./ri.png")
 * **CSS**: CSS is the abbreviation of "Combination Sensitivity Score". It is derived using relative IC50 values of compounds and the area under their dose-response curves. CSS of a drug combination is calculated such that each of the compounds (background drug) is used at a fixed concentration (its relative IC50) and another is at varying concentrations (foreground drug) resulting in two CSS values, which are then averaged. Each drug's dose-response is modeled using 4-parameter log-logistic curve. The area under the log-scaled dose-response curve (AUC) is then determined according to:
 
 $$AUC = \int_{c_1}^{c_2}y_{min} + \frac{y_{max}-y_{min}}{1 + 10^{\lambda(log_{10}IC_{50}-x')}}dx'$$
-, where $[c_1, c_2]$ is the concentration range of the foreground drug tested.[6]
+where $[c_1, c_2]$ is the concentration range of the foreground drug tested.[6]
 
 The function `CalculateSensitivity` is designed to calculate the synergy scores. Important parameters are:
 
@@ -323,7 +323,7 @@ Plot2DrugHeatmap(
     drugs = c(1, 2),
     plot_value = "response",
     dynamic = FALSE,
-    summary_statistic = c("mean", "quantile_25", "median", "quantile_75")
+    summary_statistic = c("mean",  "median")
   )
 
 Plot2DrugHeatmap(
@@ -332,7 +332,7 @@ Plot2DrugHeatmap(
     drugs = c(1, 2),
     plot_value = "ZIP_synergy",
     dynamic = FALSE,
-    summary_statistic = c("mean", "quantile_25", "median", "quantile_75")
+    summary_statistic = c( "quantile_25", "quantile_75")
   )
 ```
 
@@ -347,7 +347,7 @@ Plot2DrugContour(
     drugs = c(1, 2),
     plot_value = "response",
     dynamic = FALSE,
-    summary_statistic = c("mean", "quantile_25", "median", "quantile_75")
+    summary_statistic = c("mean", "median")
   )
 Plot2DrugContour(
     data = res,
@@ -355,7 +355,7 @@ Plot2DrugContour(
     drugs = c(1, 2),
     plot_value = "ZIP_synergy",
     dynamic = FALSE,
-    summary_statistic = c("mean", "quantile_25", "median", "quantile_75")
+    summary_statistic = c("quantile_25", "quantile_75")
   )
 ```
 
@@ -402,6 +402,7 @@ It is recommend to plot the 3D surface in dynamic (`dynamic=TRUE`) way, with whi
 *SynergyFinder* provides two plotting wrapper for two-drug combination dose-response visualization (`PlotDoseResponse`) and synergy score visualization (`PlotSynergy`).
 
 The function `PlotDoseResponse` combined the dose-response curve and dose-response heatmap in one figure. In addition to the parameters inherited from `PlotDoseResponseCurve` and `Plot2DrugHeatmap`, this function has the parameters for saving the plot as a file, including:
+
 * `save_file` Whether to save the plot into a file;
 * `file_type` The file format. Default is "pdf". Available values are "jpeg", "bmp", "png", "tiff", "pdf", "svg";
 * `file_name` The name of the file. If it is `NULL` the default file names containing drug names and block ID are used.
@@ -448,11 +449,12 @@ The function `PlotBarometer` is designed to generate the barometer for given con
 The needle of the barometer points to the observed response value. The expected responses from different models are marked as the ticks on the color bar. The observed response and the concentration of the combined drugs are tested at the center of the barometer. This plot is available for high-order drug combination visualization.
 
 Important parameters for this function are:
+
 * `data`: The R object generated by function `CalculateSynergy`;
 * `plot_block`: Select the block from which to extract the observed and expected response values;
 * `plot_concs`: Select the concentration combination of drugs in the combination matrix to generate the plot. Its value should be a vector of numeric values which represents the concentrations of drug 1, drug 2, ... at selected combination point. The length of the vector must be equal to the number of drugs in the block. The concentrations must be tested concentrations for corresponding drug.
 
-This function will return a `ggplot` object. User could use `+ theme()` to adjust the plot theme. 
+This function will return a `ggplot` object. User could add additional `theme()` layers to adjust the plot theme. 
 
 Following shows two examples for a synergy combination from block 1 at ispinesib 9.7656 nM + ibrutinib 50 nM and a antagonistic combination from block 2 at Canertinib 625 nM + Ibrutinib 12.5 nM
 
@@ -531,7 +533,7 @@ PlotSensitiveSynergy(
 
 # 6. Data with replicates
 
-*SynergyFinder* has an build-in example data (`ONEIL_screening_data`) in the package. It is extracted from a pan-cancer drug screening study.[7] The example input data contains two representative drug combinations (MK-1775 & Niraparib and Paclitaxel & L-778123 free base) for which the %inhibition of a cell line OCUBM and NCIH2122 was assayed using a 5 by 5 dose matrix design with four replicates. To load the example data, we use the command:
+*SynergyFinder* has an build-in example data (`ONEIL_screening_data`) in the package. It is extracted from a pan-cancer drug screening study.[7] The example input data contains two representative drug combinations (MK-1775 & Niraparib and Paclitaxel & L-778123 free base) for which the %inhibition of a cell line OCUBM and NCIH2122 was assayed using a 5 by 5 dose matrix design with four replicates. To load the example data, please run:
 
 ```{r}
 data("ONEIL_screening_data")
@@ -653,7 +655,7 @@ Plot2DrugHeatmap(
     plot_value = "response",
     dynamic = FALSE,
     statistic = "sem",
-    summary_statistic = c("mean", "quantile_25", "median", "quantile_75")
+    summary_statistic = c("mean",  "median", )
   )
 
 # 95% confidence interval
@@ -664,13 +666,13 @@ Plot2DrugHeatmap(
     plot_value = "ZIP_synergy",
     statistic = "ci",
     dynamic = FALSE,
-    summary_statistic = c("mean", "quantile_25", "median", "quantile_75")
+    summary_statistic = c("quantile_25", "quantile_75")
   )
 ```
 
 # 7 Higher-order drug combination screening
 
-*SynergyFinder* has an build-in example data (`NCATS_screening_data`) in the package. It is extracted from a triple drug screening study on malaria.[8] The example input data contains two representative drug combinations (Piperaquine & Pyronaridine Tetraphosphate & Darunavir Ethanolate and Piperaquine & Pyronaridine Tetraphosphate & Lopinavir) for which the %inhibition of malaria was assayed using a 10 by 10 by 12 dose matrix design with four replicates. To load the example data, we use the command:
+*SynergyFinder* has an build-in example data (`NCATS_screening_data`) in the package. It is extracted from a triple drug screening study on malaria.[8] The example input data contains two representative drug combinations (Piperaquine & Pyronaridine Tetraphosphate & Darunavir Ethanolate and Piperaquine & Pyronaridine Tetraphosphate & Lopinavir) for which the %inhibition of malaria was assayed using a 10 by 10 by 12 dose matrix design with four replicates. To load the example data, please run:
 
 ```{r}
 data("NCATS_screening_data")
@@ -748,12 +750,12 @@ str(res$synergy_scores)
 
 ## 7.3 Sensitivity scoring
 
-The calculation of RI and relative IC50 for monotherapies in higher-order drug combination is same as that is used in 2-drug combination data. Please check section 4.2 for more details.
+The calculation of RI and relative IC50 of monotherapies in higher-order drug combination is same as that is used in the 2-drug combination data. Please check section 4.2 for more details.
 
 *SynergyFinder* extends the CSS score developed by Malyutina et al.[6] to higher-order drug combinations. For a combination that involves $n$ drugs, the $CSS_ij$ for each pair of "drug i + drug j" combination, where $i,j \in {1, 2, 3, ..., n}$, is calculated while fixing the drug i (background drug) at its relative IC50 and let drug j be at varying concentrations (foreground drug). Drug j's dose-response is modeled using 4-parameter log-logistic curve. The area under the log-scaled dose-response curve (AUC) is then determined according to:
 
 $$AUC = \int_{c_1}^{c_2}y_{min} + \frac{y_{max}-y_{min}}{1 + 10^{\lambda(log_{10}IC_{50}-x')}}dx'$$
-, where $[c_1, c_2]$ is the concentration range of the foreground drug tested. 
+where $[c_1, c_2]$ is the concentration range of the foreground drug tested. 
 
 The CSS for the whole dose-response matrix is defined as the average of all the pair-wise CSS:
 
