@@ -28,7 +28,7 @@ Combinatorial therapies is one of the major strategies for improving treatment e
 
 To facilitate the use of the R package for the drug discovery community, we also provide a web server at http://synergyfinderplus.org/ as a user-friendly interface to enable a more flexible and versatile analysis of drug combination data. In the web application, in addition to the functions in R package, we provide the annotation of drugs and cell lines that are tested in an experiment, including their chemical information, targets and signaling network information.
 
-# 1. Install and load the SynergyFinder
+# 1 Installation
 
 **Note:** We recommend to install *Bioconductor >= 3.13* and *SynergyFinder >= 3.0.1* to access the new features described in this vignette. 
 
@@ -47,7 +47,7 @@ Load *SynergyFinder* to R environment
 library(synergyfinder)
 ```
 
-# 2.Prepare inpute data
+# 2 Input data
 
 *synergyfinder* requires a data frame that describes the drug combination data set. The dose-response data is represented as a long table where each row represent one observation in the dose-response matrix.
 
@@ -86,7 +86,7 @@ data("mathews_screening_data")
 head(mathews_screening_data)
 ```
 
-# 3. Reshape and pre-process
+# 3 Reshaping and pre-processing
 
 We provide a function `ReshapeData` to reshape and pre-process the input data for further analysis:
 
@@ -119,9 +119,9 @@ The output `data` is a list containing following components:
 str(res)
 ```
 
-# 4. Synergy and Sensitivity analysis
+# 4 Synergy and sensitivity analysis
 
-## 4.1. Drug synergy scoring
+## 4.1 Drug synergy scoring
 
 The synergistic effect can be determined as the excess of observed effect over expected effect calculated by a reference models (synergy scoring models). All of the models make different assumptions regarding the expected effect. Currently, 4 reference models are available in *SynergyFinder*. 
 
@@ -255,7 +255,7 @@ sensitive_columns <- c(
 res$drug_pairs[, sensitive_columns]
 ```
 
-# 5. Visualization
+# 5 Visualization
 
 ## 5.1 Dose-response curve
 
@@ -312,7 +312,7 @@ Important parameters shared by all the three functions are:
 
 Following shows the examples for dose-response and ZIP synergy landscape.
 
-### 1. Heatmap (`Plot2DrugHeatmap`)
+### 5.2.1 Heatmap
 
 If `dynamic` is set as `FALSE`, this function will return a `ggplot` object. User could use `+ theme()` to adjust the plot theme. 
 
@@ -336,7 +336,7 @@ Plot2DrugHeatmap(
   )
 ```
 
-### 2. 2D contour plot (`Plot2DrugContour`)
+### 5.2.2 2D contour plot
 
 If `dynamic` is set as `FALSE`, this function will return a `ggplot` object. User could use `+ theme()` to adjust the plot theme. 
 
@@ -359,7 +359,7 @@ Plot2DrugContour(
   )
 ```
 
-### 3. 3D surface plot
+### 5.2.3 3D surface plot
 
 If parameter `dynamic` is set as `FALSE`, this function will return an object of class `recordedplot`. User could use `replayPlot` to plot it.
 
@@ -531,7 +531,7 @@ PlotSensitiveSynergy(
 )
 ```
 
-# 6. Data with replicates
+# 6 Data with replicates
 
 *SynergyFinder* has an build-in example data (`ONEIL_screening_data`) in the package. It is extracted from a pan-cancer drug screening study.[7] The example input data contains two representative drug combinations (MK-1775 & Niraparib and Paclitaxel & L-778123 free base) for which the %inhibition of a cell line OCUBM and NCIH2122 was assayed using a 5 by 5 dose matrix design with four replicates. To load the example data, please run:
 
@@ -540,7 +540,7 @@ data("ONEIL_screening_data")
 head(ONEIL_screening_data)
 ```
 
-## 6.1 Reshape and pre-process
+## 6.1 Reshaping and pre-processing
 
 The function `ReshapeData` automatically detect whether there are replicates in the input data. If there are replicates, this function calculates the statistics for the response value (both adjusted and original values) via bootstrapping.
 
@@ -655,7 +655,7 @@ Plot2DrugHeatmap(
     plot_value = "response",
     dynamic = FALSE,
     statistic = "sem",
-    summary_statistic = c("mean",  "median", )
+    summary_statistic = c("mean",  "median")
   )
 
 # 95% confidence interval
@@ -679,7 +679,7 @@ data("NCATS_screening_data")
 head(NCATS_screening_data)
 ```
 
-## 7.1 Reshape and pre-process
+## 7.1 Reshaping and pre-processing
 
 The utility of function `ReshapeData` on higher-order drug combination screening data is same as that on 2-drug combination screening data. Please check section 3 for more details about the parameters and output format.
 
