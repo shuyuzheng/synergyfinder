@@ -57,7 +57,7 @@ summary statistics printed in heatmap for all the \code{plot_value} in
 whole combination matrix. Available values are:
 \itemize{
   \item \strong{mean} Median value for all the responses or synergy
-  scores in the matrix;
+  scores in the matrix and the p-value if it is valid;
   \item \strong{median} Median value for all the responses or synergy
   scores in the matrix;
   \item \strong{quantile_90} 90% quantile. User could change the number to

@@ -32,7 +32,7 @@ to the "response" values in the matrix. Default is \code{TRUE}.}
 random seed for calculating the noise. Default setting is \code{NULL}}
 
 \item{iteration}{An integer. It indicates the number of iterations for
-synergy scores calculation on data with replicates.}
+bootstrapping while calculating statistics for data with replicates.}
 
 \item{data_type}{a parameter to specify the response data type which can be
 either "viability" or "inhibition".}

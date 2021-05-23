@@ -44,7 +44,7 @@
 #'   values are also available:
 #'   \itemize{
 #'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
-#'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
+#'     additive effects calculated by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
 #'     \item \strong{ZIP_synergy, Bliss_synergy, HSA_synergy, Loewe_synergy}
 #'     The synergy score calculated by ZIP, Bliss, HSA or Loewe model,
@@ -109,7 +109,7 @@ PlotMultiDrugBar <- function(data,
                              highlight_neg_color = "#2166AC",
                              panel_title_size = 10,
                              axis_text_size = 10,
-                             highlight_label_size = 2,
+                             highlight_label_size = 5,
                              data_table = FALSE) {
   plot_data <- .ExtractMultiDrugPlotData(
     data,
@@ -257,27 +257,20 @@ PlotMultiDrugBar <- function(data,
 #'   values are also available:
 #'   \itemize{
 #'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
-#'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
+#'     additive effects calculated by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
 #'     \item \strong{ZIP_synergy, Bliss_synergy, HSA_synergy, Loewe_synergy}
 #'     The synergy score calculated by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
 #'     \item \strong{ZIP_fit} The response fitted by ZIP model.
 #'   }
-#' @param statistic A character or NULL. It indicates the statistics printed
-#'   in the plot while there are replicates in input data. Available values are:
-#'   \itemize{
-#'     \item \strong{sem} Standard error of mean;
-#'     \item \strong{ci} 95\% confidence interval.
-#'   }
-#'   If it is \code{NULL}, no statistics will be printed.
 #' @param plot_title A charactor value. It specifies the plot title. If it is
 #'   \code{NULL}, the function will automatically generate a title.
 #' @param distance_method The methods to calculate the distance between
 #'   different data points from the concentration of drugs. The distance matrix
 #'   is used for dimension reduction. This parameter is used to set the 
 #'   parameter \code{method} for \link[vegan]{vegdist}. The default values is
-#'   "euclidean". 
+#'   "mahalanobis". 
 #' @param high_value_color An R color value. It indicates the color for the
 #'   high values.
 #' @param low_value_color An R color value. It indicates the color for low
@@ -285,10 +278,10 @@ PlotMultiDrugBar <- function(data,
 #' @param point_color An R color value. It indicates the color for data points.
 #' @param text_size_scale A numeric value. It is used to control the size
 #'   of text in the plot. All the text size will multiply by this scale factor.
-#' @param camera_width A numeric value. It indicates the output figure's width
-#'   in pixel while clicking the camera button.
-#' @param camera_height A numeric value. It indicates the output figure's height
-#'   in pixel while clicking the camera button.
+#' @param camera_width A numeric value or NULL. It indicates the output figure's
+#'   width on pixel.
+#' @param camera_height A numeric value or NULL. It indicates the output
+#'   figure's height on pixel.
 #' @param camera_scale A numeric value. The output plot while clicking the
 #'   camera button.will multiply title/legend/axis/canvas sizes by this factor.
 #' @param summary_statistic A vector of characters or NULL. It indicates the
@@ -296,7 +289,7 @@ PlotMultiDrugBar <- function(data,
 #'   matrix. Available values are:
 #'   \itemize{
 #'     \item \strong{mean} Median value for all the responses or synergy
-#'     scores in the matrix;
+#'     scores in the matrix and the p-value if it is valid;
 #'     \item \strong{median} Median value for all the responses or synergy
 #'     scores in the matrix;
 #'     \item \strong{quantile_90} 90\% quantile. User could change the number to
@@ -324,14 +317,13 @@ PlotMultiDrugBar <- function(data,
 #'   data,
 #'   plot_block = 1,
 #'   plot_value = "response",
-#'   statistic = NULL,
-#'   show_data_points = TRUE
+#'   show_data_points = TRUE,
+#'   distance_method = "mahalanobis"
 #' )
 #' p
 PlotMultiDrugSurface <- function(data,
                                  plot_block = 1,
                                  plot_value = "response",
-                                 statistic = NULL,
                                  summary_statistic = NULL,
                                  plot_title = NULL,
                                  distance_method = "mahalanobis", 
@@ -340,14 +332,14 @@ PlotMultiDrugSurface <- function(data,
                                  show_data_points = TRUE,
                                  point_color = "#DDA137",
                                  text_size_scale = 1,
-                                 camera_width = 500,
-                                 camera_height = 500,
+                                 camera_width = NULL,
+                                 camera_height = NULL,
                                  camera_scale = 1) {
   plot_data <- .ExtractMultiDrugPlotData(
     data,
     plot_block = plot_block,
     plot_value = plot_value,
-    statistic = statistic,
+    statistic = NULL,
     summary_statistic = summary_statistic,
     titles = TRUE
   )
@@ -401,7 +393,7 @@ PlotMultiDrugSurface <- function(data,
 #'   values are also available:
 #'   \itemize{
 #'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
-#'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
+#'     additive effects calculated by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
 #'     \item \strong{ZIP_synergy, Bliss_synergy, HSA_synergy, Loewe_synergy}
 #'     The synergy score calculated by ZIP, Bliss, HSA or Loewe model,
@@ -422,7 +414,7 @@ PlotMultiDrugSurface <- function(data,
 #'   matrix. Available values are:
 #'   \itemize{
 #'     \item \strong{mean} Median value for all the responses or synergy
-#'     scores in the matrix;
+#'     scores in the matrix and the p-value if it is valid;
 #'     \item \strong{median} Median value for all the responses or synergy
 #'     scores in the matrix;
 #'     \item \strong{quantile_90} 90\% quantile. User could change the number to
@@ -603,9 +595,11 @@ PlotMultiDrugSurface <- function(data,
         summary_value_table <- plot_table
       }
       avail_value <- grepl("mean|median|quantile_\\d+", summary_statistic)
-      if ("mean" %in% summary_statistic) {
+      if ("mean" %in% summary_statistic & 
+          (drug_pair$replicate | 
+           !plot_value %in% c("response", "response_origin"))) {
         value <- .RoundValues(mean(summary_value_table[[plot_value]]))
-        if (drug_pair$replicate) {
+        # if (drug_pair$replicate) {
           p_value <- data$drug_pairs[data$drug_pairs$block_id == plot_block,
                                      paste0(plot_value, "_p_value")]
           if (p_value != "< 2e-324") {
@@ -621,9 +615,9 @@ PlotMultiDrugSurface <- function(data,
               ")"
             )
           )
-        } else {
-          plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
-        }
+        # } else {
+        #   plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
+        # }
       }
       if ("median" %in% summary_statistic) {
         value <- .RoundValues(stats::median(summary_value_table[[plot_value]]))
@@ -681,7 +675,7 @@ PlotMultiDrugSurface <- function(data,
 #'   values are also available:
 #'   \itemize{
 #'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
-#'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
+#'     additive effects calculated by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
 #'     \item \strong{ZIP_synergy, Bliss_synergy, HSA_synergy, Loewe_synergy}
 #'     The synergy score calculated by ZIP, Bliss, HSA or Loewe model,
@@ -692,7 +686,7 @@ PlotMultiDrugSurface <- function(data,
 #'   different data points from the concentration of drugs. The distance matrix
 #'   is used for dimension reduction. This parameter is used to set the 
 #'   parameter \code{method} for \link[vegan]{vegdist}. The default values is
-#'   "euclidean".
+#'   "mahalanobis".
 #'
 #' @return A data frame. It contains the plot information required by function
 #'   \link{GenerateSurface}
@@ -707,7 +701,7 @@ PlotMultiDrugSurface <- function(data,
 DimensionReduction <- function(plot_table,
                                 drug_pair,
                                 plot_value,
-                                distance_method){
+                                distance_method = "mahalanobis"){
   # Dimension reduction
   # Each row in the result table can be considered as a feature
   # https://stackoverflow.com/questions/44503255/rank-vector-with-some-equal-values
@@ -788,10 +782,10 @@ DimensionReduction <- function(plot_table,
 #' @param z_axis_title A character value. It is the title for z-axis.
 #' @param text_size_scale A numeric value. It is used to control the size
 #'   of text in the plot. All the text size will multiply by this scale factor.
-#' @param camera_width A numeric value. It indicates the output figure's width on 
-#'   pixel.
-#' @param camera_height A numeric value. It indicates the output figure's height on 
-#'   pixel.
+#' @param camera_width A numeric value or NULL. It indicates the output figure's
+#'   width on pixel.
+#' @param camera_height A numeric value or NULL. It indicates the output
+#'   figure's height on pixel.
 #' @param camera_scale A numeric value. The output plot will multiply 
 #'   title/legend/axis/canvas sizes by this factor.
 #' @param show_data_points A logical value. If it is \code{TRUE}, the raw data
@@ -817,8 +811,8 @@ GenerateSurface <- function(dim_reduced_data,
                            legend_title,
                            z_axis_title,
                            text_size_scale = 1, 
-                           camera_width = 500,
-                           camera_height = 500,
+                           camera_width = NULL,
+                           camera_height = NULL,
                            camera_scale = 1) {
   plot_table <- dim_reduced_data$plot_table
   mds_data <- dim_reduced_data$mds_data

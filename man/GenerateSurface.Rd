@@ -15,8 +15,8 @@ GenerateSurface(
   legend_title,
   z_axis_title,
   text_size_scale = 1,
-  camera_width = 500,
-  camera_height = 500,
+  camera_width = NULL,
+  camera_height = NULL,
   camera_scale = 1
 )
 }
@@ -49,11 +49,11 @@ plotted.}
 \item{text_size_scale}{A numeric value. It is used to control the size
 of text in the plot. All the text size will multiply by this scale factor.}
 
-\item{camera_width}{A numeric value. It indicates the output figure's width on 
-pixel.}
+\item{camera_width}{A numeric value or NULL. It indicates the output figure's
+width on pixel.}
 
-\item{camera_height}{A numeric value. It indicates the output figure's height on 
-pixel.}
+\item{camera_height}{A numeric value or NULL. It indicates the output
+figure's height on pixel.}
 
 \item{camera_scale}{A numeric value. The output plot will multiply 
 title/legend/axis/canvas sizes by this factor.}

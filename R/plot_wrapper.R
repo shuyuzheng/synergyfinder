@@ -35,7 +35,7 @@
 #'   whole combination matrix. Available values are:
 #'   \itemize{
 #'     \item \strong{mean} Median value for all the responses or synergy
-#'     scores in the matrix;
+#'     scores in the matrix and the p-value if it is valid;
 #'     \item \strong{median} Median value for all the responses or synergy
 #'     scores in the matrix;
 #'     \item \strong{quantile_90} 90% quantile. User could change the number to
@@ -221,19 +221,26 @@ PlotDoseResponse <- function(data,
       if (is.null(file_name)) {
         if (adjusted) {
           file <- paste(
-            data$drug_pairs[which(data$drug_pairs$block_id == b), 
-                            paste0("drug", drugs)],
+            paste0(
+              data$drug_pairs[which(data$drug_pairs$block_id == b), 
+                              paste0("drug", drugs)],
+              collapse = "_"
+            ),
             "adjusted_dose_response_block",
             b,
             sep = "_"
           )
         } else {
           file <- paste(
-            data$drug_pairs[which(data$drug_pairs$block_id == b), 
-                            paste0("drug", drugs)],
+            paste0(
+              data$drug_pairs[which(data$drug_pairs$block_id == b), 
+                              paste0("drug", drugs)],
+              collapse = "_"
+            ),
             "original_dose_response_block",
             b,
-            sep = "_"
+            sep = "_",
+            collapse = "_"
           )
         }
       } else {
@@ -312,7 +319,7 @@ PlotDoseResponse <- function(data,
 #'   matrix. Available values are:
 #'   \itemize{
 #'     \item \strong{mean} Median value for all the responses or synergy
-#'     scores in the matrix;
+#'     scores in the matrix and the p-value if it is valid;
 #'     \item \strong{median} Median value for all the responses or synergy
 #'     scores in the matrix;
 #'     \item \strong{quantile_90} 90\% quantile. User could change the number to
@@ -364,10 +371,10 @@ PlotDoseResponse <- function(data,
 #' @param units A character value. It indicates the units for \code{width} and
 #'   \code{height} for saved plots. It is used to set the \code{units}
 #'   parameter in function \link[ggplot2]{ggsave} or the function selected by
-#'   \code{device} (It will not work on "pdf" and "svg" devices. There units
+#'   \code{file_type} (It will not work on "pdf" and "svg" devices. There units
 #'   are always in inch.). \strong{Note}: It only works while 
 #'   \code{save_file = TRUE}.
-#' @param device A character value. It indicates the device to use for saving 
+#' @param file_type A character value. It indicates the device to use for saving 
 #'   plots. If \code{type = "3D"}, the corresponding device function in package
 #'   "grDevices" will be called to save the plots. If
 #'   \code{type = "2D"/"heatmap"}, it will be used to set the parameter
@@ -409,12 +416,12 @@ PlotSynergy <- function(data,
                         dynamic = FALSE,
                         display = TRUE, 
                         save_file = FALSE,
+                        file_type = "pdf",
                         file_name = NULL,
                         file_path = NULL,
                         height = 6,
                         width = 6,
-                        units = "in",
-                        device = "pdf") {
+                        units = "in") {
   # Check input data
   if (!is.list(data)) {
     stop("Input data is not a list format!")
@@ -522,22 +529,22 @@ PlotSynergy <- function(data,
         }
         # Set width and height according to plot types
         if (type == "3D") {
-          if (!device %in% c("jpeg", "bmp", "png", "tiff", "pdf", "svg")){
-            warning("Can not save plot in ", device, " format. Avaliable formats
+          if (!file_type %in% c("jpeg", "bmp", "png", "tiff", "pdf", "svg")){
+            warning("Can not save plot in ", file_type, " format. Avaliable formats
                 are 'svg', 'jpeg', 'bmp', 'png', 'tiff',and 'pdf'.")
-          } else if (device  == "pdf") {
-            grDevices::pdf(paste(file, device, sep = "."), 
+          } else if (file_type  == "pdf") {
+            grDevices::pdf(paste(file, file_type, sep = "."), 
                            width = width, height = height)
-          } else if (device == "svg") {
+          } else if (file_type == "svg") {
             grDevices::svg(
-              paste(file, device, sep = "."), 
+              paste(file, file_type, sep = "."), 
               width = width, 
               height = height)
           } else {
             do.call(
-              device,
+              file_type,
               args = list(
-                filename = paste(file, device, sep="."),
+                filename = paste(file, file_type, sep="."),
                 width = width,
                 height = height, 
                 units = units,
@@ -548,12 +555,12 @@ PlotSynergy <- function(data,
           grDevices::dev.off()
         } else {
           ggplot2::ggsave(
-            filename = paste(file, device, sep="."),
+            filename = paste(file, file_type, sep="."),
             plot = plots[[block]],
             path = file_path,
             width = width,
             height = height,
-            device = device,
+            device = file_type,
             units = units
           )
         }

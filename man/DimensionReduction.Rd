@@ -4,7 +4,12 @@
 \alias{DimensionReduction}
 \title{Dimension Reduction for Multi-drug Combination Visualization}
 \usage{
-DimensionReduction(plot_table, drug_pair, plot_value, distance_method)
+DimensionReduction(
+  plot_table,
+  drug_pair,
+  plot_value,
+  distance_method = "mahalanobis"
+)
 }
 \arguments{
 \item{plot_table}{A data frame contains concentrations for all drugs, the
@@ -26,7 +31,7 @@ If the \code{data} is the output from \link{CalculateSynergy}, following
 values are also available:
 \itemize{
   \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
-  additive effects predicted by ZIP, Bliss, HSA or Loewe model,
+  additive effects calculated by ZIP, Bliss, HSA or Loewe model,
   respectively.
   \item \strong{ZIP_synergy, Bliss_synergy, HSA_synergy, Loewe_synergy}
   The synergy score calculated by ZIP, Bliss, HSA or Loewe model,
@@ -38,7 +43,7 @@ values are also available:
 different data points from the concentration of drugs. The distance matrix
 is used for dimension reduction. This parameter is used to set the 
 parameter \code{method} for \link[vegan]{vegdist}. The default values is
-"euclidean".}
+"mahalanobis".}
 }
 \value{
 A data frame. It contains the plot information required by function

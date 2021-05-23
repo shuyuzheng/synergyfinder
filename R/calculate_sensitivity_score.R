@@ -151,7 +151,8 @@ CalculateSensitivity <- function(data,
       SensCI95_right <- apply(tmp_iter, 2, 
                              function(x) stats::quantile(x, probs = 0.975))
       p_value <- apply(
-        tmp_iter, 2, 
+        tmp_iter[, !grepl("ic50", colnames(tmp_iter), fixed = TRUE)],
+        2, 
         function(x) {
           z <- abs(mean(x)) / stats::sd(x)
           p <- exp(-0.717 * z - 0.416 * z ^2)

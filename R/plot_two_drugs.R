@@ -41,7 +41,7 @@
 #'   values are also available:
 #'   \itemize{
 #'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
-#'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
+#'     additive effects calculated by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
 #'     \item \strong{ZIP_synergy, Bliss_synergy, HSA_synergy, Loewe_synergy}
 #'     The synergy score calculated by ZIP, Bliss, HSA or Loewe model,
@@ -60,7 +60,7 @@
 #'   matrix. Available values are:
 #'   \itemize{
 #'     \item \strong{mean} Median value for all the responses or synergy
-#'     scores in the matrix;
+#'     scores in the matrix and the p-value if it is valid;
 #'     \item \strong{median} Median value for all the responses or synergy
 #'     scores in the matrix;
 #'     \item \strong{quantile_90} 90\% quantile. User could change the number to
@@ -194,7 +194,9 @@ Plot2DrugHeatmap <- function(data,
     avail_value <- grepl("mean|median|quantile_\\d+", summary_statistic)
     if ("mean" %in% summary_statistic) {
       value <- .RoundValues(mean(summary_value_table$value))
-      if (length(concs == 2) & drug_pair$replicate) {
+      if (length(concs == 2) & 
+          (drug_pair$replicate | 
+           !plot_value %in% c("response", "response_origin"))) {# & drug_pair$replicate) {
         p_value <- data$drug_pairs[data$drug_pairs$block_id == plot_block,
                                    paste0(plot_value, "_p_value")]
         if (p_value != "< 2e-324") {
@@ -467,7 +469,7 @@ Plot2DrugHeatmap <- function(data,
 #'   values are also available:
 #'   \itemize{
 #'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
-#'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
+#'     additive effects calculated by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
 #'     \item \strong{ZIP_synergy, Bliss_synergy, HSA_synergy, Loewe_synergy}
 #'     The synergy score calculated by ZIP, Bliss, HSA or Loewe model,
@@ -479,7 +481,7 @@ Plot2DrugHeatmap <- function(data,
 #'   matrix. Available values are:
 #'   \itemize{
 #'     \item \strong{mean} Median value for all the responses or synergy
-#'     scores in the matrix;
+#'     scores in the matrix and the p-value if it is valid;
 #'     \item \strong{median} Median value for all the responses or synergy
 #'     scores in the matrix;
 #'     \item \strong{quantile_90} 90\% quantile. User could change the number to
@@ -617,7 +619,9 @@ Plot2DrugContour <- function(data,
     avail_value <- grepl("mean|median|quantile_\\d+", summary_statistic)
     if ("mean" %in% summary_statistic) {
       value <- .RoundValues(mean(summary_value_table$value))
-      if (length(concs == 2) & drug_pair$replicate) {
+      if (length(concs == 2) & 
+          (drug_pair$replicate | 
+           !plot_value %in% c("response", "response_origin"))) {# & drug_pair$replicate) {
         p_value <- data$drug_pairs[data$drug_pairs$block_id == plot_block,
                                    paste0(plot_value, "_p_value")]
         if (p_value != "< 2e-324") {
@@ -908,7 +912,7 @@ Plot2DrugContour <- function(data,
 #'   values are also available:
 #'   \itemize{
 #'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
-#'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
+#'     additive effects calculated by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
 #'     \item \strong{ZIP_synergy, Bliss_synergy, HSA_synergy, Loewe_synergy}
 #'     The synergy score calculated by ZIP, Bliss, HSA or Loewe model,
@@ -920,7 +924,7 @@ Plot2DrugContour <- function(data,
 #'   matrix. Available values are:
 #'   \itemize{
 #'     \item \strong{mean} Median value for all the responses or synergy
-#'     scores in the matrix;
+#'     scores in the matrix and the p-value if it is valid;
 #'     \item \strong{median} Median value for all the responses or synergy
 #'     scores in the matrix;
 #'     \item \strong{quantile_90} 90\% quantile. User could change the number to
@@ -1063,7 +1067,9 @@ Plot2DrugSurface <- function(data,
     avail_value <- grepl("mean|median|quantile_\\d+", summary_statistic)
     if ("mean" %in% summary_statistic) {
       value <- .RoundValues(mean(summary_value_table$value))
-      if (length(concs == 2) & drug_pair$replicate) {
+      if (length(concs == 2) & 
+          (drug_pair$replicate | 
+           !plot_value %in% c("response", "response_origin"))) {# & drug_pair$replicate) {
         p_value <- data$drug_pairs[data$drug_pairs$block_id == plot_block,
                                    paste0(plot_value, "_p_value")]
         if (p_value != "< 2e-324") {
@@ -1402,7 +1408,7 @@ Plot2DrugSurface <- function(data,
 #'   values are also available:
 #'   \itemize{
 #'     \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
-#'     additive effects predicted by ZIP, Bliss, HSA or Loewe model,
+#'     additive effects calculated by ZIP, Bliss, HSA or Loewe model,
 #'     respectively.
 #'     \item \strong{ZIP_synergy, Bliss_synergy, HSA_synergy, Loewe_synergy}
 #'     The synergy score calculated by ZIP, Bliss, HSA or Loewe model,

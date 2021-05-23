@@ -25,12 +25,12 @@ PlotSynergy(
   dynamic = FALSE,
   display = TRUE,
   save_file = FALSE,
+  file_type = "pdf",
   file_name = NULL,
   file_path = NULL,
   height = 6,
   width = 6,
-  units = "in",
-  device = "pdf"
+  units = "in"
 )
 }
 \arguments{
@@ -81,7 +81,7 @@ summary statistics for all the \code{plot_value} in whole combination
 matrix. Available values are:
 \itemize{
   \item \strong{mean} Median value for all the responses or synergy
-  scores in the matrix;
+  scores in the matrix and the p-value if it is valid;
   \item \strong{median} Median value for all the responses or synergy
   scores in the matrix;
   \item \strong{quantile_90} 90\% quantile. User could change the number to
@@ -132,6 +132,13 @@ default, it is FALSE. \strong{Note}: It doesn't work while
 exporting plotly plots. Please check 
 https://plotly.com/r/static-image-export/ for more details.}
 
+\item{file_type}{A character value. It indicates the device to use for saving 
+plots. If \code{type = "3D"}, the corresponding device function in package
+"grDevices" will be called to save the plots. If
+\code{type = "2D"/"heatmap"}, it will be used to set the parameter
+\code{device} in function \link[ggplot2]{ggsave}.
+\strong{Note}: It only works while \code{save_file = TRUE}.}
+
 \item{file_name}{A character vector. It indicates the file names. If it is 
 not defined by user, a default name will be assigned. \strong{Note}: It
 only works while \code{save_file = TRUE}.}
@@ -149,16 +156,9 @@ If it is not defined by user, a default name will be assigned.
 \item{units}{A character value. It indicates the units for \code{width} and
 \code{height} for saved plots. It is used to set the \code{units}
 parameter in function \link[ggplot2]{ggsave} or the function selected by
-\code{device} (It will not work on "pdf" and "svg" devices. There units
+\code{file_type} (It will not work on "pdf" and "svg" devices. There units
 are always in inch.). \strong{Note}: It only works while 
 \code{save_file = TRUE}.}
-
-\item{device}{A character value. It indicates the device to use for saving 
-plots. If \code{type = "3D"}, the corresponding device function in package
-"grDevices" will be called to save the plots. If
-\code{type = "2D"/"heatmap"}, it will be used to set the parameter
-\code{device} in function \link[ggplot2]{ggsave}.
-\strong{Note}: It only works while \code{save_file = TRUE}.}
 }
 \value{
 A list of ggplot objects.

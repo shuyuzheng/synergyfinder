@@ -35,7 +35,7 @@ If the \code{data} is the output from \link{CalculateSynergy}, following
 values are also available:
 \itemize{
   \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
-  additive effects predicted by ZIP, Bliss, HSA or Loewe model,
+  additive effects calculated by ZIP, Bliss, HSA or Loewe model,
   respectively.
   \item \strong{ZIP_synergy, Bliss_synergy, HSA_synergy, Loewe_synergy}
   The synergy score calculated by ZIP, Bliss, HSA or Loewe model,

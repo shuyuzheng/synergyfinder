@@ -8,7 +8,6 @@ PlotMultiDrugSurface(
   data,
   plot_block = 1,
   plot_value = "response",
-  statistic = NULL,
   summary_statistic = NULL,
   plot_title = NULL,
   distance_method = "mahalanobis",
@@ -17,8 +16,8 @@ PlotMultiDrugSurface(
   show_data_points = TRUE,
   point_color = "#DDA137",
   text_size_scale = 1,
-  camera_width = 500,
-  camera_height = 500,
+  camera_width = NULL,
+  camera_height = NULL,
   camera_scale = 1
 )
 }
@@ -41,7 +40,7 @@ If the \code{data} is the output from \link{CalculateSynergy}, following
 values are also available:
 \itemize{
   \item \strong{ZIP_ref, Bliss_ref, HSA_ref, Loewe_ref} The reference
-  additive effects predicted by ZIP, Bliss, HSA or Loewe model,
+  additive effects calculated by ZIP, Bliss, HSA or Loewe model,
   respectively.
   \item \strong{ZIP_synergy, Bliss_synergy, HSA_synergy, Loewe_synergy}
   The synergy score calculated by ZIP, Bliss, HSA or Loewe model,
@@ -49,20 +48,12 @@ values are also available:
   \item \strong{ZIP_fit} The response fitted by ZIP model.
 }}
 
-\item{statistic}{A character or NULL. It indicates the statistics printed
-in the plot while there are replicates in input data. Available values are:
-\itemize{
-  \item \strong{sem} Standard error of mean;
-  \item \strong{ci} 95\% confidence interval.
-}
-If it is \code{NULL}, no statistics will be printed.}
-
 \item{summary_statistic}{A vector of characters or NULL. It indicates the
 summary statistics for all the \code{plot_value} in whole combination
 matrix. Available values are:
 \itemize{
   \item \strong{mean} Median value for all the responses or synergy
-  scores in the matrix;
+  scores in the matrix and the p-value if it is valid;
   \item \strong{median} Median value for all the responses or synergy
   scores in the matrix;
   \item \strong{quantile_90} 90\% quantile. User could change the number to
@@ -77,7 +68,7 @@ If it is \code{NULL}, no statistics will be printed.}
 different data points from the concentration of drugs. The distance matrix
 is used for dimension reduction. This parameter is used to set the 
 parameter \code{method} for \link[vegan]{vegdist}. The default values is
-"euclidean".}
+"mahalanobis".}
 
 \item{high_value_color}{An R color value. It indicates the color for the
 high values.}
@@ -94,11 +85,11 @@ plotted.}
 \item{text_size_scale}{A numeric value. It is used to control the size
 of text in the plot. All the text size will multiply by this scale factor.}
 
-\item{camera_width}{A numeric value. It indicates the output figure's width
-in pixel while clicking the camera button.}
+\item{camera_width}{A numeric value or NULL. It indicates the output figure's
+width on pixel.}
 
-\item{camera_height}{A numeric value. It indicates the output figure's height
-in pixel while clicking the camera button.}
+\item{camera_height}{A numeric value or NULL. It indicates the output
+figure's height on pixel.}
 
 \item{camera_scale}{A numeric value. The output plot while clicking the
 camera button.will multiply title/legend/axis/canvas sizes by this factor.}
@@ -120,8 +111,8 @@ p <- PlotMultiDrugSurface(
   data,
   plot_block = 1,
   plot_value = "response",
-  statistic = NULL,
-  show_data_points = TRUE
+  show_data_points = TRUE,
+  distance_method = "mahalanobis"
 )
 p
 }

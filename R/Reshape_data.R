@@ -26,6 +26,8 @@
 #' (ConcUnit/conc_r_unit, conc_c_unit/ConcUnit1, ConcUnit2, ConcUnit3)
 #'
 #' @param data drug combination response data in a data frame format
+#' @param data_type a parameter to specify the response data type which can be
+#'   either "viability" or "inhibition".
 #' @param impute a logical value. If it is \code{TRUE}, the \code{NA} values
 #'   will be imputed by \code{\link[mice]{mice}}. Default is \code{TRUE}.
 #' @param impute_method a single string. It sets the \code{method} parameter
@@ -36,10 +38,8 @@
 #'   to the "response" values in the matrix. Default is \code{TRUE}.
 #' @param seed a single value, interpreted as an integer, or NULL. It is the
 #'   random seed for calculating the noise. Default setting is \code{NULL}
-#' @param data_type a parameter to specify the response data type which can be
-#'   either "viability" or "inhibition".
 #' @param iteration An integer. It indicates the number of iterations for
-#'   synergy scores calculation on data with replicates.
+#'   bootstrapping while calculating statistics for data with replicates.
 #'
 #' @return a list of the following components:
 #'   \itemize{
@@ -237,8 +237,9 @@ ReshapeData <- function(data,
     drug_pairs$response_origin_p_value <- rep(NA, nrow(drug_pairs))
     blocks <- drug_pairs$block_id[drug_pairs$replicate]
     for (b in blocks) {
+      index <- drug_pairs$block_id == b
       # Calculate synergy score. Different work flow for replicated data
-      replicate <- drug_pairs$replicate[drug_pairs$block_id == b]
+      replicate <- drug_pairs$replicate[index]
         response_one_block <- response %>%
           dplyr::filter(block_id == b) %>%
           dplyr::select(-block_id) %>%
@@ -259,15 +260,18 @@ ReshapeData <- function(data,
         return(p)
       })
       names(p) <- paste0(names(p), "_p_value")
-      drug_pairs$response_p_value[drug_pairs$block_id == b] <- p["response_p_value"]
-      drug_pairs$response_origin_p_value[drug_pairs$block_id == b] <- p["response_origin_p_value"]
+      drug_pairs$response_p_value[index] <- p["response_p_value"]
+      drug_pairs$response_origin_p_value[index] <- p["response_origin_p_value"]
     }
   }
   
   # 7. assemble output data
-  data <- list(drug_pairs = drug_pairs, response = response)
+  data <- list(
+    drug_pairs = dplyr::ungroup(drug_pairs),
+    response = dplyr::ungroup(response)
+  )
   if (any(drug_pairs$replicate)){
-    data$response_statistics <- replicate_response
+    data$response_statistics <- dplyr::ungroup(replicate_response)
   }
   return(data)
 }

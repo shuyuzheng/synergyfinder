@@ -179,8 +179,22 @@ PlotBarometer <- function(data,
   
   # Data table for needle (The coordinate for vertex of triangle)
   needle_value <- selected_data$response
-  theta_radius = angle_slice * needle_value + start_angle;
-  needle_length = (color_bar_outer + color_bar_inner) / 2;
+  
+  # Shrink the values out of the range [0, 100]
+  if (needle_value < 0) {
+    needle_label_value <- needle_value
+    needle_value <- needle_value / 10
+  } else if (needle_value > 100) {
+    needle_label_value <- needle_value
+    needle_value <- 100 + (needle_value - 100) / 10
+  } else {
+    needle_label_value <- needle_value
+  }
+  
+  theta_radius = angle_slice * needle_value + start_angle
+  
+
+  needle_length = (color_bar_outer + color_bar_inner) / 2
   needle <- data.frame(
     theta = c(theta_radius, theta_radius - pi /2, theta_radius + pi /2),
     r = c(needle_length, 0.15, 0.15),
@@ -190,17 +204,23 @@ PlotBarometer <- function(data,
   
   # Data table for reference effects
   ref <- grep(".*_ref", colnames(selected_data), value = TRUE)
+  
   if (length(ref) == 0) {
     reference <- NULL
   } else {
     reference <- selected_data %>% 
       dplyr::select(dplyr::all_of(ref)) %>% 
-      tidyr::gather(key = "label", value = "value") %>% 
+      tidyr::gather(key = "label", value = "value")
+    reference$value[which(reference$value < 0)] <- reference$value[reference$value < 0] /10
+    reference$value[reference$value > 100] <- 100 + reference$value[reference$value > 100]/10
+    reference <- reference %>% 
       dplyr::mutate(
         adjust = 0,
         angle = value * angle_slice + start_angle
       ) %>% 
       dplyr::arrange(value)
+    # Shrink the values out of the range [0, 100]
+
     reference$label <- sub("_ref", "", reference$label)
     # Separate overlapped labels
     if (nrow(reference) > 1) {
@@ -239,13 +259,13 @@ PlotBarometer <- function(data,
     conc_text <- paste(conc_text, collapse = "\n")
     center_texts <- paste0(
       "[ ", 
-      .RoundValues(needle_value), 
+      .RoundValues(needle_label_value), 
       "% ]\n",
       conc_text)
   } else {
     center_texts <- paste0(
       "[ ", 
-      .RoundValues(needle_value), 
+      .RoundValues(needle_label_value), 
       "% ]\n")
   }
   p <- ggplot(color_bar_data) +

@@ -127,7 +127,7 @@ PlotDoseResponseCurve <- function(data,
   # Extract single drug dose response
   if (!adjusted) {
     response <- data$response %>% 
-      dplyr::select(-respone) %>% 
+      dplyr::select(-response) %>% 
       dplyr::rename(response = response_origin) %>% 
       dplyr::filter(block_id == plot_block)
   } else {
