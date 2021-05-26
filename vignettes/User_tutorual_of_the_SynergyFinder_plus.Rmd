@@ -4,7 +4,7 @@ author: "Shuyu Zheng, Wenyu Wang, and Jing Tang \n Research Program in Systems O
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Cell Annotation with TidyComb}
+  %\VignetteIndexEntry{User tutorial of the SynergyFinder Plus}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
