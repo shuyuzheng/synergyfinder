@@ -1,0 +1,17 @@
+citHeader("To cite synergyfinder in publications use:")
+
+citEntry(
+  entry    = "Article",
+  title    = "SynergyFinder Plus: towards a better interpretation and annotation of drug combination screening datasets",
+  author   = c(person("Shuyu", "Zheng"),
+                    person("Wenyu", "Wang"),
+                    person("Jehad", "Aldahdooh"),
+                    person("Alina", "Malyutina"),
+                    person("Tolou", "Shadbahr"),
+                    person("Alberto", "Pessia"),
+                    person("Jing", "Tang")),
+  journal  = "bioRxiv",
+  year     = "2021",
+  pages    = "2021.06.01.446564",
+  url      = "http://biorxiv.org/content/early/2021/06/01/2021.06.01.446564.abstract"
+)

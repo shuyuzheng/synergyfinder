@@ -2,7 +2,9 @@
 title: "User tutorial of the SynergyFinder Plus"
 author: "Shuyu Zheng, Wenyu Wang, and Jing Tang \n Research Program in Systems Oncology, Faculty of Medicine, University of Helsinki"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    toc: true
 vignette: >
   %\VignetteIndexEntry{User tutorial of the SynergyFinder Plus}
   %\VignetteEngine{knitr::rmarkdown}
@@ -836,6 +838,34 @@ PlotMultiDrugSurface(
 knitr::include_graphics("./Dose_Response_Matrix.svg")
 knitr::include_graphics("./ZIP_Synergy_Score.svg")
 ```
+
+# Citation
+
+### For use of SynergyFinder R package or web application:
+
+Zheng,S., Wang,W., Aldahdooh,J., Malyutina,A., Shadbahr,T., Pessia,A. and Tang,J. (2021) SynergyFinder Plus: towards a better interpretation and annotation of drug combination screening datasets. bioRxiv, 10.1101/2021.06.01.446564.
+
+### For use of ZIP synergy scoring:
+
+Yadav,B., Wennerberg,K., Aittokallio,T. and Tang,J. (2015) Searching for Drug Synergy in Complex Dose-Response Landscapes Using an Interaction Potency Model. Comput Struct Biotechnol J, 13, 504–513.
+
+### For how to harmonize the different synergy scoring methods:
+
+Tang,J., Wennerberg,K. and Aittokallio,T. (2015) What is synergy? The Saariselkä agreement revisited. Front Pharmacol, 6, 181.
+
+### For general ideas of drug combination therapies:
+
+Tang,J. (2017) Informatics Approaches for Predicting, Understanding, and Testing Cancer Drug Combinations. Methods Mol Biol, 1636, 485–506.
+
+### For retrieving the most comprehensive drug combination data resources and their sensitivity and synergy results by SynergyFinder, please go to DrugComb :
+
+Zheng,S., Aldahdooh,J., Shadbahr,T., Wang,Y., Aldahdooh,D., Bao,J., Wang,W. and Tang,J. (2021) DrugComb update: a more comprehensive drug sensitivity data repository and analysis portal. Nucleic Acids Research, 10.1093/nar/gkab438.
+
+Zagidullin,B., Aldahdooh,J., Zheng,S., Wang,W., Wang,Y., Saad,J., Malyutina,A., Jafari,M., Tanoli,Z., Pessia,A., et al. (2019) DrugComb: an integrative cancer drug combination data portal. Nucleic Acids Res, 10.1093/nar/gkz337.
+
+### For use of combination sensitivity score:
+
+Malyutina,A., Majumder,M.M., Wang,W., Pessia,A., Heckman,C.A. and Tang,J. (2019) Drug combination sensitivity scoring facilitates the discovery of synergistic and efficacious drug combinations in cancer. PLOS Computational Biology, 15, e1006752.
 
 # Reference
 
