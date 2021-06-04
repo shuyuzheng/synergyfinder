@@ -28,7 +28,7 @@ Combinatorial therapies is one of the major strategies for improving treatment e
 4. synergy barometer for harmonizing multiple synergy scoring methods to provide a consensus metric of synergy;
 5. evaluation of synergy and sensitivity simultaneously to provide an unbiased interpretation of the clinical potential of the drug combinations.
 
-To facilitate the use of the R package for the drug discovery community, we also provide a web server at http://synergyfinderplus.org/ as a user-friendly interface to enable a more flexible and versatile analysis of drug combination data. In the web application, in addition to the functions in R package, we provide the annotation of drugs and cell lines that are tested in an experiment, including their chemical information, targets and signaling network information.
+To facilitate the use of the R package for the drug discovery community, we also provide a web server at https://synergyfinderplus.org/ as a user-friendly interface to enable a more flexible and versatile analysis of drug combination data. In the web application, in addition to the functions in R package, we provide the annotation of drugs and cell lines that are tested in an experiment, including their chemical information, targets and signaling network information.
 
 # 1 Installation
 
