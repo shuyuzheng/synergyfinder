@@ -292,7 +292,14 @@ CalculateCSS <- function(response, ic50) {
           if (nrow(x) == 2) {
             return(x$response[2])
           } else {
-            return(PredictResponse(x, dose = ic50[[sub("conc", "ic50_", ic50_c)]]))
+            return(
+              suppressWarnings(
+                PredictResponse(
+                  x,
+                  dose = ic50[[sub("conc", "ic50_", ic50_c)]]
+                )
+              )
+            )
           }
         })) %>% 
         dplyr::select(dose = !!as.name(css_c), response) %>% 

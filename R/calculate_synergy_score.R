@@ -349,7 +349,7 @@ ZIP <- function(response,
       dplyr::ungroup() %>% 
       dplyr::rename(dose = conc) %>% 
       # Group table by conditions, and wrap as a input data for model fitting
-      tidyr::nest(dplyr::any_of(c("dose", "response"))) %>% 
+      tidyr::nest(data = dplyr::any_of(c("dose", "response"))) %>% 
       dplyr::mutate(pred = furrr::future_map(data, function(x, conc) {
         condition_baseline <- x$response[which(x$dose == 0)]
         model <-  suppressWarnings(
