@@ -9,8 +9,11 @@
 #
 # FitDoseResponse: Fitting Single Drug Dose-Response Model
 # FindModelType: Find the Type of Model Used for Fitting Dose Response Data
-# PredictModelSpecify: Predict Response Value at Certain Drug Dose
+# PredictResponse: Predict Response Value at Certain Drug Dose
 # FindModelPar: Find the Fitted Parameters from 4-Parameter Log-Logistic Model
+#
+# Auxiliary functions:
+# .PredictResponseFromModel: Predict Response Value at Certain Drug Dose
 
 #' Fitting Single Drug Dose-Response Model
 #'
@@ -147,20 +150,25 @@ FindModelType <- function(model) {
 
 #' Predict Response Value at Certain Drug Dose
 #'
-#' \code{PredictModelSpecify} uses \code{\link[drc]{drm}} function to fit the
-#' dose response model and generate the predict response value at the given dose.
+#' \code{PredictResponse} uses \code{\link[drc]{drm}} function to fit the dose
+#' response model and generate the predict response value at the given dose.
 #'
 #' \strong{Note}: Random number generator used in \code{AddNoise} with
-#' \code{method = "random"}. If the analysis requires reproducibility, please
-#' set the random seed before calling this function.
+#' \code{method = "random"}. If the analysis requires for reproductiblity,
+#' plesase set the random seed before calling this function.
 #'
-#' @param model An object for fitted model from drm::drc function L.4 or LL.4
-#' model.
-#' @param dose A numeric value. It indicates the concentration of drug at which
-#'   the response will be predicted.
-#'   
+#' @param df A data frame. It contains two variable:
+#' \itemize{
+#'   \item \strong{dose} a serial of concentration of drug;
+#'   \item \strong{response} the cell line response to each concentration of
+#'   drug. It should be the inhibition rate according to negative control.
+#' }
+#'
+#' @param dose A numeric value. It specifies the dose at which user want to
+#'   predict the response of cell line to the drug.
+#'
 #' @return A numeric value. It is the response value of cell line to the drug at
-#' inputted dose.
+#'  inputted dose.
 #'
 #' @author
 #' \itemize{
@@ -169,13 +177,15 @@ FindModelType <- function(model) {
 #' }
 #'
 #' @export
-PredictModelSpecify <- function(model, dose) {
-  if (model$call$fct[[1]][[3]] == "LL.4") {
-    pred <- stats::predict(model, data.frame(dose = dose))
-  } else if(model$call$fct[[1]][[3]] == "L.4") {
-    pred <- stats::predict(model, data.frame(dose = log(dose)))# NB! use log
+PredictResponse <- function(df, dose) {
+  if (stats::var(df$response, na.rm = TRUE) == 0) {
+    pred <- df$response[1]
   } else {
-    stop("Fitted model should be LL.4 or L.4.")
+    model <- FitDoseResponse(df)
+    pred <- .PredictResponseFromModel(model, dose)
+    if (pred > 100) {
+      pred <- 100 + stats::runif(1, -0.01, 0)
+    }
   }
   return(pred)
 }
@@ -199,3 +209,38 @@ FindModelPar <- function (model){
   return(par)
 }
 
+# Auxiliary functions -----------------------------------------------------
+
+#' Predict Response Value at Certain Drug Dose
+#'
+#' \code{PredictResponseFromModel} uses \code{\link[drc]{drm}} function to fit the
+#' dose response model and generate the predict response value at the given dose.
+#'
+#' \strong{Note}: Random number generator used in \code{AddNoise} with
+#' \code{method = "random"}. If the analysis requires reproducibility, please
+#' set the random seed before calling this function.
+#'
+#' @param model An object for fitted model from drm::drc function L.4 or LL.4
+#' model.
+#' @param dose A numeric value. It indicates the concentration of drug at which
+#'   the response will be predicted.
+#'   
+#' @return A numeric value. It is the response value of cell line to the drug at
+#' inputted dose.
+#'
+#' @author
+#' \itemize{
+#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
+#'   \item Jing Tang \email{jing.tang@helsinki.fi}
+#' }
+#'
+.PredictResponseFromModel <- function(model, dose) {
+  if (model$call$fct[[1]][[3]] == "LL.4") {
+    pred <- stats::predict(model, data.frame(dose = dose))
+  } else if(model$call$fct[[1]][[3]] == "L.4") {
+    pred <- stats::predict(model, data.frame(dose = log(dose)))# NB! use log
+  } else {
+    stop("Fitted model should be LL.4 or L.4.")
+  }
+  return(pred)
+}

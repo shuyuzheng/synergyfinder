@@ -17,7 +17,7 @@
 #
 # Auxiliary functions:
 # .ScoreCurve/.ScoreCurve_L4: facility functions for CalculateRI
-# .own_log/.own_log2: facility functions for CalculateRI
+# .Own_log/.Own_log2: facility functions for CalculateRI
 
 #' Calculate the Synergy Scores for Drug Combinations
 #'
@@ -494,55 +494,6 @@ CalculateIC50 <- function(coef, type, max.conc){
   return (ic50)
 }
 
-#' Predict Response Value at Certain Drug Dose
-#'
-#' \code{PredictResponse} uses \code{\link[drc]{drm}} function to fit the dose
-#' response model and generate the predict response value at the given dose.
-#'
-#' \strong{Note}: Random number generator used in \code{AddNoise} with
-#' \code{method = "random"}. If the analysis requires for reproductiblity,
-#' plesase set the random seed before calling this function.
-#'
-#' @param df A data frame. It contains two variable:
-#' \itemize{
-#'   \item \strong{dose} a serial of concentration of drug;
-#'   \item \strong{response} the cell line response to each concentration of
-#'   drug. It should be the inhibition rate according to negative control.
-#' }
-#'
-#' @param dose A numeric value. It specifies the dose at which user want to
-#'   predict the response of cell line to the drug.
-#'
-#' @return A numeric value. It is the response value of cell line to the drug at
-#'  inputted dose.
-#'
-#' @author
-#' \itemize{
-#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
-#'   \item Jing Tang \email{jing.tang@helsinki.fi}
-#' }
-#'
-#' @export
-PredictResponse <- function(df, dose) {
-  if (stats::var(df$response, na.rm = TRUE) == 0) {
-    pred <- df$response[1]
-  } else {
-    model <- FitDoseResponse(df)
-    if (model$call$fct[[1]][[3]] == "LL.4") {
-      pred <- stats::predict(model, data.frame(dose = dose))
-    } else if(model$call$fct[[1]][[3]] == "L.4") {
-      pred <- stats::predict(model, data.frame(dose = log(dose)))# NB! use log
-    } else {
-      stop("Fitted model should be LL.4 or L.4.")
-    }
-    
-    if (pred > 100) {
-      pred <- 100 + stats::runif(1, -0.01, 0)
-    }
-  }
-  return(pred)
-}
-
 # Auxiliary functions -----------------------------------------------------
 
 #' CSS Facilitate Function - .ScoreCurve for Curves Fitted by LL.4 Model
@@ -576,8 +527,8 @@ PredictResponse <- function(df, dose) {
 #' }
 #'
 .ScoreCurve <- function(b, c, d, m, c1, c2, t) {
-  int_y <- (((((d - c) * .own_log(-b, c2, m)) / ((-b) * log(10))) + c * c2) -
-              ((((d - c) * .own_log(-b, c1, m)) / ((-b) * log(10))) + c * c1))
+  int_y <- (((((d - c) * .Own_log(-b, c2, m)) / ((-b) * log(10))) + c * c2) -
+              ((((d - c) * .Own_log(-b, c1, m)) / ((-b) * log(10))) + c * c1))
   
   ratio <- int_y / ((1 - t) * (c2 - c1))
   sens <- ratio * 100 # scale by 100
@@ -604,7 +555,7 @@ PredictResponse <- function(df, dose) {
 #'   \item Jing Tang \email{jing.tang@helsinki.fi}
 #' }
 #'
-.own_log = function(b, c, x)
+.Own_log = function(b, c, x)
 {
   arg = 1 + 10^(b*(c-x))
   if(is.infinite(arg)==T) res = b*(c-x)*log(10) else res = log(arg)
@@ -641,7 +592,7 @@ PredictResponse <- function(df, dose) {
 #'
 .ScoreCurve_L4 <- function(b, c, d, e, c1, c2, t) {
   int_y <- d * (c2 - c1) + ((c - d) / b) *
-    (.own_log2(b * (c2 - e)) - .own_log2(b * (c1 - e)))
+    (.Own_log2(b * (c2 - e)) - .Own_log2(b * (c1 - e)))
   ratio <- int_y / ((1 - t) * (c2 - c1))
   sens <- ratio * 100 # scale by 100
   return(sens)
@@ -663,7 +614,7 @@ PredictResponse <- function(df, dose) {
 #'   \item Jing Tang \email{jing.tang@helsinki.fi}
 #' }
 #'
-.own_log2 <- function(x){
+.Own_log2 <- function(x){
   arg = 1 + exp(x)
   if(is.infinite(arg)==T) res = x else res = log(arg)
   return(res)
