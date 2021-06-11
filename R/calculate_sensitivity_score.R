@@ -9,15 +9,15 @@
 #
 # CalculateSensitivity: Calculate the synergy scores for drug combinations
 # CalculateCSS: Calculate the synergy scores for drug combinations
-# CalculateSens: Calculate sensitivity score (relative inhibition)
+# CalculateRI: Calculate sensitivity score (relative inhibition)
 # ImputeIC50: Impute missing value at IC50 concentration of drug
 # PredictResponse: Predict response value at certain drug dose
 # CalculateIC50: Transform IC50 from coefficients from fitted dose-response
 #                model
 #
 # Auxiliary functions:
-# .ScoreCurve/.ScoreCurve_L4: facility functions for CalculateSens
-# .own_log/.own_log2: facility functions for CalculateSens
+# .ScoreCurve/.ScoreCurve_L4: facility functions for CalculateRI
+# .own_log/.own_log2: facility functions for CalculateRI
 
 #' Calculate the Synergy Scores for Drug Combinations
 #'
@@ -117,7 +117,7 @@ CalculateSensitivity <- function(data,
         )
         # Calculate RI
         single_drug_data <- ExtractSingleDrug(response_boot)
-        ri <- as.data.frame(lapply(single_drug_data, CalculateSens))
+        ri <- as.data.frame(lapply(single_drug_data, CalculateRI))
         colnames(ri) <- sub("conc", "ri_", colnames(ri))
         
         # Calculate IC50 for all drugs
@@ -184,7 +184,7 @@ CalculateSensitivity <- function(data,
       )
       # Calculate RI
       single_drug_data <- ExtractSingleDrug(response_one_block)
-      ri <- as.data.frame(lapply(single_drug_data, CalculateSens))
+      ri <- as.data.frame(lapply(single_drug_data, CalculateRI))
       colnames(ri) <- sub("conc", "ri_", colnames(ri))
       
       # Calculate IC50 for all drugs
@@ -304,7 +304,7 @@ CalculateCSS <- function(response, ic50) {
         })) %>% 
         dplyr::select(dose = !!as.name(css_c), response) %>% 
         tidyr::unnest(cols = c(response)) %>% 
-        CalculateSens()
+        CalculateRI()
       css_name <- paste0(
         sub("conc", "css", css_c),
         sub("conc", "_ic50", ic50_c)
@@ -319,7 +319,7 @@ CalculateCSS <- function(response, ic50) {
 
 #' Calculate Relative Inhibition (RI) for Dose-Response Curve
 #'
-#' Function \code{CalculateSens} calculates cell line sensitivity to a drug or a
+#' Function \code{CalculateRI} calculates cell line sensitivity to a drug or a
 #' combination of drugs from dose response curve.
 #'
 #' This function measures the sensitivity by calculating the Area Under Curve
@@ -347,9 +347,9 @@ CalculateCSS <- function(response, ic50) {
 #' # LL.4
 #' df <- data.frame(dose = c(0, 0.1954, 0.7812, 3.125, 12.5, 50),
 #'                  response = c(2.95, 3.76, 18.13, 28.69, 46.66, 58.82))
-#' RI <- CalculateSens(df)
+#' RI <- CalculateRI(df)
 
-CalculateSens <- function(df) {
+CalculateRI <- function(df) {
   df <- df[order(df$dose), ]
   df <- df[which(df$dose != 0),]
   if (nrow(df) == 1) {
@@ -411,7 +411,7 @@ CalculateSens <- function(df) {
 #'
 #' @return A data frame contains all response value at the IC50 concentration
 #'   of certein drug. It could be directly passed to function
-#'   \code{CalculateSens} for scoring.
+#'   \code{CalculateRI} for scoring.
 #'
 #' @author
 #' \itemize{

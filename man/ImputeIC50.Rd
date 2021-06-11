@@ -17,7 +17,7 @@ combination.}
 \value{
 A data frame contains all response value at the IC50 concentration
   of certein drug. It could be directly passed to function
-  \code{CalculateSens} for scoring.
+  \code{CalculateRI} for scoring.
 }
 \description{
 \code{ImputeIC50} uses the particular experiment's values to predict the
