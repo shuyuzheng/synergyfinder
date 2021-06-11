@@ -9,15 +9,15 @@
 #
 # CalculateSensitivity: Calculate the synergy scores for drug combinations
 # CalculateCSS: Calculate the synergy scores for drug combinations
-# CalculateSens: Calculate sensitivity score (relative inhibition)
+# CalculateRI: Calculate sensitivity score (relative inhibition)
 # ImputeIC50: Impute missing value at IC50 concentration of drug
 # PredictResponse: Predict response value at certain drug dose
 # CalculateIC50: Transform IC50 from coefficients from fitted dose-response
 #                model
 #
 # Auxiliary functions:
-# .ScoreCurve/.ScoreCurve_L4: facility functions for CalculateSens
-# .own_log/.own_log2: facility functions for CalculateSens
+# .ScoreCurve/.ScoreCurve_L4: facility functions for CalculateRI
+# .Own_log/.Own_log2: facility functions for CalculateRI
 
 #' Calculate the Synergy Scores for Drug Combinations
 #'
@@ -117,7 +117,7 @@ CalculateSensitivity <- function(data,
         )
         # Calculate RI
         single_drug_data <- ExtractSingleDrug(response_boot)
-        ri <- as.data.frame(lapply(single_drug_data, CalculateSens))
+        ri <- as.data.frame(lapply(single_drug_data, CalculateRI))
         colnames(ri) <- sub("conc", "ri_", colnames(ri))
         
         # Calculate IC50 for all drugs
@@ -184,7 +184,7 @@ CalculateSensitivity <- function(data,
       )
       # Calculate RI
       single_drug_data <- ExtractSingleDrug(response_one_block)
-      ri <- as.data.frame(lapply(single_drug_data, CalculateSens))
+      ri <- as.data.frame(lapply(single_drug_data, CalculateRI))
       colnames(ri) <- sub("conc", "ri_", colnames(ri))
       
       # Calculate IC50 for all drugs
@@ -304,7 +304,7 @@ CalculateCSS <- function(response, ic50) {
         })) %>% 
         dplyr::select(dose = !!as.name(css_c), response) %>% 
         tidyr::unnest(cols = c(response)) %>% 
-        CalculateSens()
+        CalculateRI()
       css_name <- paste0(
         sub("conc", "css", css_c),
         sub("conc", "_ic50", ic50_c)
@@ -319,7 +319,7 @@ CalculateCSS <- function(response, ic50) {
 
 #' Calculate Relative Inhibition (RI) for Dose-Response Curve
 #'
-#' Function \code{CalculateSens} calculates cell line sensitivity to a drug or a
+#' Function \code{CalculateRI} calculates cell line sensitivity to a drug or a
 #' combination of drugs from dose response curve.
 #'
 #' This function measures the sensitivity by calculating the Area Under Curve
@@ -347,9 +347,9 @@ CalculateCSS <- function(response, ic50) {
 #' # LL.4
 #' df <- data.frame(dose = c(0, 0.1954, 0.7812, 3.125, 12.5, 50),
 #'                  response = c(2.95, 3.76, 18.13, 28.69, 46.66, 58.82))
-#' RI <- CalculateSens(df)
+#' RI <- CalculateRI(df)
 
-CalculateSens <- function(df) {
+CalculateRI <- function(df) {
   df <- df[order(df$dose), ]
   df <- df[which(df$dose != 0),]
   if (nrow(df) == 1) {
@@ -411,7 +411,7 @@ CalculateSens <- function(df) {
 #'
 #' @return A data frame contains all response value at the IC50 concentration
 #'   of certein drug. It could be directly passed to function
-#'   \code{CalculateSens} for scoring.
+#'   \code{CalculateRI} for scoring.
 #'
 #' @author
 #' \itemize{
@@ -494,55 +494,6 @@ CalculateIC50 <- function(coef, type, max.conc){
   return (ic50)
 }
 
-#' Predict Response Value at Certain Drug Dose
-#'
-#' \code{PredictResponse} uses \code{\link[drc]{drm}} function to fit the dose
-#' response model and generate the predict response value at the given dose.
-#'
-#' \strong{Note}: Random number generator used in \code{AddNoise} with
-#' \code{method = "random"}. If the analysis requires for reproductiblity,
-#' plesase set the random seed before calling this function.
-#'
-#' @param df A data frame. It contains two variable:
-#' \itemize{
-#'   \item \strong{dose} a serial of concentration of drug;
-#'   \item \strong{response} the cell line response to each concentration of
-#'   drug. It should be the inhibition rate according to negative control.
-#' }
-#'
-#' @param dose A numeric value. It specifies the dose at which user want to
-#'   predict the response of cell line to the drug.
-#'
-#' @return A numeric value. It is the response value of cell line to the drug at
-#'  inputted dose.
-#'
-#' @author
-#' \itemize{
-#'   \item Shuyu Zheng \email{shuyu.zheng@helsinki.fi}
-#'   \item Jing Tang \email{jing.tang@helsinki.fi}
-#' }
-#'
-#' @export
-PredictResponse <- function(df, dose) {
-  if (stats::var(df$response, na.rm = TRUE) == 0) {
-    pred <- df$response[1]
-  } else {
-    model <- FitDoseResponse(df)
-    if (model$call$fct[[1]][[3]] == "LL.4") {
-      pred <- stats::predict(model, data.frame(dose = dose))
-    } else if(model$call$fct[[1]][[3]] == "L.4") {
-      pred <- stats::predict(model, data.frame(dose = log(dose)))# NB! use log
-    } else {
-      stop("Fitted model should be LL.4 or L.4.")
-    }
-    
-    if (pred > 100) {
-      pred <- 100 + stats::runif(1, -0.01, 0)
-    }
-  }
-  return(pred)
-}
-
 # Auxiliary functions -----------------------------------------------------
 
 #' CSS Facilitate Function - .ScoreCurve for Curves Fitted by LL.4 Model
@@ -576,8 +527,8 @@ PredictResponse <- function(df, dose) {
 #' }
 #'
 .ScoreCurve <- function(b, c, d, m, c1, c2, t) {
-  int_y <- (((((d - c) * .own_log(-b, c2, m)) / ((-b) * log(10))) + c * c2) -
-              ((((d - c) * .own_log(-b, c1, m)) / ((-b) * log(10))) + c * c1))
+  int_y <- (((((d - c) * .Own_log(-b, c2, m)) / ((-b) * log(10))) + c * c2) -
+              ((((d - c) * .Own_log(-b, c1, m)) / ((-b) * log(10))) + c * c1))
   
   ratio <- int_y / ((1 - t) * (c2 - c1))
   sens <- ratio * 100 # scale by 100
@@ -604,7 +555,7 @@ PredictResponse <- function(df, dose) {
 #'   \item Jing Tang \email{jing.tang@helsinki.fi}
 #' }
 #'
-.own_log = function(b, c, x)
+.Own_log = function(b, c, x)
 {
   arg = 1 + 10^(b*(c-x))
   if(is.infinite(arg)==T) res = b*(c-x)*log(10) else res = log(arg)
@@ -641,7 +592,7 @@ PredictResponse <- function(df, dose) {
 #'
 .ScoreCurve_L4 <- function(b, c, d, e, c1, c2, t) {
   int_y <- d * (c2 - c1) + ((c - d) / b) *
-    (.own_log2(b * (c2 - e)) - .own_log2(b * (c1 - e)))
+    (.Own_log2(b * (c2 - e)) - .Own_log2(b * (c1 - e)))
   ratio <- int_y / ((1 - t) * (c2 - c1))
   sens <- ratio * 100 # scale by 100
   return(sens)
@@ -663,7 +614,7 @@ PredictResponse <- function(df, dose) {
 #'   \item Jing Tang \email{jing.tang@helsinki.fi}
 #' }
 #'
-.own_log2 <- function(x){
+.Own_log2 <- function(x){
   arg = 1 + exp(x)
   if(is.infinite(arg)==T) res = x else res = log(arg)
   return(res)

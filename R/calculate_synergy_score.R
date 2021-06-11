@@ -632,7 +632,7 @@ Loewe <- function(response,
       if (all(!is.finite(x_cap))) { # if none of drug achieve the combination response
         # max of the single drug response
         y_loewe[i] <- max(mapply(function(model) {
-          suppressWarnings(PredictModelSpecify(model, sum(x)))
+          suppressWarnings(.PredictResponseFromModel(model, sum(x)))
         },
         model = single_drug_model
         ))
