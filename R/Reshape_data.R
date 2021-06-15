@@ -216,8 +216,9 @@ ReshapeData <- function(data,
       response_origin_sd = stats::sd(response_origin),
       response_origin_mean = mean(response_origin),
       n = dplyr::n(), .groups = "keep"
-    ) %>%
-    dplyr::filter(n > 1) %>% 
+    )
+  replicate_response <- replicate_response %>%
+    dplyr::filter(block_id %in% replicate_response$block_id[which(replicate_response$n > 1)]) %>% 
     dplyr::mutate(
       response_sem = response_sd / sqrt(n),
       response_CI95 = stats::qt(0.975, df = n - 1) * response_sem,
