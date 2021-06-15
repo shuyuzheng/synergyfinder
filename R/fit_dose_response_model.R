@@ -69,11 +69,12 @@ FitDoseResponse <- function(data, Emin = NA, Emax = NA) {
   if (!all(c("dose", "response") %in% colnames(data))) {
     stop("The input must contain columns: \"dose\", \"respone\".")
   }
-
+  # If all the response values are same, the curve can not be fitted.
+  # Solution: add a small value to the response at highest dosage
   if (nrow(data) != 1 & stats::var(data$response) == 0) {
     data$response[nrow(data)] <- data$response[nrow(data)] +
       10^-10
-  }
+  } 
   drug.model <- NULL
   drug.model <- tryCatch(
     {

@@ -288,7 +288,8 @@ CalculateCSS <- function(response, ic50) {
         dplyr::rename(dose = !!ic50_c) %>% 
         dplyr::group_by(!!as.name(css_c)) %>% 
         tidyr::nest(data = dplyr::all_of(c("dose", "response"))) %>% 
-        dplyr::mutate(response = furrr::future_map(data, function(x){
+        dplyr::mutate(response = furrr::future_map(
+          data, function(x){
           if (nrow(x) == 2) {
             return(x$response[2])
           } else {
@@ -351,11 +352,17 @@ CalculateCSS <- function(response, ic50) {
 
 CalculateRI <- function(df) {
   df <- df[order(df$dose), ]
-  df <- df[which(df$dose != 0),]
+  df <- df[which(df$dose != 0), ]
   if (nrow(df) == 1) {
     score <- df$response[1]
     res <- score
   } else {
+    # If all the response values are same, the curve can not be fitted.
+    # Solution: add a small value to the response at highest dosage
+    if (stats::var(df$response) == 0) {
+      df$response[nrow(df)] <- df$response[nrow(df)] +
+        10^-10
+    }
     tryCatch({
       model <- drc::drm(response ~ dose, data = df, fct = drc::LL.4(),
                         control = drc::drmc(errorm = FALSE, noMessage = TRUE,
