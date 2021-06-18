@@ -98,7 +98,7 @@ CalculateSensitivity <- function(data,
   scores <- NULL
   scores_statistics <- NULL
   for (b in blocks) {
-    message("Calculating sensitive scores for block ", b, " ...")
+    message("Calculating sensitivity scores for block ", b, " ...")
     response_one_block <- response %>% 
       dplyr::filter(block_id == b) %>% 
       dplyr::select(-block_id) %>% 
@@ -302,7 +302,9 @@ CalculateCSS <- function(response, ic50) {
               )
             )
           }
-        })) %>% 
+        },
+        .options = furrr::furrr_options(seed = NULL)
+        )) %>% 
         dplyr::select(dose = !!as.name(css_c), response) %>% 
         tidyr::unnest(cols = c(response)) %>% 
         CalculateRI()
