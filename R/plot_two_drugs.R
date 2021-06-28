@@ -404,8 +404,8 @@ Plot2DrugHeatmap <- function(data,
           ticks = FALSE
         )
       ) +
-      ggplot2::xlab(paste0(drug_pair$drug1, " (", drug_pair$conc_unit2, ")")) +
-      ggplot2::ylab(paste0(drug_pair$drug2, " (", drug_pair$conc_unit1, ")")) +
+      ggplot2::xlab(paste0(drug_pair$drug1, " (", drug_pair$conc_unit1, ")")) +
+      ggplot2::ylab(paste0(drug_pair$drug2, " (", drug_pair$conc_unit2, ")")) +
       # Add the title for heatmap
       ggplot2::ggtitle(
         label = paste0(
