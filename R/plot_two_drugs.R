@@ -118,8 +118,8 @@ Plot2DrugHeatmap <- function(data,
                              plot_title = NULL,
                              col_range = NULL,
                              row_range = NULL,
-                             high_value_color = "#A90217",
-                             low_value_color = "#2166AC",
+                             high_value_color = "#FF0000",
+                             low_value_color = "#00FF00",
                              text_label_size_scale = 1,
                              text_label_color = "#000000",
                              title_text_size_scale = 1) {
@@ -505,6 +505,8 @@ Plot2DrugHeatmap <- function(data,
 #'   use \link[plotly]{plot_ly} to generate an interactive plot. If it is
 #'   \code{FALSE}, this function will use \link[lattice]{wireframe} to generate
 #'   a static plot.
+#' @param grid A logical value. It indicates whether to add grids on the 
+#'   surface.
 #' @param high_value_color An R color value. It indicates the color for the
 #'   high values.
 #' @param low_value_color An R color value. It indicates the color for low
@@ -535,11 +537,12 @@ Plot2DrugContour <- function(data,
                              interpolate_len = 2,
                              summary_statistic = NULL,
                              dynamic = FALSE,
+                             grid = TRUE,
                              plot_title = NULL,
                              col_range = NULL,
                              row_range = NULL,
-                             high_value_color = "#A90217",
-                             low_value_color = "#2166AC",
+                             high_value_color = "#FF0000",
+                             low_value_color = "#00FF00",
                              text_size_scale = 1) {
   # Extract plot data
   plot_data <- .Extract2DrugPlotData(
@@ -671,14 +674,16 @@ Plot2DrugContour <- function(data,
   y_ticks_text <- as.character(sort(conc2))
   x_axis_title <- paste0(drug_pair$drug1, " (", drug_pair$conc_unit1, ")")
   y_axis_title <- paste0(drug_pair$drug2, " (", drug_pair$conc_unit2, ")")
-
+  
+  # Color palette
+  color_range <- round(max(abs(extended_mat)), -1) + 10
+  start_point <- -color_range
+  end_point <- color_range
+  
   if (dynamic){
     y <- seq(1, ncol(extended_mat))
     x <- seq(1, nrow(extended_mat))
-    # Color palette
-    color_range <- round(max(abs(extended_mat)), -1) + 10
-    start_point <- -color_range
-    end_point <- color_range
+
     # Hover text
     concs <- expand.grid(conc1, conc2)
     hover_text <- NULL
@@ -717,40 +722,51 @@ Plot2DrugContour <- function(data,
       zmin = start_point,
       zmax = end_point,
       type = "contour",
-      line = list(width = 0),
+      line = list(color = "white", smoothing = 0),
       text = t(hover_text_mat),
       hoverinfo = "text",
-      autocolorscale = FALSE,
+      # autocolorscale = FALSE,
       colorscale = list(
         c(0, low_value_color),
         c(0.5, "white"),
         c(1, high_value_color)
       ),
+      autocontour = F,
+      # ncontours = 21,
       colorbar = list(
         x = 1,
         y = 0.75,
-        align = "center",
-        outlinecolor = "#FFFFFF",
-        tickcolor = "#FFFFFF",
         title = legend_title,
-        titlefont = list(size = 12 * text_size_scale, family = "arial"),
+        titlefont = list(size = 16 * text_size_scale, family = "arial"),
+        showticklabels = TRUE,
+        align = "center",
+        outlinewidth = 0,
+        ticks = "inside",
+        tickcolor = "#FFFFFFF",
         tickfont = list(size = 12 * text_size_scale, family = "arial")
       ),
       contours = list(
+        coloring = "heatmap",
+        start = start_point,
+        end = end_point,
+        size = 10,
+        showlabels = FALSE,
         x = list(
           # highlight = FALSE,
-          show = TRUE,
+          highlightwidth = 2,
+          show = FALSE,
           color = 'black',
-          width = 1,
+          width = 5,
           start = 1,
           end = max(x),
           size = 1 * text_size_scale
         ),
         y = list(
           # highlight = FALSE,
-          show = TRUE,
+          highlightwidth = 2,
+          show = FALSE,
           color = 'black',
-          width = 1,
+          width = 5,
           start = 1,
           end = max(y),
           size = 1 * text_size_scale
@@ -774,26 +790,26 @@ Plot2DrugContour <- function(data,
           y = 0.99
         ),
         xaxis = list(
-          title = paste0("<i>", x_axis_title, "</i>"),
+          title = paste0(x_axis_title),
           tickfont = list(size = 12 * text_size_scale, family = "arial"),
-          titlefont = list(size = 12 * text_size_scale, family = "arial"),
+          titlefont = list(size = 16 * text_size_scale, family = "arial"),
           ticks = "none",
           showspikes = FALSE,
-          showgrid = FALSE,
           tickmode = "array", 
           tickvals = x_ticks,
-          ticktext = x_ticks_text
+          ticktext = x_ticks_text,
+          range = c(min(x_ticks), max(x_ticks))
         ),
         yaxis = list(
-          title = paste0("<i>", y_axis_title, "</i>"),
+          title = paste0(y_axis_title),
           tickfont = list(size = 12 * text_size_scale, family = "arial"),
-          titlefont = list(size = 12 * text_size_scale, family = "arial"),
+          titlefont = list(size = 16 * text_size_scale, family = "arial"),
           ticks = "none",
           showspikes = FALSE,
-          showgrid = FALSE,
           tickmode = "array", 
           tickvals = y_ticks,
-          ticktext = y_ticks_text
+          ticktext = y_ticks_text,
+          range = c(min(y_ticks), max(y_ticks))
         ),
         margin = list(
           l = 50,
@@ -811,34 +827,72 @@ Plot2DrugContour <- function(data,
           height = 500,
           scale = 1
         )
-      ) 
+      )
+    if (grid) {
+      for(x in x_ticks){
+        p <- plotly::add_segments(
+          p,
+          x = x,
+          xend = x,
+          y = min(y_ticks),
+          yend = max(y_ticks),
+          line = list(color = "black", dash = "dot", width = 1),
+          inherit = FALSE,
+          showlegend = FALSE
+        )
+      }
+      for(y in y_ticks){
+        p <- plotly::add_segments(
+          p,
+          y = y,
+          yend = y,
+          x = min(x_ticks),
+          xend = max(x_ticks),
+          line = list(color = "black", dash = "dot", width = 1),
+          inherit = FALSE,
+          showlegend = FALSE
+        )
+      }
+    }
   } else{
     extended_df <- reshape2::melt(extended_mat)
     colnames(extended_df) <- c("x", "y", "value")
-    
-    # Color palette
-    color_range <- round(max(abs(extended_mat)), -1) + 10
-    start_point <- -color_range
-    end_point <- color_range
-    p <- ggplot2::ggplot(extended_df) +
-      metR::geom_contour_fill(
+    myPalette <- colorRampPalette(
+      c(low_value_color, "white", high_value_color)
+      )(100)
+    p <- ggplot2::ggplot(
+        extended_df,
         ggplot2::aes(x = x, y = y, z = value)
-      ) + 
+      ) +
+      metR::geom_contour_fill(
+        ggplot2::aes(x = x, y = y, z = value),
+        color = "#FFFFFF50",
+        binwidth = 10
+      ) +
       ggplot2::scale_x_continuous(
+        expand = c(0, 0),
         breaks = x_ticks,
-        labels = x_ticks_text
+        labels = x_ticks_text,
+        limits = c(min(x_ticks), max(x_ticks))
       ) +
       ggplot2::scale_y_continuous(
+        expand = c(0, 0),
         breaks = y_ticks,
-        labels = y_ticks_text
+        labels = y_ticks_text,
+        limits = c(min(y_ticks), max(y_ticks))
       ) +
-      ggplot2::scale_fill_gradient2(
-        high= high_value_color,
-        mid = "#FFFFFF",
-        low = low_value_color,
-        midpoint = 0,
+      # ggplot2::scale_fill_gradient2(
+      #   high= high_value_color,
+      #   mid = "#FFFFFF",
+      #   low = low_value_color,
+      #   midpoint = 0,
+      #   name = legend_title,
+      #   limits = c(start_point, end_point),
+      # ) +
+      ggplot2::scale_fill_gradientn(
         name = legend_title,
-        limits = c(start_point, end_point),
+        colours = myPalette,
+        limits = c(start_point, end_point)
       ) +
       ggplot2::guides(
         fill = ggplot2::guide_colorbar(
@@ -882,6 +936,17 @@ Plot2DrugContour <- function(data,
         ),
         legend.background = element_rect(color = NA)
       )
+    if (grid) {
+      p <- p +
+        geom_vline(
+          xintercept = x_ticks,
+          linetype = "dotted"
+        ) +
+        geom_hline(
+          yintercept = y_ticks,
+          linetype = "dotted"
+        )
+    }
   }
   p
   return(p)
@@ -985,8 +1050,8 @@ Plot2DrugSurface <- function(data,
                              row_range = NULL,
                              dynamic = FALSE,
                              grid = TRUE,
-                             high_value_color = "#A90217",
-                             low_value_color = "#2166AC",
+                             high_value_color = "#FF0000",
+                             low_value_color = "#00FF00",
                              text_size_scale = 1) {
   # Extract plot data
   plot_data <- .Extract2DrugPlotData(
