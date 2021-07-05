@@ -505,8 +505,7 @@ Plot2DrugHeatmap <- function(data,
 #'   use \link[plotly]{plot_ly} to generate an interactive plot. If it is
 #'   \code{FALSE}, this function will use \link[lattice]{wireframe} to generate
 #'   a static plot.
-#' @param grid A logical value. It indicates whether to add grids on the 
-#'   surface.
+#' @param grid A logical value. It indicates whether to add grids.
 #' @param high_value_color An R color value. It indicates the color for the
 #'   high values.
 #' @param low_value_color An R color value. It indicates the color for low

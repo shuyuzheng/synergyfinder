@@ -16,8 +16,8 @@ Plot2DrugSurface(
   row_range = NULL,
   dynamic = FALSE,
   grid = TRUE,
-  high_value_color = "#A90217",
-  low_value_color = "#2166AC",
+  high_value_color = "#FF0000",
+  low_value_color = "#00FF00",
   text_size_scale = 1
 )
 }

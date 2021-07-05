@@ -21,7 +21,7 @@ PlotSynergy(
   text_size_scale = 1,
   heatmap_text_label_size_scale = 1,
   heatmap_text_label_color = "#000000",
-  surface_grid = TRUE,
+  grid = TRUE,
   dynamic = FALSE,
   display = TRUE,
   save_file = FALSE,
@@ -115,8 +115,8 @@ control the color of text labels in the heatmap plot. If it is \code{NULL},
 text label will not be shown. It only works while
 \code{plot_type = "heatmap"}.}
 
-\item{surface_grid}{A logical value. It indicates whether to add grids on the 
-surface. It only works while \code{plot_type = "3D"}.}
+\item{grid}{A logical value. It indicates whether to add grids on the pot.
+It only works while \code{plot_type = "3D"} or \code{plot_type = "2D"}.}
 
 \item{dynamic}{A logic value. It indicates whether to generate interactive
 plot wit package "plotly" or static plot with package "ggplot2"/"lattice".}

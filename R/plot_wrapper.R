@@ -345,8 +345,8 @@ PlotDoseResponse <- function(data,
 #'   control the color of text labels in the heatmap plot. If it is \code{NULL},
 #'   text label will not be shown. It only works while
 #'   \code{plot_type = "heatmap"}.
-#' @param surface_grid A logical value. It indicates whether to add grids on the 
-#'   surface. It only works while \code{plot_type = "3D"}.
+#' @param grid A logical value. It indicates whether to add grids on the pot.
+#'   It only works while \code{plot_type = "3D"} or \code{plot_type = "2D"}.
 #' @param dynamic A logic value. It indicates whether to generate interactive
 #'   plot wit package "plotly" or static plot with package "ggplot2"/"lattice".
 #' @param display A logic value. It specifies whether to automatically display
@@ -412,7 +412,7 @@ PlotSynergy <- function(data,
                         text_size_scale = 1,
                         heatmap_text_label_size_scale = 1,
                         heatmap_text_label_color = "#000000",
-                        surface_grid = TRUE,
+                        grid = TRUE,
                         dynamic = FALSE,
                         display = TRUE, 
                         save_file = FALSE,
@@ -450,6 +450,7 @@ PlotSynergy <- function(data,
         interpolate_len = interpolate_len,
         high_value_color = high_value_color,
         low_value_color = low_value_color,
+        grid = grid,
         row_range = row_range,
         col_range = col_range,
         text_size_scale = text_size_scale)
@@ -490,7 +491,7 @@ PlotSynergy <- function(data,
         low_value_color = low_value_color,
         row_range = row_range,
         col_range = col_range,
-        grid = surface_grid,
+        grid = grid,
         text_size_scale = text_size_scale)
       if (display) {
         if (dynamic) {
