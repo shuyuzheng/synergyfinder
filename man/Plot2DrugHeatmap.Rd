@@ -15,8 +15,8 @@ Plot2DrugHeatmap(
   plot_title = NULL,
   col_range = NULL,
   row_range = NULL,
-  high_value_color = "#A90217",
-  low_value_color = "#2166AC",
+  high_value_color = "#FF0000",
+  low_value_color = "#00FF00",
   text_label_size_scale = 1,
   text_label_color = "#000000",
   title_text_size_scale = 1

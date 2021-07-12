@@ -28,6 +28,9 @@
 #'   a static plot.
 #' @param plot_title A character value. It specifies the plot title. If it is
 #'   \code{NULL}, the function will automatically generate a title.
+#' @param text_size_scale A numeric value. It is used to control the size
+#'   of text for axis in the plot. All the text size will multiply by this
+#'   scale factor.
 #' 
 #' @return A ggplot object, while \code{dynamic = FALSE}. A plotly object,
 #'   while \code{dynamic = TRUE}.
@@ -48,13 +51,14 @@
 #' PlotSensitivitySynergy(data, plot_synergy = "ZIP")
 PlotSensitivitySynergy <- function(data,
                                  plot_synergy,
-                                 point_color = "#2D72AD",
                                  point_size = 1,
-                                 point_label_color = "#2D72AD",
+                                 point_color = "#2D72AD",
                                  show_labels = FALSE,
-                                 plot_title = NULL,
+                                 point_label_color = "#2D72AD",
+                                 label_size = 10,
                                  dynamic = FALSE,
-                                 label_size = 10){
+                                 plot_title = NULL,
+                                 text_size_scale = 1){
   plot_table <- data$drug_pairs
   # 1. Check the input data
   # Data structure of 'data'
@@ -93,7 +97,7 @@ PlotSensitivitySynergy <- function(data,
 
   
   plot_table <- plot_table %>%
-    tidyr::unite("label", block_id, dplyr::starts_with("drug"), sep = "-") %>% 
+    tidyr::unite("label", block_id, dplyr::starts_with("drug"), sep = "\n") %>% 
     dplyr::select(synergy = !!plot_synergy, css, label) 
   
   if (dynamic) {
@@ -101,6 +105,7 @@ PlotSensitivitySynergy <- function(data,
       p <- plotly::plot_ly(
         x = plot_table$css,
         y = plot_table$synergy,
+        cliponaxis = FALSE,
         type = "scatter",
         text = plot_table$label,
         # hoverinfo = "text",
@@ -132,18 +137,27 @@ PlotSensitivitySynergy <- function(data,
       plotly::layout(
         title = list(
           text = paste0("<b>", plot_title, "</b>"),
-          tickfont = list(size = 18, family = "arial"),
+          tickfont = list(
+            size = 18 * text_size_scale,
+            family = "arial"
+          ),
           y = 0.99
         ),
         xaxis = list(
           title = paste0("<i>Combination Sensitivity Score</i>"),
-          tickfont = list(size = 12, family = "arial"),
+          tickfont = list(
+            size = 12 * text_size_scale,
+            family = "arial"
+          ),
           # ticks = "none",
           showspikes = FALSE
         ),
         yaxis = list(
           title = paste0("<i>", "Synergy Score", "</i>"),
-          tickfont = list(size = 12 , family = "arial"),
+          tickfont = list(
+            size = 12 * text_size_scale,
+            family = "arial"
+          ),
           # ticks = "none",
           showspikes = FALSE
         )
@@ -203,16 +217,15 @@ PlotSensitivitySynergy <- function(data,
           colour = "#DFDFDF"
         ),
         plot.title = ggplot2::element_text(
-          size = 13.5,
+          size = 13.5 * text_size_scale,
           face = "bold",
           hjust = 0.5
         ),
         axis.text = ggplot2::element_text(
-          size = 10
+          size = 10 * text_size_scale
         ),
         axis.title = ggplot2::element_text(
-          face = "italic",
-          size = 10
+          size = 10 * text_size_scale
         ),
         # axis.ticks = element_blank(),
         axis.line.y.left = ggplot2::element_line(color = "black"),

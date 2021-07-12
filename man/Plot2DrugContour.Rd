@@ -12,11 +12,12 @@ Plot2DrugContour(
   interpolate_len = 2,
   summary_statistic = NULL,
   dynamic = FALSE,
+  grid = TRUE,
   plot_title = NULL,
   col_range = NULL,
   row_range = NULL,
-  high_value_color = "#A90217",
-  low_value_color = "#2166AC",
+  high_value_color = "#FF0000",
+  low_value_color = "#00FF00",
   text_size_scale = 1
 )
 }
@@ -72,6 +73,8 @@ If it is \code{NULL}, no statistics will be printed.}
 use \link[plotly]{plot_ly} to generate an interactive plot. If it is
 \code{FALSE}, this function will use \link[lattice]{wireframe} to generate
 a static plot.}
+
+\item{grid}{A logical value. It indicates whether to add grids.}
 
 \item{plot_title}{A character value. It specifies the plot title. If it is
 \code{NULL}, the function will automatically generate a title.}
