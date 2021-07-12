@@ -629,7 +629,7 @@ Loewe <- function(response,
         par = single_par, type = single_type
       )
 
-      if (all(!is.finite(x_cap))) { # if none of drug achieve the combination response
+      if (all(!is.finite(x_cap))) { # if none of drugs achieve the combination response
         # max of the single drug response
         y_loewe[i] <- max(mapply(function(model) {
           suppressWarnings(.PredictResponseFromModel(model, sum(x)))
@@ -764,7 +764,7 @@ CorrectBaseLine <- function(response, method = c("non", "part", "all")) {
   # if NAN it means the response cannot be achieved by the drug, the response 
   # can be either too high or too low for the drug to achieve
   if (is.nan(res) == TRUE){
-    res <- ifelse(y > max(drug_par[3], drug_par[2]), 1, -1)*Inf
+    res <- ifelse(y > max(drug_par[3], drug_par[2]), Inf, 0)
   }
   return(res)
 }
@@ -790,7 +790,7 @@ CorrectBaseLine <- function(response, method = c("non", "part", "all")) {
   res <- exp((drug_par[4] + log((drug_par[3] - y) /
                                  (y - drug_par[2])) / drug_par[1]))
   if (is.nan(res) == TRUE) {
-    res <- ifelse(y > max(drug_par[3], drug_par[2]), 1, -1)*Inf
+    res <- ifelse(y > max(drug_par[3], drug_par[2]), Inf, 0)
   }
   return(res)
 }
@@ -857,24 +857,30 @@ CorrectBaseLine <- function(response, method = c("non", "part", "all")) {
   y_test <- seq(min_y, max_y, length.out = nsteps) # test nsteps responses
   # Calculate expected dose at each drug
   for(i in 1:ndrugs){
-    tmp <- lapply(y_test, 
-                  function(y) {
-                    .SolveExpDose(y, 
-                                  drug_par = drug_par[[i]], 
-                                  drug_type = drug_type[[i]]
-                                 )
-                  })
+    tmp <- lapply(
+      y_test, 
+      function(y) {
+        .SolveExpDose(
+          y, 
+          drug_par = drug_par[[i]],
+          drug_type = drug_type[[i]]
+        )
+      }
+    )
     x_test[i,] <- unlist(tmp)
   }
   # Calculate distance between point x to the expected dose plane
   for(j in 1:nsteps){ 
     # note the sign of -1
-    dist[j] = .Distance(w = c(1 / x_test[, j]), b = -1, point = x)
+    # dist[j] = .Distance(w = c(1 / x_test[, j]), b = -1, point = x)
+    dist[j] = abs(sum(x/x_test[, j]) - 1)
   }
-  # output the y.loewe corresponding to the minimal distance
-  res <- list(y_loewe = y_test[which(dist == min(dist, na.rm = T))], 
-             x_select = x_test[,which(dist == min(dist, na.rm = T))], 
-             distance = min(dist, na.rm = T)) 
+  # output the y_loewe corresponding to the minimal distance
+  res <- list(
+    y_loewe = y_test[which(dist == min(dist, na.rm = T))],
+    x_select = x_test[,which(dist == min(dist, na.rm = T))],
+    distance = min(dist, na.rm = T)
+  ) 
 }
 
 #' Bootstraping Sample from Replicates in Response Data
