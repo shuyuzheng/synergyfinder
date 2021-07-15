@@ -65,8 +65,8 @@
 #' }
 #' 
 #' @examples
-#' data("mathews_screening_data")
-#' data <- ReshapeData(mathews_screening_data)
+#' data("ONEIL_screening_data")
+#' data <- ReshapeData(ONEIL_screening_data, data_type = "inhibition")
 #' data <- CalculateSensitivity(data)
 CalculateSensitivity <- function(data,
                                  adjusted = TRUE,
@@ -145,7 +145,7 @@ CalculateSensitivity <- function(data,
       tmp <- as.data.frame(as.list(SensMean)) %>%
         dplyr::mutate(block_id = b)
       SensSd <- apply(tmp_iter, 2, stats::sd)
-      SensSem <- SensSd / iteration
+      SensSem <- SensSd / sqrt(iteration)
       SensCI95_left <- apply(tmp_iter, 2, 
                              function(x) stats::quantile(x, probs = 0.025))
       SensCI95_right <- apply(tmp_iter, 2, 
@@ -161,11 +161,13 @@ CalculateSensitivity <- function(data,
         })
       
       names(SensMean) <- paste0(names(SensMean), "_mean")
+      names(SensSd) <- paste0(names(SensSd), "_sd")
       names(SensSem) <- paste0(names(SensSem), "_sem")
       names(SensCI95_left) <- paste0(names(SensCI95_left), "_ci_left")
       names(SensCI95_right) <- paste0(names(SensCI95_right), "_ci_right")
       names(p_value) <-  paste0(names(p_value), "_p_value")
       tmp_sensitivity_statistic <- as.data.frame(as.list(c(SensMean,
+                                                           SensSd,
                                                            SensSem,
                                                            SensCI95_left,
                                                            SensCI95_right,

@@ -156,8 +156,10 @@ CalculateSynergy <- function(data,
         for (i in s){
           tmp_m[[i]] <- rowMeans(dplyr::select(iter, dplyr::starts_with(i)))
           tmp_score_statistic_m[[paste0(i, "_mean")]] <- tmp_m[[i]]
-          tmp_score_statistic_m[[paste0(i, "_sem")]] <- 
+          tmp_score_statistic_m[[paste0(i, "_sd")]] <- 
             apply(dplyr::select(iter, dplyr::starts_with(i)), 1, stats::sd)
+          tmp_score_statistic_m[[paste0(i, "_sem")]] <- 
+            tmp_score_statistic_m[[paste0(i, "_sd")]] / sqrt(iteration)
           tmp_score_statistic_m[[paste0(i, "_ci_left")]] <- 
             apply(dplyr::select(iter, dplyr::starts_with(i)), 1, 
                   function(x) stats::quantile(x, probs = 0.025))
