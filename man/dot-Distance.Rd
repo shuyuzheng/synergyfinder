@@ -11,7 +11,7 @@
 in the spaces to define the "plan".}
 
 \item{b}{A numeric value. It is the constant values in the formula which
-defines the "plan".}
+defines the "plane".}
 
 \item{point}{A numeric vector. It contains the coordinates in
 the spaces to define the "point".}

@@ -9,7 +9,8 @@
 \arguments{
 \item{y}{The expected effect (\% inhibition) of the drug to cell line}
 
-\item{drug_par}{The parameters for fitted dose-response model.}
+\item{drug_par}{The parameters ("b_Hill", "c_Emin", "d_Emax", "e_EC50") for
+fitted dose-response model.}
 }
 \value{
 A numeric value. It indicates the expected dose of drug.

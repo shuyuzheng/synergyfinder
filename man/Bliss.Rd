@@ -4,17 +4,12 @@
 \alias{Bliss}
 \title{Calculate Bliss Synergy Score}
 \usage{
-Bliss(response, single_drug_data)
+Bliss(response)
 }
 \arguments{
 \item{response}{A data frame. It must contain the columns: "conc1", "conc2",
 ..., for the concentration of the combined drugs and "response" for the
 observed \%inhibition at certain combination.}
-
-\item{single_drug_data}{A list or NULL. It contains the monotherapy dose
-response data for all the tested drugs in the inputted block. If it is
-\code{NULL}, the data will extract the dose response table from inputted
-\code{response} table.}
 }
 \value{
 A data frame containing the concentrations for drugs, reference

@@ -133,13 +133,17 @@ CalculateSynergy <- function(data,
       for (m in method) {
         set.seed(seed)
         message("Calculating ", m, " score for block ", b, "...")
-        iter <- pbapply::pblapply(seq(1, iteration), function(x){
+        iter <- pbapply::pblapply(seq(1, iteration), function(i){
           response_boot <- .Bootstrapping(response_one_block)
           response_boot <- CorrectBaseLine(
             response_boot,
             method = correct_baseline
           )
           s <- eval(call(m, response_boot))
+          colnames(s)[!colnames(s) %in% concs] <- paste0(
+            colnames(s)[!colnames(s) %in% concs],
+            ".",
+            i)
           return(s)
           }) %>% 
           purrr::reduce(dplyr::left_join, by = concs) %>% 
@@ -406,10 +410,6 @@ ZIP <- function(response,
 #' @param response A data frame. It must contain the columns: "conc1", "conc2",
 #'   ..., for the concentration of the combined drugs and "response" for the
 #'   observed \%inhibition at certain combination.
-#' @param single_drug_data A list or NULL. It contains the monotherapy dose
-#'   response data for all the tested drugs in the inputted block. If it is
-#'   \code{NULL}, the data will extract the dose response table from inputted
-#'   \code{response} table.
 #'
 #' @return  A data frame containing the concentrations for drugs, reference
 #'   effect and synergy score estimated by Bliss model.
@@ -439,7 +439,7 @@ ZIP <- function(response,
 #' response <- data$response[data$response$block_id == 1,
 #'                           c("conc1", "conc2", "response")]
 #' Bliss.score <- Bliss(response)
-Bliss <- function(response, single_drug_data) {
+Bliss <- function(response) {
   # Get all possible combinations of drug dosages
   single_drug_data <- ExtractSingleDrug(response = response)
   bliss <- expand.grid(lapply(single_drug_data, function(x) x$dose))
@@ -724,7 +724,7 @@ CorrectBaseLine <- function(response, method = c("non", "part", "all")) {
 #' @param w A numeric vector. It contains the parameters for all the coordinates
 #'   in the spaces to define the "plan".
 #' @param b A numeric value. It is the constant values in the formula which
-#'   defines the "plan".
+#'   defines the "plane".
 #' @param point A numeric vector. It contains the coordinates in
 #'   the spaces to define the "point".
 #'  
@@ -749,7 +749,8 @@ CorrectBaseLine <- function(response, method = c("non", "part", "all")) {
 #' to cell growth.
 #' 
 #' @param y The expected effect (\% inhibition) of the drug to cell line
-#' @param drug_par The parameters for fitted dose-response model.
+#' @param drug_par The parameters ("b_Hill", "c_Emin", "d_Emax", "e_EC50") for
+#' fitted dose-response model.
 #' 
 #' @return A numeric value. It indicates the expected dose of drug.
 #' 
@@ -776,7 +777,8 @@ CorrectBaseLine <- function(response, method = c("non", "part", "all")) {
 #' to cell growth.
 #' 
 #' @param y The expected effect (\% inhibition) of the drug to cell line
-#' @param drug_par The parameters for fitted dose-response model.
+#' @param drug_par The parameters ("b_Hill", "c_Emin", "d_Emax", "e_log(EC50)")
+#' for fitted dose-response model.
 #'
 #' @return A numeric value. It indicates the expected dose of drug.
 #' 
