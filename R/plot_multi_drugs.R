@@ -318,7 +318,8 @@ PlotMultiDrugBar <- function(data,
 #'   plot_block = 1,
 #'   plot_value = "response",
 #'   show_data_points = TRUE,
-#'   distance_method = "mahalanobis"
+#'   distance_method = "mahalanobis",
+#'   summary_statistic = "mean"
 #' )
 #' p
 PlotMultiDrugSurface <- function(data,
@@ -327,8 +328,8 @@ PlotMultiDrugSurface <- function(data,
                                  summary_statistic = NULL,
                                  plot_title = NULL,
                                  distance_method = "mahalanobis", 
-                                 high_value_color = "#A90217",
-                                 low_value_color = "#2166AC",
+                                 high_value_color = "#FF0000",
+                                 low_value_color = "#00FF00",
                                  show_data_points = TRUE,
                                  point_color = "#DDA137",
                                  text_size_scale = 1,
@@ -599,7 +600,7 @@ PlotMultiDrugSurface <- function(data,
           (drug_pair$replicate | 
            !plot_value %in% c("response", "response_origin"))) {
         value <- .RoundValues(mean(summary_value_table[[plot_value]]))
-        # if (drug_pair$replicate) {
+        if (drug_pair$replicate) {
           p_value <- data$drug_pairs[data$drug_pairs$block_id == plot_block,
                                      paste0(plot_value, "_p_value")]
           if (p_value != "< 2e-324") {
@@ -615,9 +616,9 @@ PlotMultiDrugSurface <- function(data,
               ")"
             )
           )
-        # } else {
-        #   plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
-        # }
+        } else {
+          plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
+        }
       }
       if ("median" %in% summary_statistic) {
         value <- .RoundValues(stats::median(summary_value_table[[plot_value]]))
