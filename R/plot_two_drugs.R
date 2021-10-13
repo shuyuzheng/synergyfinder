@@ -192,41 +192,46 @@ Plot2DrugHeatmap <- function(data,
       summary_value_table <- plot_table
     }
     avail_value <- grepl("mean|median|quantile_\\d+", summary_statistic)
-    if ("mean" %in% summary_statistic) {
-      value <- .RoundValues(mean(summary_value_table$value))
-      if (length(concs == 2) & 
-          (drug_pair$replicate | 
-           !plot_value %in% c("response", "response_origin"))) {# & drug_pair$replicate) {
-        p_value <- data$drug_pairs[data$drug_pairs$block_id == plot_block,
-                                   paste0(plot_value, "_p_value")]
-        if (p_value != "< 2e-324") {
-          p_value <- paste0("= ", p_value)
-        }
-        plot_subtitle <- c(
-          plot_subtitle, 
-          paste0(
-            "Mean: ",
-            value,
-            " (p ",
-            p_value,
-            ")"
+    if (!any(avail_value)){
+      warning("Input value for parameter summary_statistic is not available.")
+      plot_subtitle <- ""
+    } else {
+      if ("mean" %in% summary_statistic) {
+        value <- .RoundValues(mean(summary_value_table$value))
+        if (length(concs == 2) & 
+            (drug_pair$replicate | 
+             !plot_value %in% c("response", "response_origin"))) {# & drug_pair$replicate) {
+          p_value <- data$drug_pairs[data$drug_pairs$block_id == plot_block,
+                                     paste0(plot_value, "_p_value")]
+          if (p_value != "< 2e-324") {
+            p_value <- paste0("= ", p_value)
+          }
+          plot_subtitle <- c(
+            plot_subtitle, 
+            paste0(
+              "Mean: ",
+              value,
+              " (p ",
+              p_value,
+              ")"
+            )
           )
-        )
-      } else {
-        plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
+        } else {
+          plot_subtitle <- c(plot_subtitle, paste0("Mean: ", value))
+        }
       }
-    }
-    if ("median" %in% summary_statistic) {
-      value <- .RoundValues(stats::median(summary_value_table$value))
-      plot_subtitle <-  c(plot_subtitle, paste0("Median: ", value))
-    }
-    qua <- grep("quantile_\\d+", summary_statistic, value = TRUE)
-    if (length(qua) > 0) {
-      for (q in qua) {
-        pro <- as.numeric(sub("quantile_", "", q))
-        value <- .RoundValues(stats::quantile(summary_value_table$value, 
-                                              probs = pro / 100))
-        plot_subtitle <-  c(plot_subtitle, paste0(pro, "% Quantile: ", value))
+      if ("median" %in% summary_statistic) {
+        value <- .RoundValues(stats::median(summary_value_table$value))
+        plot_subtitle <-  c(plot_subtitle, paste0("Median: ", value))
+      }
+      qua <- grep("quantile_\\d+", summary_statistic, value = TRUE)
+      if (length(qua) > 0) {
+        for (q in qua) {
+          pro <- as.numeric(sub("quantile_", "", q))
+          value <- .RoundValues(stats::quantile(summary_value_table$value, 
+                                                probs = pro / 100))
+          plot_subtitle <-  c(plot_subtitle, paste0(pro, "% Quantile: ", value))
+        }
       }
     }
   }

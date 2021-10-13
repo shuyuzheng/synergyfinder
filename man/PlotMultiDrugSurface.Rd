@@ -11,8 +11,8 @@ PlotMultiDrugSurface(
   summary_statistic = NULL,
   plot_title = NULL,
   distance_method = "mahalanobis",
-  high_value_color = "#A90217",
-  low_value_color = "#2166AC",
+  high_value_color = "#FF0000",
+  low_value_color = "#00FF00",
   show_data_points = TRUE,
   point_color = "#DDA137",
   text_size_scale = 1,
@@ -112,7 +112,8 @@ p <- PlotMultiDrugSurface(
   plot_block = 1,
   plot_value = "response",
   show_data_points = TRUE,
-  distance_method = "mahalanobis"
+  distance_method = "mahalanobis",
+  summary_statistic = "mean"
 )
 p
 }
