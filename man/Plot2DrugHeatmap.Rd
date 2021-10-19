@@ -56,6 +56,7 @@ values are also available:
 \item{statistic}{A character or NULL. It indicates the statistics printed
 in the plot while there are replicates in input data. Available values are:
 \itemize{
+  \item \strong{sd} Standard deviation;
   \item \strong{sem} Standard error of mean;
   \item \strong{ci} 95\% confidence interval.
 }

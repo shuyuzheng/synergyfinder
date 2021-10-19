@@ -229,7 +229,7 @@ ReshapeData <- function(data,
       response_origin_ci_left = response_origin_mean - response_origin_CI95,
       response_origin_ci_right = response_origin_mean + response_origin_CI95,
     ) %>% 
-    dplyr::select(-dplyr::ends_with("_sd"), -dplyr::ends_with("_CI95"), -dplyr::ends_with("_z"))
+    dplyr::select(-dplyr::ends_with("_CI95"), -dplyr::ends_with("_z"))
   dup_blocks <- replicate_response$block_id
   drug_pairs$replicate <- drug_pairs$block_id %in% dup_blocks
   # p value

@@ -51,6 +51,7 @@
 #' @param statistic A character or NULL. It indicates the statistics printed
 #'   in the plot while there are replicates in input data. Available values are:
 #'   \itemize{
+#'     \item \strong{sd} Standard deviation;
 #'     \item \strong{sem} Standard error of mean;
 #'     \item \strong{ci} 95\% confidence interval.
 #'   }
@@ -1543,7 +1544,7 @@ Plot2DrugSurface <- function(data,
   if (is.null(statistic)){
     statistic_table <- drug_pair$replicate
   } else {
-    avail_statistic <- c("sem", "ci")
+    avail_statistic <- c("sd", "sem", "ci")
     if (!drug_pair$replicate) {
       warning("The selected block ", plot_block,
               " doesn't have the replicate data. Statistics is not available.")
@@ -1584,6 +1585,20 @@ Plot2DrugSurface <- function(data,
         ) %>%
         dplyr::mutate(
           text = as.character(.RoundValues(value))
+        )
+    } else if (statistic == "sd") {
+      plot_table <- plot_table %>% 
+        dplyr::select(
+          dplyr::starts_with("conc"), 
+          value = !!paste0(plot_value, "_mean"),
+          statistic = !!paste0(plot_value, "_sd")
+        ) %>%
+        dplyr::mutate(
+          text = paste(
+            .RoundValues(value), "\n" ,
+            "\u00B1",
+            .RoundValues(statistic)
+          )
         )
     } else if (statistic == "sem") {
       plot_table <- plot_table %>% 

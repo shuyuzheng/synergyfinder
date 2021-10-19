@@ -20,8 +20,8 @@ where e is the fitted parameter e from \code{\link[drc]{L.4}} model.}
 ln(1+10^(b*(c-x)))
 }
 \description{
-#' This function calculates ln(1+10^(b*(c-x))) to be used in \code{.ScoreCurve}
-function
+#' This function calculates ln(1+10^(b*(c-x))) to be used in
+\code{.ScoreCurve} function
 }
 \author{
 \itemize{
