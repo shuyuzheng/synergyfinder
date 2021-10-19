@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_sensitivity_score.R
 \name{CalculateSensitivity}
 \alias{CalculateSensitivity}
-\title{Calculate the Synergy Scores for Drug Combinations}
+\title{Calculate the Sensitivity Scores for Drug Combinations}
 \usage{
 CalculateSensitivity(
   data,
@@ -29,7 +29,7 @@ baseline correction. Available values are:
 }}
 
 \item{iteration}{An integer. It indicates the number of iterations for
-synergy scores calculation on data with replicates.}
+bootstrap on data with replicates.}
 
 \item{seed}{An integer or NULL. It is used to set the random seed in synergy
 scores calculation on data with replicates.}
@@ -50,13 +50,16 @@ This function will add columns into \code{data$drug_pairs} table.
  mentioned about into the input \code{data} list.
 }
 \description{
-\code{CalculateSynergy} is the main function for calculating synergy scores
-based on model(ZIP, Bliss, Loewe, and HSA) fron one dose-response
-\strong{matrix}.
+\code{CalculateSensitivity} is the main function for calculating sensitivity
+scores from the dose response matrix. It will return the RI
+(relative inhibition), IC50 (relative IC50) for each drug in the combination.
+It will also calculate the CSS (combination sensitivity score) for each drug
+while other drugs are at their IC50 and the CSS for the whole combination
+matrix.
 }
 \examples{
-data("mathews_screening_data")
-data <- ReshapeData(mathews_screening_data)
+data("ONEIL_screening_data")
+data <- ReshapeData(ONEIL_screening_data, data_type = "inhibition")
 data <- CalculateSensitivity(data)
 }
 \author{

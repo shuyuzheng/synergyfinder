@@ -45,7 +45,7 @@ baseline correction. Available values are:
 }}
 
 \item{iteration}{An integer value. It indicates the number of iterations for
-synergy scores calculation on data with replicates.}
+bootstrap on data with replicates.}
 
 \item{seed}{An integer or NULL. It is used to set the random seed in synergy
 scores calculation on data with replicates.}
@@ -71,8 +71,7 @@ This function will add 1 or 2 elements into inputted \code{data}
 }
 \description{
 \code{CalculateSynergy} is the main function for calculating synergy scores
-  based on model(ZIP, Bliss, Loewe, and HSA) from one dose-response
-\strong{matrix}.
+  based on model(ZIP, Bliss, Loewe, and HSA) from one dose-response matrix.
 }
 \examples{
 data("mathews_screening_data")
