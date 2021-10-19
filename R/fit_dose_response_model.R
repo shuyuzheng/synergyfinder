@@ -104,13 +104,14 @@ FitDoseResponse <- function(data, Emin = NA, Emax = NA) {
 
   if (!methods::is(drug.model, "drc")) {
     data$dose[which(data$dose == 0)] <- 10^-10
-    drug.model <- drc::drm(response ~ log(dose),
-      data = data,
-      fct = drc::L.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)),
-      na.action = stats::na.omit,
-      control = drc::drmc(
-        errorm = FALSE, noMessage = TRUE,
-        otrace = TRUE
+    drug.model <- suppressWarnings(
+      drc::drm(response ~ log(dose),
+        data = data,
+        fct = drc::L.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)),
+        na.action = stats::na.omit,
+        control = drc::drmc(
+          errorm = FALSE, noMessage = TRUE, otrace = TRUE
+        )
       )
     )
   }
