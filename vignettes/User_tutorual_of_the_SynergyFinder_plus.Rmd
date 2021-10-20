@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 
 Combinatorial therapies is one of the major strategies for improving treatment efficacy in treating cancer. High-throughput drug combination screening has the advantage of assaying a large collection of chemical compounds in search for promising drug pairs. Studies that utilizes drug combination screening have generated dynamic dose-response profiles that allow researchers to quantify the degree of drug-drug interactions at an unprecedented level. *SynergyFinder* R package is a software tool to analyze such pre-clinical drug combination data sets. It provides efficient implementations for 
 
-1. all the popular synergy scoring models, including HSA, Loewe, Bliss, and ZIP to quantify the degree of drug synergy;
+1.the popular synergy scoring models, including HSA, Loewe, Bliss, and ZIP to quantify the degree of drug combination synergy;
 2. higher order drug combination data analysis and synergy landscape visualization for unlimited number of drugs in a combination;
 3. statistical analysis of drug combination synergy and sensitivity with confidence intervals and p-values;
 4. synergy barometer for harmonizing multiple synergy scoring methods to provide a consensus metric of synergy;
