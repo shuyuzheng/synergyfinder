@@ -120,7 +120,7 @@ CalculateSensitivity <- function(data,
         )
         # Calculate RI
         single_drug_data <- ExtractSingleDrug(response_boot)
-        ri <- as.data.frame(lapply(single_drug_data, CalculateRI))
+        ri <- suppressWarnings(as.data.frame(lapply(single_drug_data, CalculateRI)))
         colnames(ri) <- sub("conc", "ri_", colnames(ri))
         
         # Calculate IC50 for all drugs
@@ -136,7 +136,7 @@ CalculateSensitivity <- function(data,
         colnames(ic50) <- sub("ri", "ic50", colnames(ri))
         
         # Calculate CSS
-        css <- CalculateCSS(response_boot, ic50 = ic50)
+        css <- suppressWarnings(CalculateCSS(response_boot, ic50 = ic50))
         
         # Assemble data frame
         tmp <- cbind.data.frame(ic50, ri, css)
@@ -189,23 +189,23 @@ CalculateSensitivity <- function(data,
       )
       # Calculate RI
       single_drug_data <- ExtractSingleDrug(response_one_block)
-      ri <- as.data.frame(lapply(single_drug_data, CalculateRI))
+      ri <- suppressWarnings(as.data.frame(lapply(single_drug_data, CalculateRI)))
       colnames(ri) <- sub("conc", "ri_", colnames(ri))
       
       # Calculate IC50 for all drugs
       ic50 <-lapply(
         single_drug_data,
         function(x) {
-          model <- FitDoseResponse(x)
+          model <- suppressWarnings(FitDoseResponse(x))
           coe <- FindModelPar(model)
           type <- FindModelType(model)
-          CalculateIC50(coe, type, max(x$dose))
+          suppressWarnings(CalculateIC50(coe, type, max(x$dose)))
         }) %>% 
         as.data.frame()
       colnames(ic50) <- sub("ri", "ic50", colnames(ri))
       
       # Calculate CSS
-      css <- CalculateCSS(response_one_block, ic50 = ic50)
+      css <- suppressWarnings(CalculateCSS(response_one_block, ic50 = ic50))
       
       # Assemble data frame
       tmp <- cbind.data.frame(ic50, ri, css) %>% 

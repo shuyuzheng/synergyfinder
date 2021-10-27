@@ -378,7 +378,7 @@ ZIP <- function(response,
             Emax = NA
           )) # Fit dose response curve
         # Predict response on corresponding dosage
-        pred <-  suppressWarnings(stats::predict(model)) 
+        pred <- suppressWarnings(stats::predict(model)) 
         return(pred)
       })) %>% 
       tidyr::unnest(cols = c(data, pred)) %>% 
