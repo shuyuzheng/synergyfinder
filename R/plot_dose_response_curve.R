@@ -42,6 +42,10 @@
 #'   subtitle.
 #' @param plot_setting A list of graphical arguments. The arguments are passed 
 #'   to \link[graphics]{par} function to modify the appearance of plots.
+#' @param ylim A vector of two numeric values or \code{NULL}. It is used to set
+#'   the y limits (y1, y2) of the plot. Note that y1 > y2 is allowed and leads
+#'   to a ‘reversed axis’. With the default value, \code{NULL}, the function
+#'   will automatically set the y axis. 
 #' @param plot_new A logic value. If it is \code{TRUE}, a new device will be
 #'   initiate with \link[graphics]{plot.new}. You might want to set it as
 #'   \code{FALSE} while combining with other plots by using
@@ -90,6 +94,7 @@ PlotDoseResponseCurve <- function(data,
                                     bty = "l",
                                     lwd = 1.5
                                   ),
+                                  ylim = NULL,
                                   plot_new = TRUE,
                                   record_plot = TRUE) {
   
@@ -180,27 +185,52 @@ PlotDoseResponseCurve <- function(data,
 
   suppressWarnings(graphics::par(plot_setting))
   # Plot dots
-  
-  graphics::plot(
-    x = drug_model,
-    xlab = paste0("Concentration (", drug_anno$unit, ")"),
-    ylab = "Inhibition (%)",
-    type = "obs",
-    col = point_color,
-    pch = 16,
-    cex.axis = 1 * text_size_scale,
-    panel.first = eval(grid)
-  )
-  
-  # Plot curve
-  graphics::plot(
-    x = drug_model,
-    type = "none",
-    col = curve_color,
-    cex.axis = 1 * text_size_scale,
-    add = TRUE,
-    lwd = 3
-  )
+  if (!is.null(ylim)){
+    graphics::plot(
+      x = drug_model,
+      xlab = paste0("Concentration (", drug_anno$unit, ")"),
+      ylab = "Inhibition (%)",
+      type = "obs",
+      col = point_color,
+      pch = 16,
+      cex.axis = 1 * text_size_scale,
+      panel.first = eval(grid),
+      ylim = ylim
+    )
+    
+    # Plot curve
+    graphics::plot(
+      x = drug_model,
+      type = "none",
+      col = curve_color,
+      cex.axis = 1 * text_size_scale,
+      add = TRUE,
+      lwd = 3,
+      ylim = ylim
+    )
+  } else {
+    graphics::plot(
+      x = drug_model,
+      xlab = paste0("Concentration (", drug_anno$unit, ")"),
+      ylab = "Inhibition (%)",
+      type = "obs",
+      col = point_color,
+      pch = 16,
+      cex.axis = 1 * text_size_scale,
+      panel.first = eval(grid)
+    )
+    
+    # Plot curve
+    graphics::plot(
+      x = drug_model,
+      type = "none",
+      col = curve_color,
+      cex.axis = 1 * text_size_scale,
+      add = TRUE,
+      lwd = 3
+    )
+  }
+
   # Plot title
   graphics::title(plot_title)
   graphics::mtext(

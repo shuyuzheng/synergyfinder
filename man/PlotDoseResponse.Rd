@@ -15,6 +15,7 @@ PlotDoseResponse(
   low_value_color = "#2166AC",
   point_color = "#C24B40",
   curve_color = "black",
+  curve_ylim = NULL,
   text_size_scale = 1,
   heatmap_text_label_size_scale = 1,
   heatmap_text_label_color = "#000000",
@@ -76,6 +77,11 @@ dose response curve plots.}
 
 \item{curve_color}{An R color value. It indicates the color for curves in 
 dose response curve plots.}
+
+\item{curve_ylim}{A vector of two numeric values or \code{NULL}. It is used
+to set the y limits (y1, y2) of the dose-response curve plot. Note that
+y1 > y2 is allowed and leads to a ‘reversed axis’. With the default value,
+\code{NULL}, the function will automatically set the y axis.}
 
 \item{text_size_scale}{A numeric value. It is used to control the size
 of text in the plot. All the text size will multiply by this scale factor.}
