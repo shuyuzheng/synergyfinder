@@ -878,8 +878,8 @@ GenerateSurface <- function(dim_reduced_data,
   } else {
     if (!is.numeric(z_range)| length(z_range) !=2 | z_range[1] >= z_range[2]){
       stop(
-        "'z_range' must be a numeric vector with 2 elements and the first",
-        "number must be smaller than the second one"
+        "'z_range' must be a numeric vector with 2 elements and the first ",
+        "number must be smaller than the second one."
       )
     }
     color_range <- max(abs(z_range))
@@ -950,8 +950,8 @@ GenerateSurface <- function(dim_reduced_data,
   if (!is.null(x_range)){
     if (!is.numeric(x_range)| length(x_range) !=2 | x_range[1] >= x_range[2]){
       stop(
-        "'x_range' must be a numeric vector with 2 elements and the first",
-        "number must be smaller than the second one"
+        "'x_range' must be a numeric vector with 2 elements and the first ",
+        "number must be smaller than the second one."
       )
     }
     xaxis_setting$range <- x_range
@@ -966,8 +966,8 @@ GenerateSurface <- function(dim_reduced_data,
   if (!is.null(y_range)){
     if (!is.numeric(y_range)| length(y_range) !=2 | y_range[1] >= y_range[2]){
       stop(
-        "'y_range' must be a numeric vector with 2 elements and the first",
-        "number must be smaller than the second one"
+        "'y_range' must be a numeric vector with 2 elements and the first ",
+        "number must be smaller than the second one."
       )
     }
     yaxis_setting$range <- y_range
