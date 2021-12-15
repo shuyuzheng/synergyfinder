@@ -278,6 +278,20 @@ PlotMultiDrugBar <- function(data,
 #' @param point_color An R color value. It indicates the color for data points.
 #' @param text_size_scale A numeric value. It is used to control the size
 #'   of text in the plot. All the text size will multiply by this scale factor.
+#' @param axis_line A logical value. Whether to show the axis lines and ticks.
+#' @param colorbar_tick A logical value. Whether to show the ticks on color bar.
+#' @param x_range A numeric vector with two values or NULL. It is used to set
+#'   the range of x axis (coordinate 1). For example, \code{c(-5, 5)} means
+#'   coordinate 1 ranges from -5 to 5 in the plot. Default value is \code{NULL}.
+#'   The function automatically set the range.
+#' @param y_range A numeric vector with two values or NULL. It is used to set
+#'   the range of y axis (coordinate 2). For example, \code{c(-5, 5)} means
+#'   coordinate 2 ranges from -5 to 5 in the plot. Default value is \code{NULL}.
+#'   The function automatically set the range.
+#' @param z_range A numeric vector with two values or NULL. It is used to set
+#'   the range of z axis. For example, \code{c(0, 100)} means z axis ranges from
+#'   0 to 100 in the plot. Default value is \code{NULL}. The function
+#'   automatically set the range.
 #' @param camera_width A numeric value or NULL. It indicates the output figure's
 #'   width on pixel.
 #' @param camera_height A numeric value or NULL. It indicates the output
@@ -333,6 +347,11 @@ PlotMultiDrugSurface <- function(data,
                                  show_data_points = TRUE,
                                  point_color = "#DDA137",
                                  text_size_scale = 1,
+                                 axis_line = FALSE,
+                                 colorbar_tick = FALSE,
+                                 x_range = NULL,
+                                 y_range = NULL,
+                                 z_range = NULL,
                                  camera_width = NULL,
                                  camera_height = NULL,
                                  camera_scale = 1) {
@@ -365,6 +384,11 @@ PlotMultiDrugSurface <- function(data,
     plot_subtitle = plot_data$plot_subtitle,
     z_axis_title = plot_data$z_axis_title,
     text_size_scale = text_size_scale,
+    axis_line = axis_line,
+    colorbar_tick = colorbar_tick,
+    x_range = x_range,
+    y_range = y_range,
+    z_range = z_range,
     camera_scale = camera_scale
     )
   return(p)
@@ -568,19 +592,19 @@ PlotMultiDrugSurface <- function(data,
         sub(".*_", "", plot_value),
         "ref" = sub("_ref", " Reference Additive Effect", plot_value),
         "fit" = sub("_fit", " Fitted Effect", plot_value),
-        "synergy" = sub("_synergy", " Synergy Score", plot_value)
+        "synergy" = sub("_synergy", " Synergy score", plot_value)
       )
       z_axis_title <- switch(
         sub(".*_", "", plot_value),
         "ref" = "Response (% inhibition)",
         "fit" = "Response (% inhibition)",
-        "synergy" = "synergy score"
+        "synergy" = "Synergy score"
       )
       legend_title <- switch(
         sub(".*_", "", plot_value),
         "ref" = "Inhibition (%)",
         "fit" = "Inhibition (%)",
-        "synergy" = "Synergy Score"
+        "synergy" = "Synergy score"
       )
     }
     
@@ -783,6 +807,21 @@ DimensionReduction <- function(plot_table,
 #' @param z_axis_title A character value. It is the title for z-axis.
 #' @param text_size_scale A numeric value. It is used to control the size
 #'   of text in the plot. All the text size will multiply by this scale factor.
+#' @param axis_line A logical value. Whether to show the axis lines and ticks.
+#' @param colorbar_tick A logical value. Whether to show the ticks on color bar.
+#' @param x_range A numeric vector with two values or NULL. It is used to set
+#'   the range of x axis (coordinate 1). For example, \code{c(-5, 5)} means
+#'   coordinate 1 ranges from -5 to 5 in the plot. Default value is \code{NULL}.
+#'   The function automatically set the range.
+#' @param y_range A numeric vector with two values or NULL. It is used to set
+#'   the range of y axis (coordinate 2). For example, \code{c(-5, 5)} means
+#'   coordinate 2 ranges from -5 to 5 in the plot. Default value is \code{NULL}.
+#'   The function automatically set the range.
+#' @param z_range A numeric vector with two values or NULL. It is used to set
+#'   the range of z axis and color bar legend. For example, \code{c(0, 100)}
+#'   means z axis ranges from 0 to 100 in the plot and the color bar ranges from
+#'   -100 to 100 (max(abs(z_range))). Default value is \code{NULL}. The function
+#'   automatically set the range.
 #' @param camera_width A numeric value or NULL. It indicates the output figure's
 #'   width on pixel.
 #' @param camera_height A numeric value or NULL. It indicates the output
@@ -812,6 +851,11 @@ GenerateSurface <- function(dim_reduced_data,
                            legend_title,
                            z_axis_title,
                            text_size_scale = 1, 
+                           axis_line = FALSE,
+                           colorbar_tick = FALSE,
+                           x_range = NULL,
+                           y_range = NULL,
+                           z_range = NULL,
                            camera_width = NULL,
                            camera_height = NULL,
                            camera_scale = 1) {
@@ -827,9 +871,21 @@ GenerateSurface <- function(dim_reduced_data,
   x <- unique(extended_plot_table$x)
   y <- unique(extended_plot_table$y)
   # Color palette
-  color_range <- max(abs(extended_plot_table$pred)) + 5
-  start_point <- -color_range
-  end_point <- color_range
+  if (is.null(z_range)){
+    color_range <- max(abs(extended_plot_table$pred)) + 5
+    start_point <- -color_range
+    end_point <- color_range
+  } else {
+    if (!is.numeric(z_range)| length(z_range) !=2 | z_range[1] >= z_range[2]){
+      stop(
+        "'z_range' must be a numeric vector with 2 elements and the first",
+        "number must be smaller than the second one"
+      )
+    }
+    color_range <- max(abs(z_range))
+    start_point <- -color_range
+    end_point <- color_range
+  }
   
   p <- plotly::plot_ly() %>% 
     plotly::config(
@@ -856,9 +912,10 @@ GenerateSurface <- function(dim_reduced_data,
       colorbar = list(
         x = 1,
         y = 0.75,
-        outlinecolor = "#FFFFFF",
-        tickcolor = "#FFFFFF",
-        title = legend_title
+        outlinewidth = 0,
+        ticklen = 5,
+        title = legend_title,
+        ticks = ifelse(colorbar_tick, "outside", "")
       ),
       cmin = start_point,
       cmax = end_point,
@@ -882,6 +939,51 @@ GenerateSurface <- function(dim_reduced_data,
         marker = list(size = 3, color = point_color, symbol = 104))
   }
 
+  xaxis_setting <- list(
+    title = "<i>Coordinate 1</i>",
+    tickfont = list(size = 12 * text_size_scale, family = "arial"),
+    showline = axis_line,
+    showticklabels = axis_line,
+    ticks = ifelse(axis_line, "outside", "none"),
+    showspikes = FALSE
+  )
+  if (!is.null(x_range)){
+    if (!is.numeric(x_range)| length(x_range) !=2 | x_range[1] >= x_range[2]){
+      stop(
+        "'x_range' must be a numeric vector with 2 elements and the first",
+        "number must be smaller than the second one"
+      )
+    }
+    xaxis_setting$range <- x_range
+  }
+  yaxis_setting <- list(
+    title = "<i>Coordinate 2</i>",
+    tickfont = list(size = 12 * text_size_scale, family = "arial"),
+    showline = axis_line,
+    ticks = ifelse(axis_line, "outside", "none"),
+    showspikes = FALSE
+  )
+  if (!is.null(y_range)){
+    if (!is.numeric(y_range)| length(y_range) !=2 | y_range[1] >= y_range[2]){
+      stop(
+        "'y_range' must be a numeric vector with 2 elements and the first",
+        "number must be smaller than the second one"
+      )
+    }
+    yaxis_setting$range <- y_range
+  }
+  zaxis_setting <- list(
+    title = paste0("<i>", z_axis_title, "</i>"),
+    tickfont = list(size = 12 * text_size_scale, family = "arial"),
+    showline = axis_line,
+    showticklabels = axis_line,
+    ticks = ifelse(axis_line, "outside", "none"),
+    tickmode = "array",
+    showspikes = FALSE
+  )
+  if (!is.null(z_range)){
+    zaxis_setting$range <- z_range
+  }
   p <- p %>% 
     plotly::layout(
       title = list(
@@ -890,25 +992,9 @@ GenerateSurface <- function(dim_reduced_data,
         y = 0.99
       ),
       scene = list(
-        xaxis = list(
-          title = "<i>Coordinate 1</i>",
-          tickfont = list(size = 12 * text_size_scale, family = "arial"),
-          ticks = "none",
-          showspikes = FALSE
-        ),
-        yaxis = list(
-          title = "<i>Coordinate 2</i>",
-          tickfont = list(size = 12 * text_size_scale, family = "arial"),
-          ticks = "none",
-          showspikes = FALSE
-        ),
-        zaxis = list(
-          title = paste0("<i>", z_axis_title, "</i>"),
-          tickfont = list(size = 12 * text_size_scale, family = "arial"),
-          ticks = "none",
-          tickmode = "array",
-          showspikes = FALSE
-        ),
+        xaxis = xaxis_setting,
+        yaxis = yaxis_setting,
+        zaxis = zaxis_setting,
         camera = list(eye = list(x = -1.25, y = -1.25, z = 1.25))
       ),
       margin = list(
