@@ -85,10 +85,10 @@
 #' @param value_range A vector of two numeric values. They specify the range
 #'   of the color bars. The first item (lower bounder) must be less than the
 #'   second one (upper bounder). The plotted values larger than defined upper
-#'   bounder will be filled in color \code{high_value_color} or white (if 
-#'   "upper bounder < 0"). The plotted values less than defined lower
-#'   bounder will be filled in color \code{low_value_color} or white (if 
-#'   "lower bounder > 0"). By default, it is set as \code{NULL} which
+#'   bounder will be filled in color \code{high_value_color}. The plotted values
+#'   less than defined lower bounder will be filled in color
+#'   \code{low_value_color}. If the defined range includes 0, value 0 will be
+#'   filled in color "white". By default, it is set as \code{NULL} which
 #'   means the function will automatically set the color range according to
 #'   the plotted values.
 #' @param high_value_color An R color value. It indicates the color for the
@@ -248,7 +248,7 @@ Plot2DrugHeatmap <- function(data,
   }
   plot_subtitle <- paste(plot_subtitle, collapse = " | ")
   
-  # Color palette
+  # Color range
   if (is.null(value_range)){
     color_range <- round(max(abs(plot_table$value)), -1) + 10
     start_point <- -color_range
@@ -261,7 +261,7 @@ Plot2DrugHeatmap <- function(data,
       )
     } else if (value_range[1] >= value_range[2]){
       stop(
-        "The first item in 'value_range' vector should be smaller than the ",
+        "The first item in 'value_range' vector should be less than the ",
         "second item."
       )
     } else {
@@ -315,7 +315,6 @@ Plot2DrugHeatmap <- function(data,
     hover_text <- matrix(hover_text, nrow = length(conc1))
     
     # Color scale
-
     if (start_point < 0 & end_point <= 0){
       color_scale <- list(
         c(0, low_value_color),
@@ -442,33 +441,29 @@ Plot2DrugHeatmap <- function(data,
       )
     
     # Manage color bar
-    if (start_point < 0 & end_point <= 0){
-      p <- p +
-        ggplot2::scale_fill_gradient(
-          high= "#FFFFFF",
-          low = low_value_color,
-          name = legend_title,
-          limits = c(start_point, end_point),
-          na.value = "#FFFFFF",
-          oob = scales::oob_squish_any
-        )
-    } else if (start_point >= 0 & end_point > 0){
-      p <- p +
-        ggplot2::scale_fill_gradient(
-          high= high_value_color,
-          low = "#FFFFFF",
-          name = legend_title,
-          limits = c(start_point, end_point),
-          oob = scales::oob_squish_any
-        )
-    } else {
+    if (start_point < 0 & end_point > 0){
       colour_breaks <- c(start_point, 0, end_point)
       colours <- c(low_value_color, "#FFFFFF", high_value_color)
       p <- p +
         scale_fill_gradientn(
           limits  = range(plot_table$value),
           colours = colours[c(1, seq_along(colours), length(colours))],
-          values  = c(0, scales::rescale(colour_breaks, from = range(plot_table$value)), 1),
+          values  = c(
+            0,
+            scales::rescale(colour_breaks, from = range(plot_table$value)),
+            1
+          ),
+          oob = scales::oob_squish_any
+        )
+      
+    } else {
+      p <- p +
+        ggplot2::scale_fill_gradient(
+          high= high_value_color,
+          low = low_value_color,
+          name = legend_title,
+          limits = c(start_point, end_point),
+          oob = scales::oob_squish_any
         )
     }
     
@@ -577,6 +572,15 @@ Plot2DrugHeatmap <- function(data,
 #'   ending concentration of the drug on y-axis. Use e.g., c(1, 3) to specify
 #'   that only from 1st to 3rd concentrations of the drug on y-axis are used. By
 #'   default, it is NULl so all the concentrations are used.
+#' @param value_range A vector of two numeric values. They specify the range
+#'   of the color bars. The first item (lower bounder) must be less than the
+#'   second one (upper bounder). The plotted values larger than defined upper
+#'   bounder will be filled in color \code{high_value_color}. The plotted values
+#'   less than defined lower bounder will be filled in color
+#'   \code{low_value_color}. If the defined range includes 0, value 0 will be
+#'   filled in color "white". By default, it is set as \code{NULL} which
+#'   means the function will automatically set the color range according to
+#'   the plotted values.
 #' @param dynamic A logical value. If it is \code{TRUE}, this function will
 #'   use \link[plotly]{plot_ly} to generate an interactive plot. If it is
 #'   \code{FALSE}, this function will use \link[lattice]{wireframe} to generate
@@ -616,6 +620,7 @@ Plot2DrugContour <- function(data,
                              plot_title = NULL,
                              col_range = NULL,
                              row_range = NULL,
+                             value_range = NULL,
                              high_value_color = "#FF0000",
                              low_value_color = "#00FF00",
                              text_size_scale = 1) {
@@ -750,10 +755,27 @@ Plot2DrugContour <- function(data,
   x_axis_title <- paste0(drug_pair$drug1, " (", drug_pair$conc_unit1, ")")
   y_axis_title <- paste0(drug_pair$drug2, " (", drug_pair$conc_unit2, ")")
   
-  # Color palette
-  color_range <- round(max(abs(extended_mat)), -1) + 10
-  start_point <- -color_range
-  end_point <- color_range
+  # Color range
+  if (is.null(value_range)){
+    color_range <- round(max(abs(plot_table$value)), -1) + 10
+    start_point <- -color_range
+    end_point <- color_range
+  } else {
+    if (length(value_range) != 2 | class(value_range) != "numeric"){
+      stop(
+        "The variable 'value_range' should be a vector with exact 2 numeric ",
+        "values."
+      )
+    } else if (value_range[1] >= value_range[2]){
+      stop(
+        "The first item in 'value_range' vector should be less than the ",
+        "second item."
+      )
+    } else {
+      start_point <- value_range[1]
+      end_point <- value_range[2]
+    }
+  }
   
   if (dynamic){
     y <- seq(1, ncol(extended_mat))
@@ -790,6 +812,27 @@ Plot2DrugContour <- function(data,
         hover_text_mat[x_ticks[i], y_ticks[j]] <- hover_text[i, j]
       }
     }
+    
+    # Color scale
+    if (start_point < 0 & end_point <= 0){
+      color_scale <- list(
+        c(0, low_value_color),
+        c(1, "white")
+      )
+    } else if (start_point >= 0 & end_point > 0){
+      color_scale <- list(
+        c(0, "white"),
+        c(1, high_value_color)
+      )
+    } else {
+      zero_pos <- -start_point/(end_point - start_point)
+      color_scale <- list(
+        c(0, low_value_color),
+        c(zero_pos, "white"),
+        c(1, high_value_color)
+      )
+    }
+    
     p <- plotly::plot_ly(
       x = x,
       y = y,
@@ -801,11 +844,7 @@ Plot2DrugContour <- function(data,
       text = t(hover_text_mat),
       hoverinfo = "text",
       # autocolorscale = FALSE,
-      colorscale = list(
-        c(0, low_value_color),
-        c(0.5, "white"),
-        c(1, high_value_color)
-      ),
+      colorscale = color_scale,
       autocontour = F,
       # ncontours = 21,
       colorbar = list(
@@ -955,7 +994,7 @@ Plot2DrugContour <- function(data,
         breaks = y_ticks,
         labels = y_ticks_text,
         limits = c(min(y_ticks), max(y_ticks))
-      ) +
+      )
       # ggplot2::scale_fill_gradient2(
       #   high= high_value_color,
       #   mid = "#FFFFFF",
@@ -964,11 +1003,39 @@ Plot2DrugContour <- function(data,
       #   name = legend_title,
       #   limits = c(start_point, end_point),
       # ) +
-      ggplot2::scale_fill_gradientn(
-        name = legend_title,
-        colours = myPalette,
-        limits = c(start_point, end_point)
-      ) +
+      
+    # Manage color bar
+    if (start_point < 0 & end_point > 0){
+      colour_breaks <- c(start_point, 0, end_point)
+      colours <- c(low_value_color, "#FFFFFF", high_value_color)
+      p <- p +
+        scale_fill_gradientn(
+          limits  = range(plot_table$value),
+          colours = colours[c(1, seq_along(colours), length(colours))],
+          values  = c(
+            0,
+            scales::rescale(colour_breaks, from = range(plot_table$value)),
+            1
+          ),
+          oob = scales::oob_squish_any
+        )
+      
+    } else {
+      p <- p +
+        ggplot2::scale_fill_gradient(
+          high= high_value_color,
+          low = low_value_color,
+          name = legend_title,
+          limits = c(start_point, end_point),
+          oob = scales::oob_squish_any
+        )
+    }
+      # ggplot2::scale_fill_gradientn(
+      #   name = legend_title,
+      #   colours = myPalette,
+      #   limits = c(start_point, end_point)
+      # )
+      p <- p +
       ggplot2::guides(
         fill = ggplot2::guide_colorbar(
           barheight = 10,
@@ -1818,7 +1885,7 @@ Plot2DrugSurface <- function(data,
 #' 
 #' This function will round the input numbers by 2 digits, if the absolute of 
 #' number is larger than or equal to 1. It will take 2 significant digits, if
-#' the absolute of number is smaller than 1. 
+#' the absolute of number is less than 1. 
 #'
 #' @param numbers A vector of numeric values. It contains the numbers need to
 #' be rounded.

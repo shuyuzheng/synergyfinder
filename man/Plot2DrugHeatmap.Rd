@@ -97,10 +97,10 @@ default, it is \code{NULL} so all the concentrations are used.}
 \item{value_range}{A vector of two numeric values. They specify the range
 of the color bars. The first item (lower bounder) must be less than the
 second one (upper bounder). The plotted values larger than defined upper
-bounder will be filled in color \code{high_value_color} or white (if 
-"upper bounder < 0"). The plotted values less than defined lower
-bounder will be filled in color \code{low_value_color} or white (if 
-"lower bounder > 0"). By default, it is set as \code{NULL} which
+bounder will be filled in color \code{high_value_color}. The plotted values
+less than defined lower bounder will be filled in color
+\code{low_value_color}. If the defined range includes 0, value 0 will be
+filled in color "white". By default, it is set as \code{NULL} which
 means the function will automatically set the color range according to
 the plotted values.}
 
