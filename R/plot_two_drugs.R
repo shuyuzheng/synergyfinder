@@ -77,11 +77,20 @@
 #' @param col_range A vector of two integers. They specify the starting and 
 #'   ending concentration of the drug on x-axis. Use e.g., c(1, 3) to specify
 #'   that only from 1st to 3rd concentrations of the drug on x-axis are used. By
-#'   default, it is NULl so all the concentrations are used.
+#'   default, it is \code{NULL} so all the concentrations are used.
 #' @param row_range A vector of two integers. They specify the starting and
 #'   ending concentration of the drug on y-axis. Use e.g., c(1, 3) to specify
 #'   that only from 1st to 3rd concentrations of the drug on y-axis are used. By
-#'   default, it is NULl so all the concentrations are used.
+#'   default, it is \code{NULL} so all the concentrations are used.
+#' @param value_range A vector of two numeric values. They specify the range
+#'   of the color bars. The first item (lower bounder) must be less than the
+#'   second one (upper bounder). The plotted values larger than defined upper
+#'   bounder will be filled in color \code{high_value_color} or white (if 
+#'   "upper bounder < 0"). The plotted values less than defined lower
+#'   bounder will be filled in color \code{low_value_color} or white (if 
+#'   "lower bounder > 0"). By default, it is set as \code{NULL} which
+#'   means the function will automatically set the color range according to
+#'   the plotted values.
 #' @param high_value_color An R color value. It indicates the color for the
 #'   high values.
 #' @param low_value_color An R color value. It indicates the color for low
@@ -119,6 +128,7 @@ Plot2DrugHeatmap <- function(data,
                              plot_title = NULL,
                              col_range = NULL,
                              row_range = NULL,
+                             value_range = NULL,
                              high_value_color = "#FF0000",
                              low_value_color = "#00FF00",
                              text_label_size_scale = 1,
@@ -239,9 +249,26 @@ Plot2DrugHeatmap <- function(data,
   plot_subtitle <- paste(plot_subtitle, collapse = " | ")
   
   # Color palette
-  color_range <- round(max(abs(plot_table$value)), -1) + 10
-  start_point <- -color_range
-  end_point <- color_range
+  if (is.null(value_range)){
+    color_range <- round(max(abs(plot_table$value)), -1) + 10
+    start_point <- -color_range
+    end_point <- color_range
+  } else {
+    if (length(value_range) != 2 | class(value_range) != "numeric"){
+      stop(
+        "The variable 'value_range' should be a vector with exact 2 numeric ",
+        "values."
+      )
+    } else if (value_range[1] >= value_range[2]){
+      stop(
+        "The first item in 'value_range' vector should be smaller than the ",
+        "second item."
+      )
+    } else {
+      start_point <- value_range[1]
+      end_point <- value_range[2]
+    }
+  }
   
   # plot heatmap for dose-response matrix
   if (dynamic){
@@ -287,21 +314,39 @@ Plot2DrugHeatmap <- function(data,
     )
     hover_text <- matrix(hover_text, nrow = length(conc1))
     
+    # Color scale
+
+    if (start_point < 0 & end_point <= 0){
+      color_scale <- list(
+        c(0, low_value_color),
+        c(1, "white")
+      )
+    } else if (start_point >= 0 & end_point > 0){
+      color_scale <- list(
+        c(0, "white"),
+        c(1, high_value_color)
+      )
+    } else {
+      zero_pos <- -start_point/(end_point - start_point)
+      color_scale <- list(
+        c(0, low_value_color),
+        c(zero_pos, "white"),
+        c(1, high_value_color)
+      )
+    }
+    
     p <- plotly::plot_ly(
       x = ~plot_table$x,
       y = ~plot_table$y,
       z = ~plot_table$value,
       zmin = start_point,
+      zmid = 0,
       zmax = end_point,
       type = "heatmap",
       # text = hover_text,
       hoverinfo = "",
       autocolorscale = FALSE,
-      colorscale = list(
-        c(0, low_value_color),
-        c(0.5, "white"),
-        c(1, high_value_color)
-      ),
+      colorscale = color_scale,
       colorbar = list(
         x = 1,
         y = 0.75,
@@ -394,15 +439,40 @@ Plot2DrugHeatmap <- function(data,
       ggplot2::geom_text(
         ggplot2::aes(label = text),
         size = .Pt2mm(7) * text_label_size_scale
-      ) +
-      ggplot2::scale_fill_gradient2(
-        high= high_value_color,
-        mid = "#FFFFFF",
-        low = low_value_color,
-        midpoint = 0,
-        name = legend_title,
-        limits = c(start_point, end_point)
-      ) +
+      )
+    
+    # Manage color bar
+    if (start_point < 0 & end_point <= 0){
+      p <- p +
+        ggplot2::scale_fill_gradient(
+          high= "#FFFFFF",
+          low = low_value_color,
+          name = legend_title,
+          limits = c(start_point, end_point),
+          na.value = "#FFFFFF",
+          oob = scales::oob_squish_any
+        )
+    } else if (start_point >= 0 & end_point > 0){
+      p <- p +
+        ggplot2::scale_fill_gradient(
+          high= high_value_color,
+          low = "#FFFFFF",
+          name = legend_title,
+          limits = c(start_point, end_point),
+          oob = scales::oob_squish_any
+        )
+    } else {
+      colour_breaks <- c(start_point, 0, end_point)
+      colours <- c(low_value_color, "#FFFFFF", high_value_color)
+      p <- p +
+        scale_fill_gradientn(
+          limits  = range(plot_table$value),
+          colours = colours[c(1, seq_along(colours), length(colours))],
+          values  = c(0, scales::rescale(colour_breaks, from = range(plot_table$value)), 1),
+        )
+    }
+    
+    p <- p +
       ggplot2::guides(
         fill = ggplot2::guide_colorbar(
           barheight = 10,
@@ -1022,8 +1092,12 @@ Plot2DrugContour <- function(data,
 #'   surface.
 #' @param high_value_color An R color value. It indicates the color for the
 #'   high values.
+#' @param mid-value-color An R color value. The default value is "white" or
+#'   "#FFFFFF". It indicates the color for the value at the middle of the color
+#'   bar.
 #' @param low_value_color An R color value. It indicates the color for low
 #'   values.
+
 #' @param text_size_scale A numeric value. It is used to control the size
 #'   of text in the plot. All the text size will multiply by this scale factor.
 #'
@@ -1057,6 +1131,8 @@ Plot2DrugSurface <- function(data,
                              grid = TRUE,
                              high_value_color = "#FF0000",
                              low_value_color = "#00FF00",
+                             mid_value_color = "#FFFFFF",
+                             color_bar_lim = NULL,
                              text_size_scale = 1) {
   # Extract plot data
   plot_data <- .Extract2DrugPlotData(
@@ -1195,9 +1271,23 @@ Plot2DrugSurface <- function(data,
     y <- seq(1, ncol(extended_mat))
     x <- seq(1, nrow(extended_mat))
     # Color palette
-    color_range <- max(abs(extended_mat)) + 5
-    start_point <- -color_range
-    end_point <- color_range
+    if (is.null(color_bar_lim)) {
+      color_range <- max(abs(extended_mat)) + 5
+      start_point <- -color_range
+      end_point <- color_range
+      mid_value <- 0.5
+    } else {
+      if (!is.numeric(color_bar_lim) | length(color_bar_lim) != 3){
+        stop(
+          "The value for parameter color_bar_lim must be a vector containing",
+          "3 numeric values.")
+      }
+      start_point <- color_bar_lim[1]
+      end_point <- color_bar_lim[3]
+      mid_value <- (color_bar_lim[2] - color_bar_lim[1]) /
+        (color_bar_lim[3] - color_bar_lim[1])
+    }
+
     # Hover text
     concs <- expand.grid(conc1, conc2)
     hover_text <- NULL
@@ -1240,7 +1330,7 @@ Plot2DrugSurface <- function(data,
         hoverinfo = "text",
         colorscale = list(
           c(0, low_value_color),
-          c(0.5, "white"),
+          c(mid_value, mid_value_color),
           c(1, high_value_color)
         ),
         cauto = FALSE,
@@ -1346,19 +1436,50 @@ Plot2DrugSurface <- function(data,
       ) 
   } else { # static plot
     # Color palette
-    color_range <- round(max(abs(plot_table$value)) + 5, 2)
-    start_point <- -color_range
-    end_point <- color_range
+    if (is.null(color_bar_lim)){
+      color_range <- round(max(abs(plot_table$value)) + 5, 2)
+      start_point <- -color_range
+      end_point <- color_range
+      mid_point <- 0
+    } else {
+      if (!is.numeric(color_bar_lim) | length(color_bar_lim) != 3){
+        stop(
+          "The value for parameter color_bar_lim must be a vector containing",
+          "3 numeric values.")
+      }
+      start_point <- color_bar_lim[1]
+      mid_point <- color_bar_lim[2]
+      end_point <- color_bar_lim[3]
+    }
+    
     color_level <- round(seq(start_point, end_point, by = 2), 0)
     col1 <- grDevices::colorRampPalette(c(
-      "#FFFFFF",
+      mid_value_color,
       low_value_color
-    ))(length(which(color_level <= 0)))
+    ))(length(which(color_level <= mid_point)))
     col2 <- grDevices::colorRampPalette(c(
-      "#FFFFFF",
+      mid_value_color,
       high_value_color
-    ))(length(which(color_level >= 0)))
-    col <- c(rev(col1), col2[-1])
+    ))(length(which(color_level >= mid_point)))
+    col <- c(
+      rev(col1), 
+      col2[-1]
+    )
+    additional_low_tick <- (start_point - min(plot_table$value) - 5) %/% 2
+    additional_high_tick <- (start_point - min(plot_table$value) - 5) %/% 2
+    if (additional_low_tick > 0) {
+      col <- c(
+        rep(high_value_color, additional_low_tick),
+        col
+      )
+    }
+    if (additional_high_tick > 0) {
+      col <- c(
+        col,
+        rep(high_value_color, additional_high_tick)
+      )
+    }
+    
     scale_par <- list(
       arrows = FALSE,
       distance = c(0.8, 0.8, 0.8),
