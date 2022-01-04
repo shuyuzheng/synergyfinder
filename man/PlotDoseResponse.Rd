@@ -16,6 +16,7 @@ PlotDoseResponse(
   point_color = "#C24B40",
   curve_color = "black",
   curve_ylim = NULL,
+  curve_grid = TRUE,
   text_size_scale = 1,
   heatmap_text_label_size_scale = 1,
   heatmap_text_label_color = "#000000",
@@ -82,6 +83,9 @@ dose response curve plots.}
 to set the y limits (y1, y2) of the dose-response curve plot. Note that
 y1 > y2 is allowed and leads to a ‘reversed axis’. With the default value,
 \code{NULL}, the function will automatically set the y axis.}
+
+\item{curve_grid}{A logical value. It indicates whether to add grids on the
+dose-response curve pot.}
 
 \item{text_size_scale}{A numeric value. It is used to control the size
 of text in the plot. All the text size will multiply by this scale factor.}

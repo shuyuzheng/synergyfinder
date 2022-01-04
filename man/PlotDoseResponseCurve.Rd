@@ -11,7 +11,7 @@ PlotDoseResponseCurve(
   adjusted = TRUE,
   Emin = NA,
   Emax = NA,
-  grid = expression(graphics::grid(col = "#DFDFDF", lty = 1)),
+  grid = TRUE,
   point_color = "#C24B40",
   curve_color = "black",
   text_size_scale = 1,
@@ -48,8 +48,9 @@ the 4-parameter log-logistic function to fit the dose-response curve. If
 it is not NA, it is fixed the value assigned by the user. Default setting
 is \code{NA}.}
 
-\item{grid}{A expression for \link[graphics]{grid} function of \code{NULL}.
-If it is \code{NULL}, no grids will be shown in the plot.}
+\item{grid}{A logical value. It indicates whether to show the grids in the
+plots. The default value is \code{TRUE}. If \code{grid = NULL} or
+\code{grid = FALSE}, there is no grid.}
 
 \item{point_color}{An R color value. It indicates the color for points in
 dose response curve plots.}
@@ -94,7 +95,7 @@ log-logistic curve.
 \examples{
 data("mathews_screening_data")
 data <- ReshapeData(mathews_screening_data)
-p <- PlotDoseResponseCurve(data, grid = NULL)
+p <- PlotDoseResponseCurve(data, plot_block = 1, drug_index = 2, grid = NULL)
 replayPlot(p)
 }
 \author{
