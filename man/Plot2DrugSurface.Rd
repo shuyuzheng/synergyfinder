@@ -18,6 +18,8 @@ Plot2DrugSurface(
   grid = TRUE,
   high_value_color = "#FF0000",
   low_value_color = "#00FF00",
+  mid_value_color = "#FFFFFF",
+  color_bar_lim = NULL,
   text_size_scale = 1
 )
 }
@@ -98,6 +100,10 @@ values.}
 
 \item{text_size_scale}{A numeric value. It is used to control the size
 of text in the plot. All the text size will multiply by this scale factor.}
+
+\item{mid-value-color}{An R color value. The default value is "white" or
+"#FFFFFF". It indicates the color for the value at the middle of the color
+bar.}
 }
 \value{
 If \code{dynamic = FALSE}, this function will return a plot project 
