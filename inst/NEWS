@@ -1,3 +1,16 @@
+# synergyfinder 3.3.3 (2022-01-01)
+# Author: shuyu.zheng@helsinki.fi
+## New features
+
+* Enable the setting of color bar range in plotting functions for heatmap, contour, and 3D surface plots.
+* Enable the setting of z-axis range in plotting functions for 3D surface plots.
+* Enable the setting of axis lines and ticks in plotting functions for contour and 3D surface plots.
+* Check the number of drugs-cell combo in each block. If there are more than one combo in some blocks. The ReshapeData stops and raises an error message.
+
+## Debug
+
+* The input data with replicates and missing values caused errors while calculating synergy scores. Now this bug is fixed.
+
 # synergyfinder 2.99.0/2.4.8 (2021-03-10)
 ## Author: shuyu.zheng@helsinki.fi
 ## Major Update
