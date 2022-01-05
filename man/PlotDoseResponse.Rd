@@ -16,9 +16,11 @@ PlotDoseResponse(
   point_color = "#C24B40",
   curve_color = "black",
   curve_ylim = NULL,
+  curve_grid = TRUE,
   text_size_scale = 1,
   heatmap_text_label_size_scale = 1,
   heatmap_text_label_color = "#000000",
+  heatmap_color_range = NULL,
   curve_plot_title = NULL,
   heatmap_plot_title = NULL,
   Emin = NA,
@@ -83,6 +85,9 @@ to set the y limits (y1, y2) of the dose-response curve plot. Note that
 y1 > y2 is allowed and leads to a ‘reversed axis’. With the default value,
 \code{NULL}, the function will automatically set the y axis.}
 
+\item{curve_grid}{A logical value. It indicates whether to add grids on the
+dose-response curve pot.}
+
 \item{text_size_scale}{A numeric value. It is used to control the size
 of text in the plot. All the text size will multiply by this scale factor.}
 
@@ -94,6 +99,16 @@ the size of text labels in the heatmap plot. It only works while
 control the color of text labels in the heatmap plot. If it is \code{NULL},
 text label will not be shown.It only works while
 \code{plot_type = "heatmap"}.}
+
+\item{heatmap_color_range}{A vector of two numeric values. They specify the
+range of the color bar in heatmap plot. The first item (lower bounder) must
+be less than the second one (upper bounder). The plotted values larger than
+defined upper bounder will be filled in color \code{high_value_color}. The
+plotted values less than defined lower bounder will be filled in color
+\code{low_value_color}. If the defined range includes 0, value 0 will be
+filled in color "white". By default, it is set as \code{NULL} which
+means the function will automatically set the color range according to
+the plotted values.}
 
 \item{curve_plot_title}{A character value to indicate the plot title for
 the dose-response curve.}

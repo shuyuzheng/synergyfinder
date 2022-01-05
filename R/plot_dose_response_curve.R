@@ -29,8 +29,9 @@
 #'   the 4-parameter log-logistic function to fit the dose-response curve. If
 #'   it is not NA, it is fixed the value assigned by the user. Default setting
 #'   is \code{NA}.
-#' @param grid A expression for \link[graphics]{grid} function of \code{NULL}.
-#'   If it is \code{NULL}, no grids will be shown in the plot.
+#' @param grid A logical value. It indicates whether to show the grids in the
+#'   plots. The default value is \code{TRUE}. If \code{grid = NULL} or
+#'   \code{grid = FALSE}, there is no grid.
 #' @param point_color An R color value. It indicates the color for points in
 #'   dose response curve plots.
 #' @param curve_color An R color value. It indicates the color for curves in 
@@ -69,7 +70,7 @@
 #' @examples
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
-#' p <- PlotDoseResponseCurve(data, grid = NULL)
+#' p <- PlotDoseResponseCurve(data, plot_block = 1, drug_index = 2, grid = NULL)
 #' replayPlot(p)
 PlotDoseResponseCurve <- function(data,
                                   plot_block = 1,
@@ -77,9 +78,7 @@ PlotDoseResponseCurve <- function(data,
                                   adjusted = TRUE,
                                   Emin = NA,
                                   Emax = NA,
-                                  grid = expression(
-                                    graphics::grid(col = "#DFDFDF", lty = 1)
-                                  ),
+                                  grid = TRUE,
                                   point_color = "#C24B40",
                                   curve_color = "black",
                                   text_size_scale = 1,
@@ -178,12 +177,58 @@ PlotDoseResponseCurve <- function(data,
   #   geom_line(aes(log10(dose), response), data = curve_pred) + 
   #   scale_y_continuous(trans = log10_trans())
   # p1
+  
+  model_type <- FindModelType(drug_model)
+  if (model_type == "LL.4"){
+    # Set break point of x-axis (numbers smaller than it are set as 0)
+    bp <- round(min(log10(drug_model$origData$dose[drug_model$origData$dose > 1e-10])))-1
+    max <- round(max(log10(drug_model$origData$dose)))
+    step <- (max - bp)%/%4
+    if (step < 1){
+      step <- 1
+    }
+    xt <- 10 ^ seq(bp, max, by = step)
+    xtlab <- xt
+    xtlab[1] <- 0
+  } else { # model type is L.4
+    # Set break point of x-axis (numbers smaller than it are set as 0)
+    bp <- round(min(log10(drug_model$origData$dose[drug_model$origData$dose > 1e-10])))-1
+    # if (bp == 0) {
+    #   bp <- -1
+    # }
+    max <- round(max(log10(drug_model$origData$dose)))
+    step <- (max - bp)%/%4
+    if (step < 1){
+      step <- 1
+    }
+    # Set x-axis tick markders
+    xt <- 10 ^ seq(bp, max, by = step)
+    xtlab <- xt
+    xtlab[1] <- 0
+    drug_model$dataList$dose <- exp(drug_model$dataList$dose)
+    drug_model$dataList$dose[drug_model$dataList$dose < 10^bp] <- 10^bp
+  }
+  
+  if (is.null(grid)){
+    grid_exp <- NULL
+  } else if (grid){
+    grid_exp <- expression(
+      {
+        graphics::grid(nx = NA, ny = NULL, col = "#DFDFDF", lty = 1)
+        graphics::abline(col = "#DFDFDF", v = xt)
+      }
+    )
+  } else {
+    grid_exp <- NULL
+  }
+  
   if (plot_new) {
     graphics::plot.new()
     grDevices::dev.control("enable")
   }
 
   suppressWarnings(graphics::par(plot_setting))
+  
   # Plot dots
   if (!is.null(ylim)){
     graphics::plot(
@@ -191,22 +236,33 @@ PlotDoseResponseCurve <- function(data,
       xlab = paste0("Concentration (", drug_anno$unit, ")"),
       ylab = "Inhibition (%)",
       type = "obs",
+      log = "x",
       col = point_color,
       pch = 16,
       cex.axis = 1 * text_size_scale,
-      panel.first = eval(grid),
-      ylim = ylim
+      panel.first = eval(grid_exp),
+      ylim = ylim,
+      conName = NULL,
+      bp = 10 ^ bp,
+      xt = xt,
+      xtlab = xtlab
     )
     
     # Plot curve
     graphics::plot(
       x = drug_model,
       type = "none",
+      log = "x",
       col = curve_color,
       cex.axis = 1 * text_size_scale,
       add = TRUE,
       lwd = 3,
-      ylim = ylim
+      ylim = ylim,
+      conName = NULL,
+      xttrim = FALSE,
+      bp = 10 ^ bp,
+      xt = xt,
+      xtlab = xtlab
     )
   } else {
     graphics::plot(
@@ -214,20 +270,32 @@ PlotDoseResponseCurve <- function(data,
       xlab = paste0("Concentration (", drug_anno$unit, ")"),
       ylab = "Inhibition (%)",
       type = "obs",
+      log = "x",
       col = point_color,
       pch = 16,
       cex.axis = 1 * text_size_scale,
-      panel.first = eval(grid)
+      panel.first = eval(grid_exp),
+      xttrim = FALSE,
+      conName = NULL,
+      bp = 10 ^ bp,
+      xt = xt,
+      xtlab = xtlab
     )
     
     # Plot curve
     graphics::plot(
       x = drug_model,
       type = "none",
+      log = "x",
       col = curve_color,
       cex.axis = 1 * text_size_scale,
       add = TRUE,
-      lwd = 3
+      lwd = 3,
+      xttrim = FALSE,
+      conName = NULL,
+      bp = 10 ^ bp,
+      xt = xt,
+      xtlab = xtlab
     )
   }
 

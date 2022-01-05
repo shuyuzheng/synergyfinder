@@ -895,8 +895,8 @@ CorrectBaseLine <- function(response, method = c("non", "part", "all")) {
   }
   # output the y_loewe corresponding to the minimal distance
   res <- list(
-    y_loewe = y_test[which(dist == min(dist, na.rm = T))],
-    x_select = x_test[,which(dist == min(dist, na.rm = T))],
+    y_loewe = y_test[which(dist == min(dist, na.rm = T))][1],
+    x_select = x_test[1,which(dist == min(dist, na.rm = T))],
     distance = min(dist, na.rm = T)
   ) 
 }

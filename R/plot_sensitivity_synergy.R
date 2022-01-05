@@ -28,6 +28,7 @@
 #'   a static plot.
 #' @param plot_title A character value. It specifies the plot title. If it is
 #'   \code{NULL}, the function will automatically generate a title.
+#' @param axis_line A logical value. Whether to show the axis lines and ticks.
 #' @param text_size_scale A numeric value. It is used to control the size
 #'   of text for axis in the plot. All the text size will multiply by this
 #'   scale factor.
@@ -58,6 +59,7 @@ PlotSensitivitySynergy <- function(data,
                                  label_size = 10,
                                  dynamic = FALSE,
                                  plot_title = NULL,
+                                 axis_line = FALSE,
                                  text_size_scale = 1){
   plot_table <- data$drug_pairs
   # 1. Check the input data
@@ -69,15 +71,17 @@ PlotSensitivitySynergy <- function(data,
     stop("Input data should contain at least tow elements: 'drug_pairs' and 
          'response'. Please prepare your data with 'ReshapeData' function.")
   }
+  if (! "synergy_scores" %in% names(data)){
+    stop("Please calculate the synergy scores with function 'CalculateSynergy'")
+  }
   # Parameter 'plot_synergy'
-  
   avail_value <- colnames(plot_table)[endsWith(colnames(plot_table),"_synergy")]
   avail_value <- c(avail_value, sub("_synergy", "", avail_value))
   if (!plot_synergy %in% avail_value) {
     stop("The parameter 'plot_synergy = ", plot_synergy, "' is not available.",
-         "Avaliable values are '", paste(avail_value, collapse = ", "),
+         " Avaliable values are '", paste(avail_value, collapse = ", "),
          "'. Alternativly calculate the synergy scores with function",
-         " 'CalculateSynergy'.")
+         " 'CalculateSynergy'")
   }
   if (!grepl("_synergy", plot_synergy)) {
     plot_synergy <- paste0(plot_synergy, "_synergy")
@@ -149,7 +153,8 @@ PlotSensitivitySynergy <- function(data,
             size = 12 * text_size_scale,
             family = "arial"
           ),
-          # ticks = "none",
+          ticks = ifelse(axis_line, "outside", "none"),
+          showline = axis_line,
           showspikes = FALSE
         ),
         yaxis = list(
@@ -158,7 +163,8 @@ PlotSensitivitySynergy <- function(data,
             size = 12 * text_size_scale,
             family = "arial"
           ),
-          # ticks = "none",
+          ticks = ifelse(axis_line, "outside", "none"),
+          showline = axis_line,
           showspikes = FALSE
         )
       ) %>% 
@@ -226,12 +232,22 @@ PlotSensitivitySynergy <- function(data,
         ),
         axis.title = ggplot2::element_text(
           size = 10 * text_size_scale
-        ),
-        # axis.ticks = element_blank(),
-        axis.line.y.left = ggplot2::element_line(color = "black"),
-        axis.line.x.bottom = ggplot2::element_line(color = "black")
+        )
       )
+    
+    if (axis_line){
+      p <- p +
+        ggplot2::theme(
+          axis.ticks = ggplot2::element_line(),
+          axis.line = ggplot2::element_line()
+        )
+    } else {
+      p <- p +
+        ggplot2::theme(
+          axis.ticks = ggplot2::element_blank(),
+          axis.line = ggplot2::element_blank()
+        )
+    }
   }
- 
   return(p)
 }

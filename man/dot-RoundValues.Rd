@@ -16,7 +16,7 @@ A vector of rounded numbers.
 \description{
 This function will round the input numbers by 2 digits, if the absolute of 
 number is larger than or equal to 1. It will take 2 significant digits, if
-the absolute of number is smaller than 1.
+the absolute of number is less than 1.
 }
 \author{
 \itemize{

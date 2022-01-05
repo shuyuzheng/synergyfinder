@@ -15,6 +15,7 @@ Plot2DrugHeatmap(
   plot_title = NULL,
   col_range = NULL,
   row_range = NULL,
+  color_range = NULL,
   high_value_color = "#FF0000",
   low_value_color = "#00FF00",
   text_label_size_scale = 1,
@@ -86,12 +87,22 @@ a static plot.}
 \item{col_range}{A vector of two integers. They specify the starting and 
 ending concentration of the drug on x-axis. Use e.g., c(1, 3) to specify
 that only from 1st to 3rd concentrations of the drug on x-axis are used. By
-default, it is NULl so all the concentrations are used.}
+default, it is \code{NULL} so all the concentrations are used.}
 
 \item{row_range}{A vector of two integers. They specify the starting and
 ending concentration of the drug on y-axis. Use e.g., c(1, 3) to specify
 that only from 1st to 3rd concentrations of the drug on y-axis are used. By
-default, it is NULl so all the concentrations are used.}
+default, it is \code{NULL} so all the concentrations are used.}
+
+\item{color_range}{A vector of two numeric values. They specify the range
+of the color bars. The first item (lower bounder) must be less than the
+second one (upper bounder). The plotted values larger than defined upper
+bounder will be filled in color \code{high_value_color}. The plotted values
+less than defined lower bounder will be filled in color
+\code{low_value_color}. If the defined range includes 0, value 0 will be
+filled in color "white". By default, it is set as \code{NULL} which
+means the function will automatically set the color range according to
+the plotted values.}
 
 \item{high_value_color}{An R color value. It indicates the color for the
 high values.}

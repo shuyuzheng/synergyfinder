@@ -54,6 +54,8 @@
 #'   to set the y limits (y1, y2) of the dose-response curve plot. Note that
 #'   y1 > y2 is allowed and leads to a ‘reversed axis’. With the default value,
 #'   \code{NULL}, the function will automatically set the y axis. 
+#' @param curve_grid A logical value. It indicates whether to add grids on the
+#'   dose-response curve pot.
 #' @param text_size_scale A numeric value. It is used to control the size
 #'   of text in the plot. All the text size will multiply by this scale factor.
 #' @param heatmap_text_label_size_scale A numeric value. It is used to control
@@ -62,7 +64,16 @@
 #' @param heatmap_text_label_color NULL or an R color value. It is used to
 #'   control the color of text labels in the heatmap plot. If it is \code{NULL},
 #'   text label will not be shown.It only works while
-#'   \code{plot_type = "heatmap"}. 
+#'   \code{plot_type = "heatmap"}.
+#' @param heatmap_color_range A vector of two numeric values. They specify the
+#'   range of the color bar in heatmap plot. The first item (lower bounder) must
+#'   be less than the second one (upper bounder). The plotted values larger than
+#'   defined upper bounder will be filled in color \code{high_value_color}. The
+#'   plotted values less than defined lower bounder will be filled in color
+#'   \code{low_value_color}. If the defined range includes 0, value 0 will be
+#'   filled in color "white". By default, it is set as \code{NULL} which
+#'   means the function will automatically set the color range according to
+#'   the plotted values.
 #' @param heatmap_plot_title A character value to indicate the plot title for
 #'   the heatmap.
 #' @param curve_plot_title A character value to indicate the plot title for
@@ -118,9 +129,11 @@ PlotDoseResponse <- function(data,
                              point_color = "#C24B40",
                              curve_color = "black",
                              curve_ylim = NULL,
+                             curve_grid = TRUE,
                              text_size_scale = 1,
                              heatmap_text_label_size_scale = 1,
                              heatmap_text_label_color = "#000000",
+                             heatmap_color_range = NULL,
                              curve_plot_title = NULL,
                              heatmap_plot_title = NULL,
                              Emin = NA,
@@ -177,6 +190,7 @@ PlotDoseResponse <- function(data,
       summary_statistic = summary_statistic,
       high_value_color = high_value_color,
       low_value_color = low_value_color,
+      color_range = heatmap_color_range,
       plot_title = heatmap_plot_title,
       text_label_size_scale = heatmap_text_label_size_scale,
       text_label_color = heatmap_text_label_color
@@ -198,7 +212,7 @@ PlotDoseResponse <- function(data,
           cex.sub = 1
         ),
         plot_subtitle = NULL,
-        grid = grid,
+        grid = curve_grid,
         point_color = point_color,
         curve_color = curve_color,
         ylim = curve_ylim,
@@ -312,6 +326,20 @@ PlotDoseResponse <- function(data,
 #'   ending concentration of the drug on y-axis. Use e.g., c(1, 3) to specify
 #'   that only from 1st to 3rd concentrations of the drug on y-axis are used. By
 #'   default, it is NULl so all the concentrations are used.
+#' @param color_range A vector of two numeric values. They specify the range
+#'   of the color bars. The first item (lower bounder) must be less than the
+#'   second one (upper bounder). The plotted values larger than defined upper
+#'   bounder will be filled in color \code{high_value_color}. The plotted values
+#'   less than defined lower bounder will be filled in color
+#'   \code{low_value_color}. If the defined range includes 0, value 0 will be
+#'   filled in color "white". By default, it is set as \code{NULL} which
+#'   means the function will automatically set the color range according to
+#'   the plotted values.
+#' @param z_range A vector of two numeric values. They specify the range of
+#'   z-axis plotted in 3D surface plot. It doesn't work for 2D or heatmap plots.
+#'   Default value is \code{NULL}. The function automatically set the range.
+#' @param axis_line A logical value. Whether to show the axis lines and ticks.
+#'   It doesn't work for heatmap plot.
 #' @param statistic A character or NULL. It indicates the statistics printed
 #'   in the plot while there are replicates in input data. Available values are:
 #'   \itemize{
@@ -409,6 +437,9 @@ PlotSynergy <- function(data,
                         drugs = c(1, 2),
                         row_range = NULL,
                         col_range = NULL,
+                        color_range = NULL,
+                        z_range = NULL,
+                        axis_line = FALSE,
                         statistic = NULL,
                         summary_statistic = "mean",
                         plot_title = NULL,
@@ -459,6 +490,8 @@ PlotSynergy <- function(data,
         grid = grid,
         row_range = row_range,
         col_range = col_range,
+        color_range = color_range,
+        axis_line = axis_line,
         text_size_scale = text_size_scale)
       if (display) {
         fig
@@ -477,6 +510,7 @@ PlotSynergy <- function(data,
         low_value_color = low_value_color,
         row_range = row_range,
         col_range = col_range,
+        color_range = color_range,
         title_text_size_scale = text_size_scale,
         text_label_size_scale = heatmap_text_label_size_scale,
         text_label_color = heatmap_text_label_color)
@@ -497,6 +531,9 @@ PlotSynergy <- function(data,
         low_value_color = low_value_color,
         row_range = row_range,
         col_range = col_range,
+        color_range = color_range,
+        z_range = z_range,
+        axis_line = axis_line,
         grid = grid,
         text_size_scale = text_size_scale)
       if (display) {
