@@ -101,6 +101,23 @@ ReshapeData <- function(data,
     )
   }
   
+  # check drug and cell line names
+  check <- data %>% 
+    dplyr::select(block_id, dplyr::starts_with("drug"), dplyr::starts_with("cell")) %>% 
+    dplyr::group_by(block_id) %>% 
+    unique() %>% 
+    dplyr::summarise(
+      n = dplyr::n(),
+    ) %>% 
+    dplyr::filter(n > 1)
+  if (nrow(check) > 1) {
+    stop(
+      "There are more than one drugs-cell combos in block: ",
+      paste(head(check$block_id), collapse = ", "),
+      "... Only one drugs-cell combo is allowed in one block. ",
+      "Please separate the different drugs-cell combos into different blocks."
+    )
+  }
   # Complete the conc_unit columns
   drugs <- grep("drug\\d", colnames(data), value = TRUE)
   conc_unit <- sub("drug", "conc_unit", drugs)
@@ -181,7 +198,7 @@ ReshapeData <- function(data,
     tidyr::unnest(cols = c(data)) %>% 
     dplyr::left_join(response, by = c("block_id", concs))
   
-  non_complete_block <- combs$block_id[is.na(combs$response)]
+  non_complete_block <- unique(combs$block_id[is.na(combs$response)])
   if (length(non_complete_block) > 0) {
     if (!impute){
       stop(
@@ -197,17 +214,42 @@ ReshapeData <- function(data,
       imp <- suppressWarnings(
         mice::mice(combs, method = impute_method, printFlag = FALSE)
       )
-      response <- suppressWarnings(mice::complete(imp)) %>% 
-        dplyr::select(-response_origin) %>% 
-        dplyr::left_join(
-          response %>% 
-            dplyr::select(-response),
-          by = c("block_id", concs)
-        )
+      response <- suppressWarnings(mice::complete(imp))
     }
   }
   
   # 6. Dealing with replicates
+  
+  replicate_n <- response %>% 
+    dplyr::group_by(dplyr::across(c(-response, -response_origin))) %>%
+    dplyr::summarise(
+      n = dplyr::n(), 
+      .groups = "keep"
+    )
+  block_not_all_replicated <- replicate_n %>% 
+    dplyr::ungroup() %>% 
+    dplyr::select(block_id, n) %>% 
+    dplyr::group_by(block_id) %>% 
+    dplyr::summarise(
+      nn = dplyr::n_distinct(n),
+      maxn = max(n)) %>% 
+    dplyr::filter(nn > 1 & maxn > 1)
+  
+  if (nrow(block_not_all_replicated) > 0){
+    data_need_dup <- NULL
+    for (b in block_not_all_replicated$block_id){
+      tmp <- replicate_n %>% 
+        dplyr::filter(block_id == b & n == 1) %>% 
+        dplyr::left_join(response, by = c("block_id", concs)) %>% 
+        dplyr::select(-n)
+      data_need_dup <- rbind.data.frame(
+        data_need_dup,
+        tmp
+      )
+    }
+    response <- rbind.data.frame(response, data_need_dup)
+  }
+  
   replicate_response <- response %>%
     dplyr::group_by(dplyr::across(c(-response, -response_origin)))%>%
     dplyr::summarise(
