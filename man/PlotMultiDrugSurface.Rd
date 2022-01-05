@@ -21,6 +21,7 @@ PlotMultiDrugSurface(
   x_range = NULL,
   y_range = NULL,
   z_range = NULL,
+  color_range = NULL,
   camera_width = NULL,
   camera_height = NULL,
   camera_scale = 1
@@ -104,10 +105,19 @@ the range of y axis (coordinate 2). For example, \code{c(-5, 5)} means
 coordinate 2 ranges from -5 to 5 in the plot. Default value is \code{NULL}.
 The function automatically set the range.}
 
-\item{z_range}{A numeric vector with two values or NULL. It is used to set
-the range of z axis. For example, \code{c(0, 100)} means z axis ranges from
-0 to 100 in the plot. Default value is \code{NULL}. The function
+\item{z_range}{A vector of two numeric values. They specify the range of
+z-axis plotted.Default value is \code{NULL}. The function
 automatically set the range.}
+
+\item{color_range}{A vector of two numeric values. They specify the range
+of the color bars. The first item (lower bounder) must be less than the
+second one (upper bounder). The plotted values larger than defined upper
+bounder will be filled in color \code{high_value_color}. The plotted values
+less than defined lower bounder will be filled in color
+\code{low_value_color}. If the defined range includes 0, value 0 will be
+filled in color "white". By default, it is set as \code{NULL} which
+means the function will automatically set the color range according to
+the plotted values.}
 
 \item{camera_width}{A numeric value or NULL. It indicates the output figure's
 width on pixel.}

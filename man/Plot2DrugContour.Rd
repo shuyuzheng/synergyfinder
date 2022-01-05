@@ -14,9 +14,10 @@ Plot2DrugContour(
   dynamic = FALSE,
   grid = TRUE,
   plot_title = NULL,
+  axis_line = FALSE,
   col_range = NULL,
   row_range = NULL,
-  value_range = NULL,
+  color_range = NULL,
   high_value_color = "#FF0000",
   low_value_color = "#00FF00",
   text_size_scale = 1
@@ -80,17 +81,19 @@ a static plot.}
 \item{plot_title}{A character value. It specifies the plot title. If it is
 \code{NULL}, the function will automatically generate a title.}
 
+\item{axis_line}{A logical value. Whether to show the axis lines and ticks.}
+
 \item{col_range}{A vector of two integers. They specify the starting and 
 ending concentration of the drug on x-axis. Use e.g., c(1, 3) to specify
 that only from 1st to 3rd concentrations of the drug on x-axis are used. By
-default, it is NULl so all the concentrations are used.}
+default, it is \code{NULL} so all the concentrations are used.}
 
 \item{row_range}{A vector of two integers. They specify the starting and
 ending concentration of the drug on y-axis. Use e.g., c(1, 3) to specify
 that only from 1st to 3rd concentrations of the drug on y-axis are used. By
-default, it is NULl so all the concentrations are used.}
+default, it is \code{NULL} so all the concentrations are used.}
 
-\item{value_range}{A vector of two numeric values. They specify the range
+\item{color_range}{A vector of two numeric values. They specify the range
 of the color bars. The first item (lower bounder) must be less than the
 second one (upper bounder). The plotted values larger than defined upper
 bounder will be filled in color \code{high_value_color}. The plotted values

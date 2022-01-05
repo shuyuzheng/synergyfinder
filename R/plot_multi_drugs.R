@@ -288,10 +288,18 @@ PlotMultiDrugBar <- function(data,
 #'   the range of y axis (coordinate 2). For example, \code{c(-5, 5)} means
 #'   coordinate 2 ranges from -5 to 5 in the plot. Default value is \code{NULL}.
 #'   The function automatically set the range.
-#' @param z_range A numeric vector with two values or NULL. It is used to set
-#'   the range of z axis. For example, \code{c(0, 100)} means z axis ranges from
-#'   0 to 100 in the plot. Default value is \code{NULL}. The function
+#' @param z_range A vector of two numeric values. They specify the range of
+#'   z-axis plotted.Default value is \code{NULL}. The function
 #'   automatically set the range.
+#' @param color_range A vector of two numeric values. They specify the range
+#'   of the color bars. The first item (lower bounder) must be less than the
+#'   second one (upper bounder). The plotted values larger than defined upper
+#'   bounder will be filled in color \code{high_value_color}. The plotted values
+#'   less than defined lower bounder will be filled in color
+#'   \code{low_value_color}. If the defined range includes 0, value 0 will be
+#'   filled in color "white". By default, it is set as \code{NULL} which
+#'   means the function will automatically set the color range according to
+#'   the plotted values.
 #' @param camera_width A numeric value or NULL. It indicates the output figure's
 #'   width on pixel.
 #' @param camera_height A numeric value or NULL. It indicates the output
@@ -352,6 +360,7 @@ PlotMultiDrugSurface <- function(data,
                                  x_range = NULL,
                                  y_range = NULL,
                                  z_range = NULL,
+                                 color_range = NULL,
                                  camera_width = NULL,
                                  camera_height = NULL,
                                  camera_scale = 1) {
@@ -389,6 +398,7 @@ PlotMultiDrugSurface <- function(data,
     x_range = x_range,
     y_range = y_range,
     z_range = z_range,
+    color_range = color_range,
     camera_scale = camera_scale
     )
   return(p)
@@ -817,11 +827,18 @@ DimensionReduction <- function(plot_table,
 #'   the range of y axis (coordinate 2). For example, \code{c(-5, 5)} means
 #'   coordinate 2 ranges from -5 to 5 in the plot. Default value is \code{NULL}.
 #'   The function automatically set the range.
-#' @param z_range A numeric vector with two values or NULL. It is used to set
-#'   the range of z axis and color bar legend. For example, \code{c(0, 100)}
-#'   means z axis ranges from 0 to 100 in the plot and the color bar ranges from
-#'   -100 to 100 (max(abs(z_range))). Default value is \code{NULL}. The function
+#' @param z_range A vector of two numeric values. They specify the range of
+#'   z-axis plotted.Default value is \code{NULL}. The function
 #'   automatically set the range.
+#' @param color_range A vector of two numeric values. They specify the range
+#'   of the color bars. The first item (lower bounder) must be less than the
+#'   second one (upper bounder). The plotted values larger than defined upper
+#'   bounder will be filled in color \code{high_value_color}. The plotted values
+#'   less than defined lower bounder will be filled in color
+#'   \code{low_value_color}. If the defined range includes 0, value 0 will be
+#'   filled in color "white". By default, it is set as \code{NULL} which
+#'   means the function will automatically set the color range according to
+#'   the plotted values.
 #' @param camera_width A numeric value or NULL. It indicates the output figure's
 #'   width on pixel.
 #' @param camera_height A numeric value or NULL. It indicates the output
@@ -856,6 +873,7 @@ GenerateSurface <- function(dim_reduced_data,
                            x_range = NULL,
                            y_range = NULL,
                            z_range = NULL,
+                           color_range = NULL,
                            camera_width = NULL,
                            camera_height = NULL,
                            camera_scale = 1) {
@@ -870,21 +888,77 @@ GenerateSurface <- function(dim_reduced_data,
   )
   x <- unique(extended_plot_table$x)
   y <- unique(extended_plot_table$y)
-  # Color palette
-  if (is.null(z_range)){
-    color_range <- max(abs(extended_plot_table$pred)) + 5
+  
+  # Color range
+  if (is.null(color_range)){
+    color_range <- round(max(abs(plot_table$value)), -1) + 10
     start_point <- -color_range
     end_point <- color_range
   } else {
-    if (!is.numeric(z_range)| length(z_range) !=2 | z_range[1] >= z_range[2]){
+    if (length(color_range) != 2 | class(color_range) != "numeric"){
       stop(
-        "'z_range' must be a numeric vector with 2 elements and the first ",
-        "number must be smaller than the second one."
+        "The variable 'color_range' should be a vector with exact 2 numeric ",
+        "values."
       )
+    } else if (color_range[1] >= color_range[2]){
+      stop(
+        "The first item in 'color_range' vector should be less than the ",
+        "second item."
+      )
+    } else {
+      if (color_range[1] > max(plot_table$value) |
+          color_range[2] < min(plot_table$value)){
+        stop(
+          "There is no overlap between 'color_range' (",
+          paste(color_range, collapse = ", "),
+          ") and the range of 'plot_value' (",
+          paste(range(plot_table$value), collapse = ", "), ")")
+      }
+      start_point <- color_range[1]
+      end_point <- color_range[2]
     }
-    color_range <- max(abs(z_range))
-    start_point <- -color_range
-    end_point <- color_range
+  }
+  
+  # Color scale
+  if (start_point < 0 & end_point > 0){
+    zero_pos <- -start_point/(end_point - start_point)
+    color_scale <- list(
+      c(0, low_value_color),
+      c(zero_pos, "white"),
+      c(1, high_value_color)
+    )
+  } else {
+    color_scale <- list(
+      c(0, low_value_color),
+      c(1, high_value_color)
+    )
+  }
+  
+  # z axis range
+  if (is.null(z_range)){
+    z_range <- round(max(abs(plot_table$value)), -1) + 10
+    z_range <- c(-z_range, z_range)
+  } else {
+    if (length(z_range) != 2 | class(z_range) != "numeric"){
+      stop(
+        "The variable 'z_range' should be a vector with exact 2 numeric ",
+        "values."
+      )
+    } else if (z_range[1] >= z_range[2]){
+      stop(
+        "The first item in 'z_range' vector should be less than the ",
+        "second item."
+      )
+    } else {
+      if (z_range[1] > max(plot_table$value) |
+          z_range[2] < min(plot_table$value)){
+        stop(
+          "There is no overlap between 'color_range' (",
+          paste(z_range, collapse = ", "),
+          ") and the range of 'plot_value' (",
+          paste(range(plot_table$value), collapse = ", "), ")")
+      }
+    }
   }
   
   p <- plotly::plot_ly() %>% 
@@ -903,11 +977,7 @@ GenerateSurface <- function(dim_reduced_data,
       y = ~y,
       z = extended_mat,
       hoverinfo = 'none',
-      colorscale = list(
-        c(0, low_value_color),
-        c(0.5, "white"),
-        c(1, high_value_color)
-      ),
+      colorscale = color_scale,
       # cauto = FALSE,
       colorbar = list(
         x = 1,
@@ -943,7 +1013,7 @@ GenerateSurface <- function(dim_reduced_data,
     title = "<i>Coordinate 1</i>",
     tickfont = list(size = 12 * text_size_scale, family = "arial"),
     showline = axis_line,
-    showticklabels = axis_line,
+    showticklabels = TRUE,
     ticks = ifelse(axis_line, "outside", "none"),
     showspikes = FALSE
   )
@@ -960,6 +1030,7 @@ GenerateSurface <- function(dim_reduced_data,
     title = "<i>Coordinate 2</i>",
     tickfont = list(size = 12 * text_size_scale, family = "arial"),
     showline = axis_line,
+    showticklabels = TRUE,
     ticks = ifelse(axis_line, "outside", "none"),
     showspikes = FALSE
   )
@@ -976,7 +1047,7 @@ GenerateSurface <- function(dim_reduced_data,
     title = paste0("<i>", z_axis_title, "</i>"),
     tickfont = list(size = 12 * text_size_scale, family = "arial"),
     showline = axis_line,
-    showticklabels = axis_line,
+    showticklabels = TRUE,
     ticks = ifelse(axis_line, "outside", "none"),
     tickmode = "array",
     showspikes = FALSE

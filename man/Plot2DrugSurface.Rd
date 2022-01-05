@@ -12,14 +12,15 @@ Plot2DrugSurface(
   summary_statistic = NULL,
   plot_title = NULL,
   interpolate_len = 2,
+  axis_line = FALSE,
   col_range = NULL,
   row_range = NULL,
+  z_range = NULL,
+  color_range = NULL,
   dynamic = FALSE,
   grid = TRUE,
   high_value_color = "#FF0000",
   low_value_color = "#00FF00",
-  mid_value_color = "#FFFFFF",
-  color_bar_lim = NULL,
   text_size_scale = 1
 )
 }
@@ -74,15 +75,32 @@ If it is \code{NULL}, no statistics will be printed.}
 interpolated between two concentrations. It is used to control the 
 smoothness of the synergy surface.}
 
+\item{axis_line}{A logical value. It specifies whether to show the axis lines
+and ticks in dynamic plot. Axis lines are always shown in the static plot.}
+
 \item{col_range}{A vector of two integers. They specify the starting and 
 ending concentration of the drug on x-axis. Use e.g., c(1, 3) to specify
 that only from 1st to 3rd concentrations of the drug on x-axis are used. By
-default, it is NULl so all the concentrations are used.}
+default, it is \code{NULL} so all the concentrations are used.}
 
 \item{row_range}{A vector of two integers. They specify the starting and
 ending concentration of the drug on y-axis. Use e.g., c(1, 3) to specify
 that only from 1st to 3rd concentrations of the drug on y-axis are used. By
-default, it is NULl so all the concentrations are used.}
+default, it is \code{NULL} so all the concentrations are used.}
+
+\item{z_range}{A vector of two numeric values. They specify the range of
+z-axis plotted.Default value is \code{NULL}. The function
+automatically set the range.}
+
+\item{color_range}{A vector of two numeric values. They specify the range
+of the color bars. The first item (lower bounder) must be less than the
+second one (upper bounder). The plotted values larger than defined upper
+bounder will be filled in color \code{high_value_color}. The plotted values
+less than defined lower bounder will be filled in color
+\code{low_value_color}. If the defined range includes 0, value 0 will be
+filled in color "white". By default, it is set as \code{NULL} which
+means the function will automatically set the color range according to
+the plotted values.}
 
 \item{dynamic}{A logical value. If it is \code{TRUE}, this function will
 use \link[plotly]{plot_ly} to generate an interactive plot. If it is
@@ -100,10 +118,6 @@ values.}
 
 \item{text_size_scale}{A numeric value. It is used to control the size
 of text in the plot. All the text size will multiply by this scale factor.}
-
-\item{mid-value-color}{An R color value. The default value is "white" or
-"#FFFFFF". It indicates the color for the value at the middle of the color
-bar.}
 }
 \value{
 If \code{dynamic = FALSE}, this function will return a plot project 

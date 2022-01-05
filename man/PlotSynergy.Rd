@@ -12,6 +12,9 @@ PlotSynergy(
   drugs = c(1, 2),
   row_range = NULL,
   col_range = NULL,
+  color_range = NULL,
+  z_range = NULL,
+  axis_line = FALSE,
   statistic = NULL,
   summary_statistic = "mean",
   plot_title = NULL,
@@ -66,6 +69,23 @@ default, it is NULl so all the concentrations are used.}
 ending concentration of the drug on x-axis. Use e.g., c(1, 3) to specify
 that only from 1st to 3rd concentrations of the drug on x-axis are used. By
 default, it is NULl so all the concentrations are used.}
+
+\item{color_range}{A vector of two numeric values. They specify the range
+of the color bars. The first item (lower bounder) must be less than the
+second one (upper bounder). The plotted values larger than defined upper
+bounder will be filled in color \code{high_value_color}. The plotted values
+less than defined lower bounder will be filled in color
+\code{low_value_color}. If the defined range includes 0, value 0 will be
+filled in color "white". By default, it is set as \code{NULL} which
+means the function will automatically set the color range according to
+the plotted values.}
+
+\item{z_range}{A vector of two numeric values. They specify the range of
+z-axis plotted in 3D surface plot. It doesn't work for 2D or heatmap plots.
+Default value is \code{NULL}. The function automatically set the range.}
+
+\item{axis_line}{A logical value. Whether to show the axis lines and ticks.
+It doesn't work for heatmap plot.}
 
 \item{statistic}{A character or NULL. It indicates the statistics printed
 in the plot while there are replicates in input data. Available values are:

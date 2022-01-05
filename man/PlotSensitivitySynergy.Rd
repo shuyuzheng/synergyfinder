@@ -14,6 +14,7 @@ PlotSensitivitySynergy(
   label_size = 10,
   dynamic = FALSE,
   plot_title = NULL,
+  axis_line = FALSE,
   text_size_scale = 1
 )
 }
@@ -45,6 +46,8 @@ a static plot.}
 
 \item{plot_title}{A character value. It specifies the plot title. If it is
 \code{NULL}, the function will automatically generate a title.}
+
+\item{axis_line}{A logical value. Whether to show the axis lines and ticks.}
 
 \item{text_size_scale}{A numeric value. It is used to control the size
 of text for axis in the plot. All the text size will multiply by this
