@@ -88,7 +88,7 @@ PlotDoseResponseCurve <- function(data,
                                     cex.lab = 1 * text_size_scale,
                                     mgp = c(2, 0.5, 0),
                                     font.main = 2,
-                                    font.lab = 3,
+                                    font.lab = 1,
                                     cex.main = 14 / 12 * text_size_scale,
                                     bty = "l",
                                     lwd = 1.5

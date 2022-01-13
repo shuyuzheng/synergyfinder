@@ -148,7 +148,7 @@ PlotSensitivitySynergy <- function(data,
           y = 0.99
         ),
         xaxis = list(
-          title = paste0("<i>Combination Sensitivity Score</i>"),
+          title = paste0("Combination Sensitivity Score"),
           tickfont = list(
             size = 12 * text_size_scale,
             family = "arial"
@@ -158,7 +158,7 @@ PlotSensitivitySynergy <- function(data,
           showspikes = FALSE
         ),
         yaxis = list(
-          title = paste0("<i>", "Synergy Score", "</i>"),
+          title = paste0("Synergy Score"),
           tickfont = list(
             size = 12 * text_size_scale,
             family = "arial"
