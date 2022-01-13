@@ -133,7 +133,8 @@ Plot2DrugHeatmap <- function(data,
                              low_value_color = "#00FF00",
                              text_label_size_scale = 1,
                              text_label_color = "#000000",
-                             title_text_size_scale = 1) {
+                             title_text_size_scale = 1
+                             ) {
   # Extract plot data
   plot_data <- .Extract2DrugPlotData(
     data = data,
@@ -358,7 +359,8 @@ Plot2DrugHeatmap <- function(data,
         title = legend_title,
         titlefont = list(size = 12 * title_text_size_scale, family = "arial"),
         tickfont = list(size = 12 * title_text_size_scale, family = "arial")
-      )) %>% 
+      )
+      ) %>% 
       plotly::layout(
         title = list(
           text = paste0("<b>", plot_title, "</b>"),
@@ -366,7 +368,7 @@ Plot2DrugHeatmap <- function(data,
           y = 0.99
         ),
         xaxis = list(
-          title = paste0("<i>", x_axis_title, "</i>"),
+          title = paste0(x_axis_title),
           tickfont = list(size = 12 * title_text_size_scale, family = "arial"),
           titlefont = list(size = 12 * title_text_size_scale, family = "arial"),
           ticks = "none",
@@ -377,7 +379,7 @@ Plot2DrugHeatmap <- function(data,
           ticktext = x$ticks
         ),
         yaxis = list(
-          title = paste0("<i>", y_axis_title, "</i>"),
+          title = paste0(y_axis_title),
           tickfont = list(size = 12 * title_text_size_scale, family = "arial"),
           titlefont = list(size = 12 * title_text_size_scale, family = "arial"),
           ticks = "none",
@@ -427,12 +429,14 @@ Plot2DrugHeatmap <- function(data,
         toImageButtonOptions = list(
           format = "svg",
           filename = plot_title,
-          width = 500,
-          height = 500,
+          width = NULL,# 500,
+          height = NULL,# 500,
           scale = 1
         )
       ) 
   } else{
+    warn = getOption("warn")
+    options(warn=-1)
     p <- ggplot2::ggplot(
       data = plot_table,
       aes(x = conc1, y = conc2, fill = value)
@@ -449,11 +453,11 @@ Plot2DrugHeatmap <- function(data,
       colours <- c(low_value_color, "#FFFFFF", high_value_color)
       p <- p +
         scale_fill_gradientn(
-          limits  = range(plot_table$value),
+          limits  = c(start_point, end_point),#range(plot_table$value),
           colours = colours[c(1, seq_along(colours), length(colours))],
           values  = c(
             0,
-            scales::rescale(colour_breaks, from = range(plot_table$value)),
+            scales::rescale(colour_breaks, from = c(start_point, end_point)), #range(plot_table$value)),
             1
           ),
           oob = scales::oob_squish_any
@@ -478,14 +482,13 @@ Plot2DrugHeatmap <- function(data,
           ticks = FALSE
         )
       ) +
-      ggplot2::xlab(paste0(drug_pair$drug1, " (", drug_pair$conc_unit1, ")")) +
-      ggplot2::ylab(paste0(drug_pair$drug2, " (", drug_pair$conc_unit2, ")")) +
       # Add the title for heatmap
-      ggplot2::ggtitle(
-        label = paste0(
-          plot_title
-        ),
-        subtitle = plot_subtitle
+      ggplot2::labs(
+        title = plot_title,
+        subtitle = plot_subtitle,
+        x = paste0(drug_pair$drug1, " (", drug_pair$conc_unit1, ")"),
+        y = paste0(drug_pair$drug2, " (", drug_pair$conc_unit2, ")"),
+        fill = legend_title
       ) +
       ggplot2::theme(
         plot.title = ggplot2::element_text(
@@ -503,7 +506,6 @@ Plot2DrugHeatmap <- function(data,
           size = 10 * title_text_size_scale
         ),
         axis.title = ggplot2::element_text(
-          face = "italic",
           size = 10 * title_text_size_scale
         ),
         legend.title = ggplot2::element_text(
@@ -514,8 +516,9 @@ Plot2DrugHeatmap <- function(data,
         ),
         legend.background = element_rect(color = NA)
       )
-    }
+  }
   return(p)
+  options(warn=warn)
 }
 
 #' 2D Contour Plot for 2-drug Combination Dose-Response/Synergy Scores
@@ -626,6 +629,8 @@ Plot2DrugContour <- function(data,
                              col_range = NULL,
                              row_range = NULL,
                              color_range = NULL,
+                             # width = 600,
+                             # height = 400,
                              high_value_color = "#FF0000",
                              low_value_color = "#00FF00",
                              text_size_scale = 1) {
@@ -893,7 +898,8 @@ Plot2DrugContour <- function(data,
           end = max(y),
           size = 1 * text_size_scale
         )
-      )) %>% 
+      )
+      ) %>% 
       plotly::add_annotations(
         text = plot_subtitle,
         x = 0.5,
@@ -947,8 +953,8 @@ Plot2DrugContour <- function(data,
         toImageButtonOptions = list(
           format = "svg",
           filename = plot_title,
-          width = 500,
-          height = 500,
+          width = NULL,# 500,
+          height = NULL,# 500,,
           scale = 1
         )
       )
@@ -1067,7 +1073,6 @@ Plot2DrugContour <- function(data,
         size = 10 * text_size_scale
       ),
       axis.title = ggplot2::element_text(
-        face = "italic",
         size = 10 * text_size_scale
       ),
       legend.title = ggplot2::element_text(
@@ -1224,6 +1229,8 @@ Plot2DrugSurface <- function(data,
                              color_range = NULL,
                              dynamic = FALSE,
                              grid = TRUE,
+                             # width = 600,
+                             # height = 400,
                              high_value_color = "#FF0000",
                              low_value_color = "#00FF00",
                              text_size_scale = 1) {
@@ -1470,7 +1477,7 @@ Plot2DrugSurface <- function(data,
     
     # z-axis setting
     zaxis_setting <- list(
-      title = paste0("<i>", z_axis_title, "</i>"),
+      title = paste0(z_axis_title),
       tickfont = list(size = 12 * text_size_scale, family = "arial"),
       titlefont = list(size = 12 * text_size_scale, family = "arial"),
       ticks = ifelse(axis_line, "outside", "none"),
@@ -1548,7 +1555,7 @@ Plot2DrugSurface <- function(data,
         scene = list(
           aspectratio = list(x=1, y=1, z=1),
           xaxis = list(
-            title = paste0("<i>", x_axis_title, "</i>"),
+            title = paste0(x_axis_title),
             tickfont = list(size = 12 * text_size_scale, family = "arial"),
             titlefont = list(size = 12 * text_size_scale, family = "arial"),
             ticks = ifelse(axis_line, "outside", "none"),
@@ -1559,7 +1566,7 @@ Plot2DrugSurface <- function(data,
             ticktext = x_ticks_text
           ),
           yaxis = list(
-            title = paste0("<i>", y_axis_title, "</i>"),
+            title = paste0(y_axis_title),
             tickfont = list(size = 12 * text_size_scale, family = "arial"),
             titlefont = list(size = 12 * text_size_scale, family = "arial"),
             ticks = ifelse(axis_line, "outside", "none"),
@@ -1584,8 +1591,8 @@ Plot2DrugSurface <- function(data,
         toImageButtonOptions = list(
           format = "svg",
           filename = plot_title,
-          width = 500,
-          height = 500,
+          width = NULL,# 500,
+          height = NULL,# 500,
           scale = 1
         )
       ) 

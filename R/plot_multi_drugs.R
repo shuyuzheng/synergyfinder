@@ -966,8 +966,8 @@ GenerateSurface <- function(dim_reduced_data,
       toImageButtonOptions = list(
         format = "svg",
         filename = plot_title,
-        width = camera_width,
-        height = camera_height,
+        width = "None",# camera_width,
+        height = "None",# camera_height,
         scale = camera_scale
       )
     ) %>% 
@@ -1010,7 +1010,7 @@ GenerateSurface <- function(dim_reduced_data,
   }
 
   xaxis_setting <- list(
-    title = "<i>Coordinate 1</i>",
+    title = "Coordinate 1",
     tickfont = list(size = 12 * text_size_scale, family = "arial"),
     showline = axis_line,
     showticklabels = TRUE,
@@ -1027,7 +1027,7 @@ GenerateSurface <- function(dim_reduced_data,
     xaxis_setting$range <- x_range
   }
   yaxis_setting <- list(
-    title = "<i>Coordinate 2</i>",
+    title = "Coordinate 2",
     tickfont = list(size = 12 * text_size_scale, family = "arial"),
     showline = axis_line,
     showticklabels = TRUE,
@@ -1044,7 +1044,7 @@ GenerateSurface <- function(dim_reduced_data,
     yaxis_setting$range <- y_range
   }
   zaxis_setting <- list(
-    title = paste0("<i>", z_axis_title, "</i>"),
+    title = paste0(z_axis_title),
     tickfont = list(size = 12 * text_size_scale, family = "arial"),
     showline = axis_line,
     showticklabels = TRUE,

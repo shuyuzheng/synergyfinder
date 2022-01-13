@@ -346,8 +346,10 @@ PlotBarometer <- function(data,
       size = 4
     ) + 
     # response text
-    geom_text(
-      aes(x = 0, y = -needle_text_offset),
+    annotate(
+      "text",
+      x = 0,
+      y = -needle_text_offset,
       size = needle_text_size,
       family = font_family,
       label = center_texts,
