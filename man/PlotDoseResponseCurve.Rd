@@ -18,7 +18,7 @@ PlotDoseResponseCurve(
   plot_title = NULL,
   plot_subtitle = NULL,
   plot_setting = list(cex.lab = 1 * text_size_scale, mgp = c(2, 0.5, 0), font.main = 2,
-    font.lab = 3, cex.main = 14/12 * text_size_scale, bty = "l", lwd = 1.5),
+    font.lab = 1, cex.main = 14/12 * text_size_scale, bty = "l", lwd = 1.5),
   ylim = NULL,
   plot_new = TRUE,
   record_plot = TRUE

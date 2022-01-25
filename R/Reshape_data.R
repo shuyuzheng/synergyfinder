@@ -37,7 +37,8 @@
 #' @param noise a logical value. It indicates whether or not adding noise to
 #'   to the "response" values in the matrix. Default is \code{TRUE}.
 #' @param seed a single value, interpreted as an integer, or NULL. It is the
-#'   random seed for calculating the noise. Default setting is \code{NULL}
+#'   random seed for calculating the noise and missing value imputation.
+#'   Default setting is \code{NULL}
 #' @param iteration An integer. It indicates the number of iterations for
 #'   bootstrapping while calculating statistics for data with replicates.
 #'
@@ -71,8 +72,7 @@
 #' @examples
 #' data("mathews_screening_data")
 #' # set a random number seed for generating the noises
-#' set.seed(1)
-#' data <- ReshapeData(mathews_screening_data)
+#' data <- ReshapeData(mathews_screening_data, seed = 1)
 ReshapeData <- function(data,
                         impute = TRUE,
                         impute_method = NULL,
@@ -212,7 +212,12 @@ ReshapeData <- function(data,
         " missing values are imputed."
       )
       imp <- suppressWarnings(
-        mice::mice(combs, method = impute_method, printFlag = FALSE)
+        mice::mice(
+          combs,
+          method = impute_method,
+          printFlag = FALSE,
+          seed = seed
+        )
       )
       response <- suppressWarnings(mice::complete(imp))
     }

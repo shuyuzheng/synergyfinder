@@ -29,7 +29,8 @@ available methods.}
 to the "response" values in the matrix. Default is \code{TRUE}.}
 
 \item{seed}{a single value, interpreted as an integer, or NULL. It is the
-random seed for calculating the noise. Default setting is \code{NULL}}
+random seed for calculating the noise and missing value imputation.
+Default setting is \code{NULL}}
 
 \item{iteration}{An integer. It indicates the number of iterations for
 bootstrapping while calculating statistics for data with replicates.}
@@ -70,8 +71,7 @@ The input data must contain the following columns:
 \examples{
 data("mathews_screening_data")
 # set a random number seed for generating the noises
-set.seed(1)
-data <- ReshapeData(mathews_screening_data)
+data <- ReshapeData(mathews_screening_data, seed = 1)
 }
 \author{
 \itemize{
