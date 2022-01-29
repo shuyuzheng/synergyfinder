@@ -852,7 +852,7 @@ knitr::include_graphics("./ZIP_Synergy_Score.svg")
 
 ### For use of SynergyFinder R package or web application:
 
-Zheng,S., Wang,W., Aldahdooh,J., Malyutina,A., Shadbahr,T., Pessia,A. and Tang,J. (2021) SynergyFinder Plus: towards a better interpretation and annotation of drug combination screening datasets. bioRxiv, 10.1101/2021.06.01.446564.
+Zheng,S., Wang,W., Aldahdooh,J., Malyutina,A., Shadbahr,T., Pessia,A. Tanoli.Z and Tang,J. (2022) SynergyFinder Plus: Toward Better Interpretation and Annotation of Drug Combination Screening Datasets. Genomics, Proteomics & Bioinformatics. https://doi.org/10.1016/j.gpb.2022.01.004.
 
 ### For use of ZIP synergy scoring:
 
