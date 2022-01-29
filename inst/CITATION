@@ -2,11 +2,11 @@ citHeader("To cite synergyfinder in publications use:")
 
 citEntry(
   entry    = "Article",
-  title    = "SynergyFinder Plus: towards a better interpretation and annotation of drug combination screening datasets",
-  author   = "Shuyu Zheng, Wenyu Wang, Jehad Aldahdooh, Alina Malyutina, Tolou Shadbahr, Alberto Pessia, Jing  Tang",
-  journal  = "bioRxiv",
-  year     = "2021",
-  pages    = "2021.06.01.446564",
-  url      = "http://biorxiv.org/content/early/2021/06/01/2021.06.01.446564.abstract",
-  textVersion = "Zheng,S., Wang,W., Aldahdooh,J., Malyutina,A., Shadbahr,T., Pessia,A. and Tang,J. (2021) SynergyFinder Plus: towards a better interpretation and annotation of drug combination screening datasets. bioRxiv, 10.1101/2021.06.01.446564."
+  title    = "SynergyFinder Plus: Toward Better Interpretation and Annotation of Drug Combination Screening Datasets",
+  author   = "Shuyu Zheng, Wenyu Wang, Jehad Aldahdooh, Alina Malyutina, Tolou Shadbahr, Ziaurrehman Tanoli, Alberto Pessia, Jing  Tang",
+  journal  = "Genomics, Proteomics & Bioinformatics",
+  year     = "2022",
+  pages    = "In Press, Journal Pre-proof",
+  url      = "https://www.sciencedirect.com/science/article/pii/S1672022922000080",
+  textVersion = "Zheng,S., Wang,W., Aldahdooh,J., Malyutina,A., Shadbahr,T., Pessia,A. Tanoli.Z and Tang,J. (2022) SynergyFinder Plus: Toward Better Interpretation and Annotation of Drug Combination Screening Datasets. Genomics, Proteomics & Bioinformatics. https://doi.org/10.1016/j.gpb.2022.01.004."
 )
