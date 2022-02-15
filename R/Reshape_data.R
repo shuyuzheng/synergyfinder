@@ -212,12 +212,21 @@ ReshapeData <- function(data,
         " missing values are imputed."
       )
       imp <- suppressWarnings(
-        mice::mice(
-          combs,
-          method = impute_method,
-          printFlag = FALSE,
-          seed = seed
-        )
+        if (is.null(seed)){
+          mice::mice(
+            combs,
+            method = impute_method,
+            printFlag = FALSE,
+            seed = NA
+          )
+        } else {
+          mice::mice(
+            combs,
+            method = impute_method,
+            printFlag = FALSE,
+            seed = seed
+          )
+        }
       )
       response <- suppressWarnings(mice::complete(imp))
     }
