@@ -148,10 +148,16 @@ PlotDoseResponse <- function(data,
     stop("Input data is not in list format!")
   }
   if (!all(c("drug_pairs", "response") %in% names(data))) {
-    stop("Input data should contain at least tow elements: 'drug_pairs' and 
-         'response'. Please prepare your data with 'ReshapeData' function.")
+    stop("Input data should contain at least tow elements: 'drug_pairs' and", 
+         "'response'. Please prepare your data with 'ReshapeData' function.")
   }
-  
+  if (!is.null(file_name)) {
+    if (length(file_name) < length(block_ids)) {
+      stop("The number of elements passed to 'file_name' should be equal to",
+           "the number of elements passed to 'block_ids', i.e. the number of", 
+           "blocks to plot.")
+    }
+  }
   # 2. Select the dose response table for plotting.
   if (adjusted) {
     plot_value = "response"
@@ -176,7 +182,7 @@ PlotDoseResponse <- function(data,
   plots <- vector(mode = "list", length = length(block_ids))
   names(plots) <- block_ids
 
-  i <- 1
+  j <- 1
   for (b in block_ids) {
 
     # ggplot object for heatmap
@@ -264,8 +270,8 @@ PlotDoseResponse <- function(data,
           )
         }
       } else {
-        file <- file_name[i]
-        i <- i + 1
+        file <- file_name[j]
+        j <- j + 1
       }
 
       if (!file_type %in% c("jpeg", "bmp", "png", "tiff", "pdf", "svg")) {
@@ -544,8 +550,8 @@ PlotSynergy <- function(data,
         }
       }
     } else {
-      stop("The type of plot '", type, "' is not available. Available values
-           for parameter 'type' are: 2D, 3D, or heatmap.")
+      stop("The type of plot '", type, "' is not available. Available values",
+           "for parameter 'type' are: 2D, 3D, or heatmap.")
     }
     plots[[block]] <- fig
     
@@ -574,8 +580,10 @@ PlotSynergy <- function(data,
         # Set width and height according to plot types
         if (type == "3D") {
           if (!file_type %in% c("jpeg", "bmp", "png", "tiff", "pdf", "svg")){
-            warning("Can not save plot in ", file_type, " format. Avaliable formats
-                are 'svg', 'jpeg', 'bmp', 'png', 'tiff',and 'pdf'.")
+            warning(
+            "Can not save plot in ", file_type,
+            " format. Avaliable formats are 'svg', 'jpeg', 'bmp', 'png',",
+            " 'tiff',and 'pdf'.")
           } else if (file_type  == "pdf") {
             grDevices::pdf(paste(file, file_type, sep = "."), 
                            width = width, height = height)
