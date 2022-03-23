@@ -1621,21 +1621,25 @@ Plot2DrugSurface <- function(data,
         high_value_color
       ))(color_level)
     }
-
+    col_break <- c(start_point, end_point)
+    
     additional_low_tick <- (start_point - min(plot_table$value)) %/% 2
     additional_high_tick <- (max(plot_table$value) - end_point) %/% 2
     col_expand <- col
+    col_break_expand <- col_break
     if (additional_low_tick > 0) {
       col_expand <- c(
         rep(low_value_color, additional_low_tick),
         col_expand
       )
+      col_break_expand[1] <- min(plot_table$value)
     }
     if (additional_high_tick > 0) {
       col_expand <- c(
         col_expand,
         rep(high_value_color, additional_high_tick)
       )
+      col_break_expand[2] <- max(plot_table$value)
     }
     
     scale_par <- list(
@@ -1700,7 +1704,7 @@ Plot2DrugSurface <- function(data,
         fontsize = 13.5 * text_size_scale
       ),
       at = lattice::do.breaks(
-        range(plot_table$value),
+        col_break_expand,
         length(col_expand)
       ),
       par.settings = list(
