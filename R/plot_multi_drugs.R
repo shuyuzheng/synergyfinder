@@ -1060,7 +1060,7 @@ GenerateSurface <- function(dim_reduced_data,
       title = list(
         text = paste0("<b>", plot_title, "</b>"),
         tickfont = list(size = 18 * text_size_scale, family = "arial"),
-        y = 0.99
+        y = 1.3
       ),
       scene = list(
         xaxis = xaxis_setting,
@@ -1072,14 +1072,14 @@ GenerateSurface <- function(dim_reduced_data,
         l = 50,
         r = 50,
         b = 50,
-        t = 60,
+        t = 90,
         pad = 4
       )
     ) %>% 
     plotly::add_annotations(
       text = plot_subtitle,
       x = 0.5,
-      y = 1.1,
+      y = 1.05,
       yref = "paper",
       xref = "paper",
       xanchor = "middle",

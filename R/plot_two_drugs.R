@@ -365,7 +365,7 @@ Plot2DrugHeatmap <- function(data,
         title = list(
           text = paste0("<b>", plot_title, "</b>"),
           font = list(size = 18 * title_text_size_scale, family = "arial"),
-          y = 0.99
+          y = 1.3
         ),
         xaxis = list(
           title = paste0(x_axis_title),
@@ -393,14 +393,14 @@ Plot2DrugHeatmap <- function(data,
           l = 50,
           r = 50,
           b = 50,
-          t = 60,
+          t = 90,
           pad = 4
         )
       ) %>%
       plotly::add_annotations(
         text = plot_subtitle,
-        x = 0.5,
-        y = 1.1,
+        x = 0.3,
+        y = 1.05,
         yref = "paper",
         xref = "paper",
         xanchor = "middle",
@@ -902,8 +902,8 @@ Plot2DrugContour <- function(data,
       ) %>% 
       plotly::add_annotations(
         text = plot_subtitle,
-        x = 0.5,
-        y = 1.1,
+        x = 0.3,
+        y = 1.05,
         yref = "paper",
         xref = "paper",
         xanchor = "middle",
@@ -915,7 +915,7 @@ Plot2DrugContour <- function(data,
         title = list(
           text = paste0("<b>", plot_title, "</b>"),
           font = list(size = 18 * text_size_scale, family = "arial"),
-          y = 0.99
+          y = 1.3
         ),
         xaxis = list(
           title = paste0(x_axis_title),
@@ -945,7 +945,7 @@ Plot2DrugContour <- function(data,
           l = 50,
           r = 50,
           b = 50,
-          t = 60,
+          t = 90,
           pad = 0
         )
       ) %>% 
@@ -1537,8 +1537,8 @@ Plot2DrugSurface <- function(data,
       ) %>% 
       plotly::add_annotations(
         text = plot_subtitle,
-        x = 0.5,
-        y = 1.1,
+        x = 0.3,
+        y = 1.05,
         yref = "paper",
         xref = "paper",
         xanchor = "middle",
@@ -1550,7 +1550,7 @@ Plot2DrugSurface <- function(data,
         title = list(
           text = paste0("<b>", plot_title, "</b>"),
           font = list(size = 18 * text_size_scale, family = "arial"),
-          y = 0.99
+          y = 1.3
         ),
         scene = list(
           aspectratio = list(x=1, y=1, z=1),
@@ -1583,7 +1583,7 @@ Plot2DrugSurface <- function(data,
           l = 50,
           r = 50,
           b = 50,
-          t = 60,
+          t = 90,
           pad = 4
         )
       ) %>% 
