@@ -212,7 +212,7 @@ PlotBarometer <- function(data,
       dplyr::select(dplyr::all_of(ref)) %>% 
       tidyr::gather(key = "label", value = "value")
     reference$value[which(reference$value < 0)] <- reference$value[reference$value < 0] /10
-    reference$value[reference$value > 100] <- 100 + reference$value[reference$value > 100]/10
+    reference$value[reference$value > 100] <- 100 + (reference$value[reference$value > 100] - 100)/10
     reference <- reference %>% 
       dplyr::mutate(
         adjust = 0,
