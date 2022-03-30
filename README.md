@@ -14,6 +14,13 @@ Code released under the Mozilla Public License 2.0.
 
 ## Citation
 
-In case you use the package in your work, we do appreciate a citation to our publication:
+In case you use the package in your work, we do appreciate a citation to our publications:
 
-He L, Kulesskiy E, Saarela J, Turunen L, Wennerberg K, Aittokallio T, et al. (2018) Methods for High-throughput Drug Combination Screening and Synergy Scoring. In: von Stechow L, editor. Cancer Systems Biology: Methods and Protocols. New York, NY: Springer New York. P351-98.
+Zheng S., Wang W., Aldahdooh J., Malyutina A., Shadbahr T., Pessia A., Tang J.* (2022). SynergyFinder Plus: towards a better interpretation and annotation of drug combination screening datasets. Genomics Proteomics Bioinformatics. https://doi.org/10.1016/j.gpb.2022.01.004.
+
+He L., Kulesskiy E, Saarela J., Turunen L., Wennerberg, K., Aittokallio T., Tang J.* (2018) Methods for high-throughput drug combination screening and synergy scoring. Methods Mol Biol. 1711:351-398. doi: 10.1007/978-1-4939-7493-1_17
+
+Ianevski A., He L., Aittokallio T., Tang J.* (2017) SynergyFinder: a web application for analyzing drug combination dose-response matrix data. Bioinformatics 33(15):2413-2415.
+
+
+
