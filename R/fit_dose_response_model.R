@@ -27,8 +27,8 @@
 #' "response" value.
 #'
 #' Model choice:
-#' First use "L.4" model to fit the raw data. If error or waring occurs, use
-#' "LL.4" model to fit \code{log(raw data)}.
+#' First use "LL.4" model to fit the raw data. If error or waring occurs, use
+#' "L.4" model to fit \code{log(raw data)}.
 #'
 #' @param data A data frame. It contains two columns:
 #' \itemize{
@@ -36,6 +36,8 @@
 #'   \item \strong{response} The response (% inhibition) of cell lines to drug
 #'     with different concentrations.
 #' }
+#' @param Hill A numeric value or \code{NA}. If it is not NA, it is fixed the 
+#'   value assigned by the user. Default setting is \code{NA}.
 #' @param Emin A numeric value or \code{NA}. the minimal effect of the drug used
 #'   in the 4-parameter log-logistic function to fit the dose-response curve. If
 #'   it is not NA, it is fixed the value assigned by the user. Default setting
@@ -44,6 +46,8 @@
 #'   the 4-parameter log-logistic function to fit the dose-response curve. If it
 #'   is not NA, it is fixed the value assigned by the user. Default setting is
 #'   \code{NA}.
+#' @param EC50 A numeric value or \code{NA}. If it is not NA, it is fixed the 
+#'   value assigned by the user. Default setting is \code{NA}.
 #'
 #' @return An object of class 'drc'. It contains information of fitted model.
 #'
@@ -65,7 +69,7 @@
 #'   dose = c(0.00, 9.7656, 39.0626, 156.25, 625, 2500)
 #' )
 #' model <- FitDoseResponse(df)
-FitDoseResponse <- function(data, Emin = NA, Emax = NA) {
+FitDoseResponse <- function(data, Hill = NA, Emin = NA, Emax = NA, EC50 = NA) {
   if (!all(c("dose", "response") %in% colnames(data))) {
     stop("The input must contain columns: \"dose\", \"respone\".")
   }
@@ -80,7 +84,7 @@ FitDoseResponse <- function(data, Emin = NA, Emax = NA) {
     {
       drc::drm(response ~ dose,
         data = data,
-        fct = drc::LL.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)),
+        fct = drc::LL.4(fixed = c(Hill = Hill, Emin = Emin, Emax = Emax, EC50 = EC50)),
         na.action = stats::na.omit,
         control = drc::drmc(
           errorm = FALSE, noMessage = TRUE,
@@ -92,7 +96,7 @@ FitDoseResponse <- function(data, Emin = NA, Emax = NA) {
       data$dose[which(data$dose == 0)] <- 10^-10
       drc::drm(response ~ log(dose),
         data = data,
-        fct = drc::L.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)),
+        fct = drc::L.4(fixed = c(Hill = Hill, Emin = Emin, Emax = Emax, EC50 = EC50)),
         na.action = stats::na.omit,
         control = drc::drmc(
           errorm = FALSE, noMessage = TRUE,
@@ -107,7 +111,7 @@ FitDoseResponse <- function(data, Emin = NA, Emax = NA) {
     drug.model <- suppressWarnings(
       drc::drm(response ~ log(dose),
         data = data,
-        fct = drc::L.4(fixed = c(NA, Emin = Emin, Emax = Emax, NA)),
+        fct = drc::L.4(fixed = c(Hill = Hill, Emin = Emin, Emax = Emax, EC50 = EC50)),
         na.action = stats::na.omit,
         control = drc::drmc(
           errorm = FALSE, noMessage = TRUE, otrace = TRUE
