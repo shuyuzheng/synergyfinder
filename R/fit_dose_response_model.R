@@ -166,11 +166,11 @@ FindModelType <- function(model) {
 #'   drug. It should be the inhibition rate according to negative control.
 #' }
 #'
-#' @param dose A numeric value. It specifies the dose at which user want to
+#' @param dose A numeric vector. It specifies the dose at which user want to
 #'   predict the response of cell line to the drug.
 #'
-#' @return A numeric value. It is the response value of cell line to the drug at
-#'  inputted dose.
+#' @return A numeric vector. It is the response values of cell line to the drug
+#'  at inputted dose.
 #'
 #' @author
 #' \itemize{
@@ -185,9 +185,10 @@ PredictResponse <- function(df, dose) {
   } else {
     model <- FitDoseResponse(df)
     pred <- .PredictResponseFromModel(model, dose)
-    if (pred > 100) {
-      pred <- 100 + stats::runif(1, -0.01, 0)
-    }
+    pred[pred > 100] <- 100 + stats::runif(length(pred), -0.01, 0)
+    # if (pred > 100) {
+    #   pred <- 100 + stats::runif(1, -0.01, 0)
+    # }
   }
   return(pred)
 }
