@@ -43,10 +43,6 @@
 #'   subtitle.
 #' @param plot_setting A list of graphical arguments. The arguments are passed 
 #'   to \link[graphics]{par} function to modify the appearance of plots.
-#' @param ylim A vector of two numeric values or \code{NULL}. It is used to set
-#'   the y limits (y1, y2) of the plot. Note that y1 > y2 is allowed and leads
-#'   to a ‘reversed axis’. With the default value, \code{NULL}, the function
-#'   will automatically set the y axis. 
 #' @param plot_new A logic value. If it is \code{TRUE}, a new device will be
 #'   initiate with \link[graphics]{plot.new}. You might want to set it as
 #'   \code{FALSE} while combining with other plots by using
@@ -56,7 +52,9 @@
 #'   \code{FALSE}, this function will return \code{NULL}.
 #' @param text_size_scale A numeric value. It is used to control the size
 #'   of text in the plot. All the text size will multiply by this scale factor.
-#' 
+#' @param ... Additional graphical arguments that are inherited from
+#'   link[drc]{plot.drc} function. For example, use xlim = c(0.5, 500) or
+#'   ylim = (0, 100) to control the ranges of x-axis or y-axis, respectively. 
 #' @return A plot object recorded by \link[grDevices]{recordPlot} or NULL.
 #' 
 #' @author
@@ -93,9 +91,9 @@ PlotDoseResponseCurve <- function(data,
                                     bty = "l",
                                     lwd = 1.5
                                   ),
-                                  ylim = NULL,
                                   plot_new = TRUE,
-                                  record_plot = TRUE) {
+                                  record_plot = TRUE,
+                                  ...) {
   
   # 1. Check the input data
   # Data structure of 'data'
@@ -230,74 +228,40 @@ PlotDoseResponseCurve <- function(data,
   suppressWarnings(graphics::par(plot_setting))
   
   # Plot dots
-  if (!is.null(ylim)){
-    graphics::plot(
-      x = drug_model,
-      xlab = paste0("Concentration (", drug_anno$unit, ")"),
-      ylab = "Inhibition (%)",
-      type = "obs",
-      log = "x",
-      col = point_color,
-      pch = 16,
-      cex.axis = 1 * text_size_scale,
-      panel.first = eval(grid_exp),
-      ylim = ylim,
-      conName = NULL,
-      bp = 10 ^ bp,
-      xt = xt,
-      xtlab = xtlab
-    )
-    
-    # Plot curve
-    graphics::plot(
-      x = drug_model,
-      type = "none",
-      log = "x",
-      col = curve_color,
-      cex.axis = 1 * text_size_scale,
-      add = TRUE,
-      lwd = 3,
-      ylim = ylim,
-      conName = NULL,
-      xttrim = FALSE,
-      bp = 10 ^ bp,
-      xt = xt,
-      xtlab = xtlab
-    )
-  } else {
-    graphics::plot(
-      x = drug_model,
-      xlab = paste0("Concentration (", drug_anno$unit, ")"),
-      ylab = "Inhibition (%)",
-      type = "obs",
-      log = "x",
-      col = point_color,
-      pch = 16,
-      cex.axis = 1 * text_size_scale,
-      panel.first = eval(grid_exp),
-      xttrim = FALSE,
-      conName = NULL,
-      bp = 10 ^ bp,
-      xt = xt,
-      xtlab = xtlab
-    )
-    
-    # Plot curve
-    graphics::plot(
-      x = drug_model,
-      type = "none",
-      log = "x",
-      col = curve_color,
-      cex.axis = 1 * text_size_scale,
-      add = TRUE,
-      lwd = 3,
-      xttrim = FALSE,
-      conName = NULL,
-      bp = 10 ^ bp,
-      xt = xt,
-      xtlab = xtlab
-    )
-  }
+  graphics::plot(
+    x = drug_model,
+    xlab = paste0("Concentration (", drug_anno$unit, ")"),
+    ylab = "Inhibition (%)",
+    type = "obs",
+    log = "x",
+    col = point_color,
+    pch = 16,
+    cex.axis = 1 * text_size_scale,
+    panel.first = eval(grid_exp),
+    xttrim = FALSE,
+    conName = NULL,
+    bp = 10 ^ bp,
+    xt = xt,
+    xtlab = xtlab,
+    ...
+  )
+  
+  # Plot curve
+  graphics::plot(
+    x = drug_model,
+    type = "none",
+    log = "x",
+    col = curve_color,
+    cex.axis = 1 * text_size_scale,
+    add = TRUE,
+    lwd = 3,
+    xttrim = FALSE,
+    conName = NULL,
+    bp = 10 ^ bp,
+    xt = xt,
+    xtlab = xtlab,
+    ...
+  )
 
   # Plot title
   graphics::title(plot_title)
@@ -314,5 +278,4 @@ PlotDoseResponseCurve <- function(data,
   } else {
     return(NULL)
   }
-
 }
