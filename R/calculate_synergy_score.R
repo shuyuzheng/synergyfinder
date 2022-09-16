@@ -255,7 +255,7 @@ CalculateSynergy <- function(data,
   }
   # combo cell index
   concs <- data$synergy_scores[, grepl("conc\\d", colnames(data$synergy_scores))]
-  concs <- apply(data$synergy_scores, 2, function(x){x == 0})
+  concs <- apply(concs, 2, function(x){x == 0})
   index <- rowSums(concs) < 1
   summarized_score <- data$synergy_scores %>% 
     dplyr::select(block_id, dplyr::ends_with("_synergy")) %>% 
