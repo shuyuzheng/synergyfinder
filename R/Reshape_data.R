@@ -110,7 +110,7 @@ ReshapeData <- function(data,
       n = dplyr::n(),
     ) %>% 
     dplyr::filter(n > 1)
-  if (nrow(check) > 1) {
+  if (nrow(check) > 0) {
     stop(
       "There are more than one drugs-cell combos in block: ",
       paste(head(check$block_id), collapse = ", "),
