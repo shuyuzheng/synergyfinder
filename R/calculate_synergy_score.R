@@ -116,7 +116,8 @@ CalculateSynergy <- function(data,
   blocks <- unique(response$block_id)
   scores <- NULL
   scores_statistics <- NULL
-  for (b in blocks) {      
+  for (b in blocks) {
+    message("Calculating synergy score(s) for block ", b, "...")
     response_one_block <- response %>% 
       dplyr::filter(block_id == b) %>% 
       dplyr::select(-block_id) %>% 
@@ -131,7 +132,6 @@ CalculateSynergy <- function(data,
     if (replicate) { # Block with replicate
       for (m in method) {
         set.seed(seed)
-        message("Calculating ", m, " score for block ", b, "...")
         iter <- pbapply::pblapply(seq(1, iteration), function(i){ 
           response_boot <- .Bootstrapping(response_one_block)
           response_boot <- CorrectBaseLine(
@@ -212,7 +212,6 @@ CalculateSynergy <- function(data,
       tmp <- dplyr::select(response_one_block, dplyr::all_of(concs)) %>% 
         unique()
       for (m in method) {
-        message("Calculating ", m, " score for block ", b, "...")
         if (m %in% c("Bliss", "HSA")) {
           fun <- call(
             m,
