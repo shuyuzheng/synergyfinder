@@ -125,7 +125,7 @@ str(res)
 
 ## 4.0 Baseline Correction
 
-Typically, the models for estimating synergy or sensitivity of drug combinations expect that the drug's effect to be expressed as continuous values ranged between 0 and 1 (or between 0% and 100%). However, in practice the readouts from the drug combination screening could be negative. In this cases, the technical error might be introduced in the dose-response data. The base line correction function is designed to adjust the “baseline” of the dose-response data closer to 0. Following is the main steps for the process of “baseline correction”:
+Typically, the models for estimating synergy or sensitivity of drug combinations expect that the drug's effect to be expressed as continuous values ranged between 0% and 100%. However, in practice the readouts from the drug combination screening could be negative. In this cases, the technical error might be introduced in the dose-response data. The base line correction function is designed to adjust the “baseline” of the dose-response data closer to 0. Following is the main steps for the process of “baseline correction”:
 
 1. Extract all the single drug treatment (monotherapy) dose-response data from the combination.
 2. Fit the four-parameter log logistic model for each monotherapy with the data table from step 1.
