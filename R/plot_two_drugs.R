@@ -2076,12 +2076,14 @@ Plot2DrugSurface <- function(data,
   extend.row.dose <- mapply(function(x, y){seq(from = x, to = y,
                                                length.out = len + 2)},
                             row.dose[-nr], row.dose[-1])
-  extend.row.dose <- unique(round(c(extend.row.dose), 8))
+  #extend.row.dose <- unique(round(c(extend.row.dose), 8))
+  extend.row.dose <- unique(signif(c(extend.row.dose), 8))
   
   extend.col.dose <- mapply(function(x, y){seq(from = x, to = y,
                                                length.out = len + 2)},
                             col.dose[-nc], col.dose[-1])
-  extend.col.dose <- unique(round(c(extend.col.dose), 8))
+  #extend.col.dose <- unique(round(c(extend.col.dose), 8))
+  extend.col.dose <- unique(signif(c(extend.col.dose), 8))
   
   rownames(extended.scores) <- extend.row.dose
   colnames(extended.scores) <- extend.col.dose
