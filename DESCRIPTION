@@ -41,7 +41,7 @@ Description: Efficient implementations for analyzing pre-clinical multiple drug
 License: Mozilla Public License 2.0
 Encoding: UTF-8
 URL: https://synergyfinderplus.org/
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 biocViews: Software, StatisticalMethod
