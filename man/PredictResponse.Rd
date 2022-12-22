@@ -14,12 +14,12 @@ PredictResponse(df, dose)
   drug. It should be the inhibition rate according to negative control.
 }}
 
-\item{dose}{A numeric value. It specifies the dose at which user want to
+\item{dose}{A numeric vector. It specifies the dose at which user want to
 predict the response of cell line to the drug.}
 }
 \value{
-A numeric value. It is the response value of cell line to the drug at
- inputted dose.
+A numeric vector. It is the response values of cell line to the drug
+ at inputted dose.
 }
 \description{
 \code{PredictResponse} uses \code{\link[drc]{drm}} function to fit the dose

@@ -19,9 +19,9 @@ PlotDoseResponseCurve(
   plot_subtitle = NULL,
   plot_setting = list(cex.lab = 1 * text_size_scale, mgp = c(2, 0.5, 0), font.main = 2,
     font.lab = 1, cex.main = 14/12 * text_size_scale, bty = "l", lwd = 1.5),
-  ylim = NULL,
   plot_new = TRUE,
-  record_plot = TRUE
+  record_plot = TRUE,
+  ...
 )
 }
 \arguments{
@@ -71,11 +71,6 @@ subtitle.}
 \item{plot_setting}{A list of graphical arguments. The arguments are passed 
 to \link[graphics]{par} function to modify the appearance of plots.}
 
-\item{ylim}{A vector of two numeric values or \code{NULL}. It is used to set
-the y limits (y1, y2) of the plot. Note that y1 > y2 is allowed and leads
-to a ‘reversed axis’. With the default value, \code{NULL}, the function
-will automatically set the y axis.}
-
 \item{plot_new}{A logic value. If it is \code{TRUE}, a new device will be
 initiate with \link[graphics]{plot.new}. You might want to set it as
 \code{FALSE} while combining with other plots by using
@@ -84,6 +79,10 @@ initiate with \link[graphics]{plot.new}. You might want to set it as
 \item{record_plot}{A logic value. If it is \code{TRUE}, a plot object 
 recorded by \link[grDevices]{recordPlot} will be returned. If it is
 \code{FALSE}, this function will return \code{NULL}.}
+
+\item{...}{Additional graphical arguments that are inherited from
+link[drc]{plot.drc} function. For example, use xlim = c(0.5, 500) or
+ylim = (0, 100) to control the ranges of x-axis or y-axis, respectively.}
 }
 \value{
 A plot object recorded by \link[grDevices]{recordPlot} or NULL.

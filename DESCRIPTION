@@ -1,8 +1,8 @@
 Package: synergyfinder
 Type: Package
 Title: Calculate and Visualize Synergy Scores for Drug Combinations
-Version: 3.6.1
-Date: 2022-12-20
+Version: 3.6.2
+Date: 2022-12-22
 Authors@R:
   c(person(given = "Shuyu",
            family = "Zheng",
@@ -41,7 +41,7 @@ Description: Efficient implementations for analyzing pre-clinical multiple drug
 License: Mozilla Public License 2.0
 Encoding: UTF-8
 URL: https://synergyfinderplus.org/
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 biocViews: Software, StatisticalMethod
