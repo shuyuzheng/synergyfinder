@@ -6,7 +6,7 @@ citEntry(
   author   = "Shuyu Zheng, Wenyu Wang, Jehad Aldahdooh, Alina Malyutina, Tolou Shadbahr, Ziaurrehman Tanoli, Alberto Pessia, Jing  Tang",
   journal  = "Genomics, Proteomics & Bioinformatics",
   year     = "2022",
-  pages    = "In Press, Journal Pre-proof",
-  url      = "https://www.sciencedirect.com/science/article/pii/S1672022922000080",
-  textVersion = "Zheng,S., Wang,W., Aldahdooh,J., Malyutina,A., Shadbahr,T., Pessia,A. Tanoli.Z and Tang,J. (2022) SynergyFinder Plus: Toward Better Interpretation and Annotation of Drug Combination Screening Datasets. Genomics, Proteomics & Bioinformatics. https://doi.org/10.1016/j.gpb.2022.01.004."
+  pages    = "20(3):587-596",
+  url      = "https://doi.org/10.1016/j.gpb.2022.01.004",
+  textVersion = "Zheng,S., Wang,W., Aldahdooh,J., Malyutina,A., Shadbahr,T., Pessia,A. Tanoli.Z and Tang,J. (2022) SynergyFinder Plus: Toward Better Interpretation and Annotation of Drug Combination Screening Datasets. Genomics, Proteomics & Bioinformatics. 20(3):587-596. https://doi.org/10.1016/j.gpb.2022.01.004."
 )
