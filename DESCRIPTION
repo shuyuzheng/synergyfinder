@@ -36,11 +36,11 @@ Description: Efficient implementations for analyzing pre-clinical multiple drug
   synergy; 5. evaluation of synergy and sensitivity simultaneously to provide an
   unbiased interpretation of the clinical potential of the drug combinations.
   Based on this package, we also provide a web application
-  (https://synergyfinderplus.org/) for users who prefer graphical user
+  (https://synergyfinder.org/) for users who prefer graphical user
   interface.
 License: Mozilla Public License 2.0
 Encoding: UTF-8
-URL: https://synergyfinderplus.org/
+URL: https://synergyfinder.org/
 RoxygenNote: 7.2.3
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
