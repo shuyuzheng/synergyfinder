@@ -1644,7 +1644,7 @@ Plot2DrugSurface <- function(data,
     
     scale_par <- list(
       arrows = FALSE,
-      distance = c(0.8, 0.8, 0.8),
+      distance = c(2, 2, 2),
       col = 1,
       z = list(
         tick.number = 6,
