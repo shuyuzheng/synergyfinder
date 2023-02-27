@@ -1726,7 +1726,8 @@ Plot2DrugSurface <- function(data,
         )
         # legend title
         grid::grid.text(
-          label = legend_title,
+          # label = legend_title,
+          label = "",
           x = unit(1, "npc"),
           y = unit(0.75, "npc"),
           gp = grid::gpar(
