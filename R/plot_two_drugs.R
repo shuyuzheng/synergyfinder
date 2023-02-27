@@ -1710,7 +1710,7 @@ Plot2DrugSurface <- function(data,
       par.settings = list(
         axis.line = list(col = "transparent")
       ),
-      zoom = 0.6,
+      zoom = 1,
       aspect = 1,
       panel = function(...) {
         lattice::panel.wireframe(...)
@@ -1718,7 +1718,7 @@ Plot2DrugSurface <- function(data,
         grid::grid.text(
           label = plot_subtitle,
           x=unit(0.55, "npc"),
-          y=unit(1, "npc"),
+          y=unit(0.95, "npc"),
           gp = grid::gpar(
             col = "black",
             fontsize = 10.5 * text_size_scale
@@ -1728,7 +1728,7 @@ Plot2DrugSurface <- function(data,
         grid::grid.text(
           label = legend_title,
           x = unit(1.05, "npc"),
-          y = unit(0.75, "npc"),
+          y = unit(0.8, "npc"),
           gp = grid::gpar(
             col = "black",
             fontsize = 8.5 * text_size_scale
