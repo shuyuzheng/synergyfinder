@@ -1718,7 +1718,7 @@ Plot2DrugSurface <- function(data,
         grid::grid.text(
           label = plot_subtitle,
           x=unit(0.55, "npc"),
-          y=unit(0.95, "npc"),
+          y=unit(0.97, "npc"),
           gp = grid::gpar(
             col = "black",
             fontsize = 10.5 * text_size_scale
@@ -1727,8 +1727,8 @@ Plot2DrugSurface <- function(data,
         # legend title
         grid::grid.text(
           label = legend_title,
-          x = unit(1.05, "npc"),
-          y = unit(0.8, "npc"),
+          x = unit(1, "npc"),
+          y = unit(0.75, "npc"),
           gp = grid::gpar(
             col = "black",
             fontsize = 8.5 * text_size_scale
