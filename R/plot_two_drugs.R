@@ -1644,7 +1644,7 @@ Plot2DrugSurface <- function(data,
     
     scale_par <- list(
       arrows = FALSE,
-      distance = c(0.1, 0.1, 0.1),
+      distance = c(0.8, 0.8, 0.8),
       col = 1,
       z = list(
         tick.number = 6,
@@ -1662,9 +1662,9 @@ Plot2DrugSurface <- function(data,
     )
   
     # Let the text able to shown outside the plot panel
-    clip <- lattice::trellis.par.get("clip")
-    clip$panel <- "off"
-    lattice::trellis.par.set("clip", clip)
+    # clip <- lattice::trellis.par.get("clip")
+    # clip$panel <- "off"
+    # lattice::trellis.par.set("clip", clip)
     p <- lattice::wireframe(
       extended_mat,
       scales = scale_par,
