@@ -1710,7 +1710,7 @@ Plot2DrugSurface <- function(data,
       par.settings = list(
         axis.line = list(col = "transparent")
       ),
-      zoom = 1,
+      zoom = 0.9,
       aspect = 1,
       panel = function(...) {
         lattice::panel.wireframe(...)
