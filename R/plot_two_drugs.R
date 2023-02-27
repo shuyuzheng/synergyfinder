@@ -1738,7 +1738,7 @@ Plot2DrugSurface <- function(data,
       pretty = TRUE
     )
     print(p)
-    p <- grDevices::recordPlot()
+    # p <- grDevices::recordPlot()
   }
   return(p)
 }
