@@ -221,8 +221,9 @@ PlotDoseResponseCurve <- function(data,
   }
   
   if (plot_new) {
+    dev.off()
     graphics::plot.new()
-    # grDevices::dev.control("enable")
+    grDevices::dev.control("enable")
   }
 
   suppressWarnings(graphics::par(plot_setting))
@@ -271,7 +272,6 @@ PlotDoseResponseCurve <- function(data,
   )
   
   if (record_plot) {
-    grDevices::dev.control("enable")
     p <- grDevices::recordPlot()
     grDevices::dev.off()
     # print(p)
