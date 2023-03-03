@@ -273,7 +273,7 @@ PlotDoseResponseCurve <- function(data,
   if (record_plot) {
     p <- grDevices::recordPlot()
     grDevices::dev.off()
-    print(p)
+    # print(p)
     return(p)
   } else {
     return(NULL)
