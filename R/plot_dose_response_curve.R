@@ -222,7 +222,7 @@ PlotDoseResponseCurve <- function(data,
   
   if (plot_new) {
     message("mark")
-    dev.off()
+    while (!is.null(dev.list()))  dev.off()
     graphics::plot.new()
     grDevices::dev.control("enable")
   }
