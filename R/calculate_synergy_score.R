@@ -233,8 +233,9 @@ CalculateSynergy <- function(data,
         concs_index <- apply(concs_index, 2, function(x){x == 0})
         index <- rowSums(concs_index) < 1
         tmp_m <- unlist(tmp_m[index, paste0(m, "_synergy")])
-        z <- abs(mean(tmp_m)) / stats::sd(tmp_m)
-        p <- exp(-0.717 * z - 0.416 * z ^2)
+        # z <- abs(mean(tmp_m)) / stats::sd(tmp_m)
+        # p <- exp(-0.717 * z - 0.416 * z ^2)
+        p <- t.test(tmp_m)$p.value
         p <- formatC(p, format = "e", digits = 2, zero.print = "< 2e-324")
         data$drug_pairs[data$drug_pairs$block_id == b, 
                         paste0(m, "_synergy_p_value")] <- p
