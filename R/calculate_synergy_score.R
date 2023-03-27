@@ -932,15 +932,15 @@ CorrectBaseLine <- function(response, method = c("non", "part", "all")) {
           response = mean(
             rnorm(
               length(.x$response),
-              mean = mean(.x$response),
-              sd = sd(.x$response)
+              mean = mean(.x$response, na.rm = T),
+              sd = sd(.x$response, na.rm = T)
             )
           ),
           response_origin = mean(
             rnorm(
               length(.x$response_origin),
-              mean = mean(.x$response_origin),
-              sd = sd(.x$response_origin)
+              mean = mean(.x$response_origin, na.rm = T),
+              sd = sd(.x$response_origin, na.rm = T)
             )
           )
         )
@@ -949,8 +949,8 @@ CorrectBaseLine <- function(response, method = c("non", "part", "all")) {
           response = mean(
             rnorm(
               length(.x$response),
-              mean = mean(.x$response),
-              sd = sd(.x$response)
+              mean = mean(.x$response, na.rm = T),
+              sd = sd(.x$response, na.rm = T)
             )
           )
         )
