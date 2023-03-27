@@ -305,7 +305,7 @@ ReshapeData <- function(data,
         iter_response <- pbapply::pblapply(seq(1, iteration), function(x){
           response_boot <- .Bootstrapping(response_one_block)
           s <- response_boot[, c("response", "response_origin")] %>% 
-            colMeans()
+            colMeans(na.rm = T)
           s <- as.data.frame(as.list(s))
           return(s)
         }) %>% 
