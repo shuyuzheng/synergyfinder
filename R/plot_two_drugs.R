@@ -209,7 +209,7 @@ Plot2DrugHeatmap <- function(data,
       plot_subtitle <- ""
     } else {
       if ("mean" %in% summary_statistic) {
-        value <- .RoundValues(mean(summary_value_table$value))
+        value <- .RoundValues(mean(summary_value_table$value, na.rm = T))
         if (length(concs == 2) & 
             (drug_pair$replicate | 
              !plot_value %in% c("response", "response_origin"))) {# & drug_pair$replicate) {
@@ -233,7 +233,7 @@ Plot2DrugHeatmap <- function(data,
         }
       }
       if ("median" %in% summary_statistic) {
-        value <- .RoundValues(stats::median(summary_value_table$value))
+        value <- .RoundValues(stats::median(summary_value_table$value, na.rm = T))
         plot_subtitle <-  c(plot_subtitle, paste0("Median: ", value))
       }
       qua <- grep("quantile_\\d+", summary_statistic, value = TRUE)
@@ -241,7 +241,7 @@ Plot2DrugHeatmap <- function(data,
         for (q in qua) {
           pro <- as.numeric(sub("quantile_", "", q))
           value <- .RoundValues(stats::quantile(summary_value_table$value, 
-                                                probs = pro / 100))
+                                                probs = pro / 100, na.rm = T))
           plot_subtitle <-  c(plot_subtitle, paste0(pro, "% Quantile: ", value))
         }
       }
@@ -266,8 +266,8 @@ Plot2DrugHeatmap <- function(data,
         "second item."
       )
     } else {
-      if (color_range[1] > max(plot_table$value) |
-          color_range[2] < min(plot_table$value)){
+      if (color_range[1] > max(plot_table$value, na.rm = T) |
+          color_range[2] < min(plot_table$value, na.rm = T)){
         stop(
           "There is no overlap between 'color_range' (",
           paste(color_range, collapse = ", "),
@@ -711,7 +711,7 @@ Plot2DrugContour <- function(data,
     }
     avail_value <- grepl("mean|median|quantile_\\d+", summary_statistic)
     if ("mean" %in% summary_statistic) {
-      value <- .RoundValues(mean(summary_value_table$value))
+      value <- .RoundValues(mean(summary_value_table$value, na.rm = T))
       if (length(concs == 2) & 
           (drug_pair$replicate | 
            !plot_value %in% c("response", "response_origin"))) {# & drug_pair$replicate) {
@@ -743,7 +743,7 @@ Plot2DrugContour <- function(data,
       for (q in qua) {
         pro <- as.numeric(sub("quantile_", "", q))
         value <- .RoundValues(stats::quantile(summary_value_table$value, 
-                                              probs = pro / 100))
+                                              probs = pro / 100, na.rm = T))
         plot_subtitle <-  c(plot_subtitle, paste0(pro, "% Quantile: ", value))
       }
     }
@@ -767,7 +767,7 @@ Plot2DrugContour <- function(data,
   
   # Color range
   if (is.null(color_range)){
-    color_range <- round(max(abs(plot_table$value)), -1) + 10
+    color_range <- round(max(abs(plot_table$value), na.rm = T), -1) + 10
     start_point <- -color_range
     end_point <- color_range
   } else {
@@ -782,8 +782,8 @@ Plot2DrugContour <- function(data,
         "second item."
       )
     } else {
-      if (color_range[1] > max(plot_table$value) |
-          color_range[2] < min(plot_table$value)){
+      if (color_range[1] > max(plot_table$value, na.rm = T) |
+          color_range[2] < min(plot_table$value, na.rm = T)){
         stop(
           "There is no overlap between 'color_range' (",
           paste(color_range, collapse = ", "),
@@ -1336,7 +1336,7 @@ Plot2DrugSurface <- function(data,
       }
     }
     if ("median" %in% summary_statistic) {
-      value <- .RoundValues(stats::median(summary_value_table$value))
+      value <- .RoundValues(stats::median(summary_value_table$value, na.rm = T))
       plot_subtitle <-  c(plot_subtitle, paste0("Median: ", value))
     }
     qua <- grep("quantile_\\d+", summary_statistic, value = TRUE)
@@ -1344,7 +1344,7 @@ Plot2DrugSurface <- function(data,
       for (q in qua) {
         pro <- as.numeric(sub("quantile_", "", q))
         value <- .RoundValues(
-          stats::quantile(summary_value_table$value, probs = pro / 100)
+          stats::quantile(summary_value_table$value, probs = pro / 100, na.rm = T)
         )
         plot_subtitle <-  c(plot_subtitle, paste0(pro, "% Quantile: ", value))
       }
@@ -1369,7 +1369,7 @@ Plot2DrugSurface <- function(data,
   
   # Color range
   if (is.null(color_range)){
-    color_range <- round(max(abs(plot_table$value)), -1) + 10
+    color_range <- round(max(abs(plot_table$value), na.rm = T), -1) + 10
     start_point <- -color_range
     end_point <- color_range
   } else {
@@ -1384,8 +1384,8 @@ Plot2DrugSurface <- function(data,
         "second item."
       )
     } else {
-      if (color_range[1] > max(plot_table$value) |
-          color_range[2] < min(plot_table$value)){
+      if (color_range[1] > max(plot_table$value, na.rm = T) |
+          color_range[2] < min(plot_table$value, na.rm = T)){
         stop(
           "There is no overlap between 'color_range' (",
           paste(color_range, collapse = ", "),
@@ -1399,7 +1399,7 @@ Plot2DrugSurface <- function(data,
   
   # z axis range
   if (is.null(z_range)){
-    z_range <- round(max(abs(plot_table$value)), -1) + 10
+    z_range <- round(max(abs(plot_table$value), na.rm = T), -1) + 10
     z_range <- c(-z_range, z_range)
   } else {
     if (length(z_range) != 2 | class(z_range) != "numeric"){
@@ -1413,8 +1413,8 @@ Plot2DrugSurface <- function(data,
         "second item."
       )
     } else {
-      if (z_range[1] > max(plot_table$value) |
-          z_range[2] < min(plot_table$value)){
+      if (z_range[1] > max(plot_table$value, na.rm = T) |
+          z_range[2] < min(plot_table$value, na.rm = T){
         stop(
           "There is no overlap between 'color_range' (",
           paste(z_range, collapse = ", "),
@@ -1623,8 +1623,8 @@ Plot2DrugSurface <- function(data,
     }
     col_break <- c(start_point, end_point)
     
-    additional_low_tick <- (start_point - min(plot_table$value)) %/% 2
-    additional_high_tick <- (max(plot_table$value) - end_point) %/% 2
+    additional_low_tick <- (start_point - min(plot_table$value, na.rm = T)) %/% 2
+    additional_high_tick <- (max(plot_table$value, na.rm = T) - end_point) %/% 2
     col_expand <- col
     col_break_expand <- col_break
     if (additional_low_tick > 0) {
@@ -1632,14 +1632,14 @@ Plot2DrugSurface <- function(data,
         rep(low_value_color, additional_low_tick),
         col_expand
       )
-      col_break_expand[1] <- min(plot_table$value)
+      col_break_expand[1] <- min(plot_table$value, na.rm = T)
     }
     if (additional_high_tick > 0) {
       col_expand <- c(
         col_expand,
         rep(high_value_color, additional_high_tick)
       )
-      col_break_expand[2] <- max(plot_table$value)
+      col_break_expand[2] <- max(plot_table$value, na.rm = T)
     }
     
     scale_par <- list(
