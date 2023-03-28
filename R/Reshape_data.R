@@ -163,6 +163,7 @@ ReshapeData <- function(data,
   # 3. make sure the response values are % inhibition
   if (data_type == "viability") {
     response$response <- 100 - response$response
+    response$response_origin <- 100 - response$response_origin # use %inhibition always
   } else if (data_type == "inhibition") {
     response$response <- response$response
   } else {
