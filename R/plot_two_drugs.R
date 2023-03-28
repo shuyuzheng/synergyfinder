@@ -1413,8 +1413,8 @@ Plot2DrugSurface <- function(data,
         "second item."
       )
     } else {
-      if (z_range[1] > max(plot_table$value, na.rm = T) |
-          z_range[2] < min(plot_table$value, na.rm = T){
+      if (z_range[1] > max(plot_table$value, na.rm = T) | 
+          z_range[2] < min(plot_table$value, na.rm = T)){
         stop(
           "There is no overlap between 'color_range' (",
           paste(z_range, collapse = ", "),
