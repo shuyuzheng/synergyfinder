@@ -251,7 +251,7 @@ Plot2DrugHeatmap <- function(data,
   
   # Color range
   if (is.null(color_range)){
-    color_range <- round(max(abs(plot_table$value)), -1) + 10
+    color_range <- round(max(abs(plot_table$value), na.rm = T), -1) + 10
     start_point <- -color_range
     end_point <- color_range
   } else {
