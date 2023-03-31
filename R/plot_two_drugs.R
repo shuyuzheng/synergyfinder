@@ -1974,7 +1974,8 @@ Plot2DrugSurface <- function(data,
   plot_table[, c("conc1", "conc2")] <- lapply(
     plot_table[, c("conc1", "conc2")],
     function(x) {
-      factor(.RoundValues(x))
+      # factor(.RoundValues(x))
+      factor(x)
     }
   )
   plot_table <- plot_table %>% 
