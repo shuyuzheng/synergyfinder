@@ -632,6 +632,7 @@ Loewe <- function(response,
 
   y_loewe <- c()
   dist_loewe <- c()
+  ci_loewe <- c()
   for (i in 1:nrow(response)) {
     x <- response[i, c(1:ndrugs)] # concentrations of drugs
     y <- response$response[i] # the observed combination response
@@ -639,6 +640,7 @@ Loewe <- function(response,
     if (length(which(x > 0)) < 2) { # single drugs
       y_loewe[i] <- y
       dist_loewe[i] <- NA
+      ci_loewe[i] <- NA
     } else {
       # find the dose of single drugs that achieve the observed combination response
       x_cap <- mapply(function(par, type) .SolveExpDose(y, par, type),
@@ -659,11 +661,13 @@ Loewe <- function(response,
         y_loewe[i] <- tmp$y_loewe
         dist_loewe[i] <- tmp$distance
       }
+      ci_loewe[i] <- sum(x/x_cap)
     }
   }
   response$Loewe_ref <- y_loewe
 
   response$Loewe_synergy <- response$response - y_loewe
+  response$Loewe_ci <- ci_loewe
   response <- dplyr::select(response, -response)
   # Output results as a long table format
   return(response)
