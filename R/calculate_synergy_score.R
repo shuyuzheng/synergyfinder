@@ -175,10 +175,10 @@ CalculateSynergy <- function(data,
             tmp_score_statistic_m[[paste0(i, "_sd")]] / sqrt(iteration)
           tmp_score_statistic_m[[paste0(i, "_ci_left")]] <- 
             apply(dplyr::select(iter, dplyr::starts_with(i)), 1, 
-                  function(x) stats::quantile(x, probs = 0.025))
+                  function(x) stats::quantile(x, probs = 0.025, na.rm = T))
           tmp_score_statistic_m[[paste0(i, "_ci_right")]] <- 
             apply(dplyr::select(iter, dplyr::starts_with(i)), 1, 
-                  function(x) stats::quantile(x, probs = 0.975))
+                  function(x) stats::quantile(x, probs = 0.975, na.rm = T))
           # calculate P value for synergy scores
           if (endsWith(i, "synergy")) {
             matrix_mean <- colMeans(iter[index, startsWith(colnames(iter), i)])
