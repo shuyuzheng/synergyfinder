@@ -1835,8 +1835,8 @@ Plot2DrugSurface <- function(data,
   } else {
     avail_statistic <- c("sd", "sem", "ci")
     if (!drug_pair$replicate) {
-      warning("The selected block ", plot_block,
-              " doesn't have the replicate data. Statistics is not available.")
+      # warning("The selected block ", plot_block,
+      #        " doesn't have the replicate data. Statistics is not available.")
       statistic_table <- FALSE
     } else if(!statistic %in% avail_statistic) {
       warning("The parameter 'statistic = ", statistic, "' is not available.",
