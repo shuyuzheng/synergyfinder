@@ -1,4 +1,4 @@
-# SynergyFinder: Calculate and Visualize Synergy Scores for Drug Combinations
+# SynergyFinder Plus (SynergyFinder+): Calculate and Visualize Synergy Scores for Drug Combinations
 # Web application: http://synergyfinder.org
 # Mirror site 1: https://tangsoftwarelab.shinyapps.io/synergyfinder/
 # Mirror site 2: http://synergyfinderplus.org
