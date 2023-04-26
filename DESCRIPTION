@@ -1,7 +1,7 @@
 Package: synergyfinder
 Type: Package
 Title: Calculate and Visualize Synergy Scores for Drug Combinations
-Version: 3.9.1
+Version: 3.8.1
 Date: 2023-04-26
 Authors@R:
   c(person(given = "Shuyu",
